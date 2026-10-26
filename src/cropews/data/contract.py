@@ -132,6 +132,22 @@ def weather_errors(weather: pd.DataFrame) -> list[str]:
     return errors
 
 
+def grid_errors(grid: pd.DataFrame) -> list[str]:
+    """Checks for the 5-day grid: unique keys, no satellite values without an observed flag."""
+    errors = []
+    if grid.duplicated(["field_id", "date"]).any():
+        errors.append("duplicate (field_id, date)")
+    for flag in [c for c in grid.columns if c.endswith("_observed") and c != "weather_observed"]:
+        source = flag.removesuffix("_observed")
+        if (grid[f"{source}_days_since"] < 0).any():
+            errors.append(f"{source}_days_since < 0")
+        if (grid.loc[grid[flag], f"{source}_days_since"] >= 5).any():
+            errors.append(f"{source} observed but days_since >= step")
+    if "weather_observed" in grid and not grid["weather_observed"].all():
+        errors.append("incomplete weather in some steps")
+    return errors
+
+
 def validate_fields(fields: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     errors = field_errors(fields)
     if errors:
@@ -158,3 +174,10 @@ def validate_weather(weather: pd.DataFrame) -> pd.DataFrame:
     if errors:
         raise DataContractError("; ".join(errors))
     return weather
+
+
+def validate_grid(grid: pd.DataFrame) -> pd.DataFrame:
+    errors = grid_errors(grid)
+    if errors:
+        raise DataContractError("; ".join(errors))
+    return grid
