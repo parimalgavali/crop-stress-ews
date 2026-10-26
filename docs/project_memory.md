@@ -11,6 +11,7 @@ a production product for farmers.
 - Region NRW, crop winter wheat, seasons 2019–2025 — [0001](decisions/0001-region-crop-seasons.md)
 - Data sources and access — [0002](decisions/0002-data-sources.md)
 - Test season is 2024 (wet year), not 2022: in NRW, 2022 was a good wheat year.
+- Code is MIT-licensed (`LICENSE`); datasets are not redistributed and keep their own licences.
 
 ## Week-1 data inspection results (2026-10-26)
 
@@ -37,4 +38,3 @@ a production product for farmers.
 - Sentinel-1 and DWD weather extractors (week 1–2).
 - Free Regionalstatistik account for automated district yields; until then use IT.NRW PDFs.
 - YieldSAT access, licence and whether its German wheat fields are in NRW.
-- Repository licence not chosen yet.
