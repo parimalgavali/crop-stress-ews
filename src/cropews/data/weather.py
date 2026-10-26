@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import io
+import os
 import re
+import shutil
 import tarfile
+import tempfile
 import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
@@ -48,11 +51,15 @@ def fetch(url: str, cache_dir: Path) -> Path:
     cache_dir.mkdir(parents=True, exist_ok=True)
     out = cache_dir / url.rsplit("/", 1)[-1]
     if not out.exists():
-        part = out.with_suffix(out.suffix + ".part")
-        with urllib.request.urlopen(url, timeout=300) as resp, open(part, "wb") as f:
-            while chunk := resp.read(1 << 20):
-                f.write(chunk)
-        part.rename(out)
+        # Unique temp file + atomic rename: concurrent fetches never share a partial file.
+        fd, tmp = tempfile.mkstemp(dir=cache_dir, prefix=f".{out.name}.", suffix=".part")
+        try:
+            with os.fdopen(fd, "wb") as f, urllib.request.urlopen(url, timeout=300) as resp:
+                shutil.copyfileobj(resp, f, 1 << 20)
+            os.replace(tmp, out)
+        except BaseException:
+            Path(tmp).unlink(missing_ok=True)
+            raise
     return out
 
 
