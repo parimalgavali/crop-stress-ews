@@ -35,10 +35,14 @@ where = ["src"]
 
 [tool.ruff]
 line-length = 100
+src = ["src"]
 target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["cropews"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
