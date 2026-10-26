@@ -150,6 +150,8 @@ def test_valid_weather_passes():
         ({"hurs_pct": 120.0}, "hurs_pct"),
         ({"tasmin_c": 20.0}, "tasmin_c > tasmax_c"),
         ({"et0_mm": float("nan")}, "missing weather"),
+        ({"field_id": None}, "missing weather"),
+        ({"date": None}, "missing weather"),
     ],
 )
 def test_invalid_weather(overrides, message):
@@ -159,3 +161,13 @@ def test_invalid_weather(overrides, message):
 def test_duplicate_weather_rows_rejected():
     with pytest.raises(DataContractError, match="duplicate"):
         validate_weather(pd.concat([_weather(), _weather()]))
+
+
+def test_missing_s1_backscatter_rejected():
+    assert "missing backscatter values" in s1_observation_errors(_s1_obs(vv_db=float("nan")))
+
+
+def test_inconsistent_s1_ratio_rejected():
+    obs = _s1_obs()
+    obs["vh_vv_db"] += 1.0
+    assert "vh_vv_db != vh_db - vv_db" in s1_observation_errors(obs)
