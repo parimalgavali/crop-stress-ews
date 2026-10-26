@@ -22,6 +22,7 @@ def obs():
             "field_id": ["a", "a"],
             "year": [2024, 2024],
             "date": pd.to_datetime(["2024-04-03", "2024-04-08"]).date,
+            "coverage": [1.0, 0.95],
             "clear_fraction": [1.0, 0.2],
             "ndvi": [0.8, float("nan")],
             "ndmi": [0.3, 0.1],
@@ -44,6 +45,7 @@ def test_valid_fields_pass(fields):
         (lambda f: f.assign(field_size=0.0), "field_size"),
         (lambda f: f.assign(year=2015), "year outside"),
         (lambda f: f.set_crs(None, allow_override=True), "CRS"),
+        (lambda f: f.assign(geometry=f.geometry.centroid), "Polygon"),
     ],
 )
 def test_invalid_fields_are_reported(fields, mutate, message):
@@ -59,7 +61,12 @@ def test_valid_observations_pass(obs):
 
 @pytest.mark.parametrize(
     ("column", "value", "message"),
-    [("clear_fraction", 1.5, "clear_fraction"), ("ndvi", -1.2, "ndvi"), ("field_id", "a", None)],
+    [
+        ("clear_fraction", 1.5, "clear_fraction"),
+        ("coverage", -0.1, "coverage"),
+        ("ndvi", -1.2, "ndvi"),
+        ("field_id", "a", None),
+    ],
 )
 def test_invalid_observations_are_reported(obs, column, value, message):
     bad = obs.copy()

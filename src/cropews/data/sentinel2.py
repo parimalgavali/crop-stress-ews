@@ -9,6 +9,8 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 
+from cropews.data.contract import OBSERVATION_COLUMNS
+
 # Scene classification: 4 = vegetation, 5 = bare soil.
 CLEAR_SCL = (4, 5)
 NO_DATA_SCL = 0
@@ -50,12 +52,28 @@ def clear_fraction(scl: np.ndarray) -> float:
 def summarise_field(scl: np.ndarray, refl: Mapping[str, np.ndarray]) -> dict[str, float]:
     """Median index values over clear pixels of one field on one date."""
     clear = np.isin(scl, CLEAR_SCL)
-    out = {"clear_fraction": clear_fraction(scl)}
+    coverage = float((scl != NO_DATA_SCL).mean()) if scl.size else 0.0
+    out = {"coverage": coverage, "clear_fraction": clear_fraction(scl)}
     indices = spectral_indices({b: refl[b][clear] for b in BANDS})
     for name, values in indices.items():
         finite = values[np.isfinite(values)]
         out[name] = float(np.median(finite)) if finite.size else float("nan")
     return out
+
+
+def select_observations(obs: pd.DataFrame, min_coverage: float = 0.9) -> pd.DataFrame:
+    """Drop rows from scenes covering too little of the field; keep the clearest row per date."""
+    obs = obs[obs["coverage"] >= min_coverage]
+    obs = obs.sort_values(["clear_fraction", "coverage"])
+    obs = obs.drop_duplicates(["field_id", "date"], keep="last")
+    return obs.sort_values(["field_id", "date"]).reset_index(drop=True)
+
+
+def aligned_window(window: Any, src_transform: Any, dst_transform: Any) -> Any:
+    """Window on another grid covering exactly the ground extent of ``window``."""
+    from rasterio.windows import bounds, from_bounds
+
+    return from_bounds(*bounds(window, src_transform), transform=dst_transform)
 
 
 def extract_field_series(
@@ -64,6 +82,7 @@ def extract_field_series(
     end: str,
     max_cloud: float = 90.0,
     inward_buffer_m: float = 10.0,
+    min_coverage: float = 0.9,
     catalog: Any = None,
 ) -> pd.DataFrame:
     """One row per (field, acquisition): clear fraction and median indices at 20 m.
@@ -78,6 +97,9 @@ def extract_field_series(
     from rasterio.features import rasterize
     from rasterio.windows import from_bounds
 
+    empty = pd.DataFrame(columns=list(OBSERVATION_COLUMNS))
+    if fields.empty:
+        return empty
     if catalog is None:
         catalog = pystac_client.Client.open(STAC_URL, modifier=planetary_computer.sign_inplace)
     bbox = tuple(fields.to_crs(4326).total_bounds)
@@ -95,14 +117,17 @@ def extract_field_series(
             local = fields.to_crs(src.crs)
             local = local.assign(geometry=local.buffer(-inward_buffer_m))
             local = local[~local.geometry.is_empty]
+            if local.empty:
+                return empty
             window = from_bounds(*local.total_bounds, transform=src.transform)
             window = window.round_offsets().round_lengths()
             scl = src.read(1, window=window, boundless=True, fill_value=NO_DATA_SCL)
+            scl_transform = src.transform
             transform = src.window_transform(window)
         refl = {}
         for band in BANDS:
             with rasterio.open(item.assets[band].href) as src:
-                win = from_bounds(*local.total_bounds, transform=src.transform)
+                win = aligned_window(window, scl_transform, src.transform)
                 dn = src.read(
                     1,
                     window=win,
@@ -122,8 +147,6 @@ def extract_field_series(
             rows.append(
                 {"field_id": field_id, "year": year, "date": item.datetime.date(), **summary}
             )
-    obs = pd.DataFrame(rows)
-    if not obs.empty:
-        # Overlapping tiles can give two rows per date; keep the clearest.
-        obs = obs.sort_values("clear_fraction").drop_duplicates(["field_id", "date"], keep="last")
-    return obs.sort_values(["field_id", "date"]).reset_index(drop=True) if not obs.empty else obs
+    if not rows:
+        return empty
+    return select_observations(pd.DataFrame(rows), min_coverage)

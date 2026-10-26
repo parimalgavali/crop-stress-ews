@@ -12,6 +12,7 @@ OBSERVATION_COLUMNS = (
     "field_id",
     "year",
     "date",
+    "coverage",
     "clear_fraction",
     "ndvi",
     "ndmi",
@@ -45,6 +46,8 @@ def field_errors(fields: gpd.GeoDataFrame) -> list[str]:
         errors.append(f"year outside {SEASONS[0]}-{SEASONS[-1]}")
     if (fields.geometry.is_empty | fields.geometry.isna()).any():
         errors.append("empty or missing geometry")
+    elif not fields.geom_type.isin(["Polygon", "MultiPolygon"]).all():
+        errors.append("geometry must be Polygon or MultiPolygon")
     return errors
 
 
@@ -55,8 +58,9 @@ def observation_errors(obs: pd.DataFrame) -> list[str]:
     errors = []
     if obs.duplicated(["field_id", "date"]).any():
         errors.append("duplicate (field_id, date)")
-    if not obs["clear_fraction"].between(0, 1).all():
-        errors.append("clear_fraction outside [0, 1]")
+    for col in ("coverage", "clear_fraction"):
+        if not obs[col].between(0, 1).all():
+            errors.append(f"{col} outside [0, 1]")
     for col in NORMALISED_INDICES:
         values = obs[col].dropna()
         if not values.between(-1, 1).all():

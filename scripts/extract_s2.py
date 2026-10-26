@@ -28,6 +28,8 @@ def main() -> None:
     fields = load_winter_wheat_fields(path, args.year, args.min_size_ha)
     fields = assign_districts(fields, gpd.read_file(args.districts))
     fields = sample_fields(fields[fields["district"] == args.district], args.n)
+    if fields.empty:
+        raise SystemExit(f"no winter-wheat fields >= {args.min_size_ha} ha in {args.district!r}")
     start, end = (f"{args.year}-{d}" for d in PREDICTION_WINDOW)
     obs = validate_observations(extract_field_series(fields, start, end))
 
@@ -35,7 +37,8 @@ def main() -> None:
     out = args.out_dir / f"s2_{args.district}_{args.year}.parquet"
     obs.to_parquet(out, index=False)
     clear = obs[obs["clear_fraction"] >= 0.8].groupby("field_id").size()
-    print(f"wrote {out}: {len(obs)} rows; clear dates per field median {clear.median():.0f}")
+    median = clear.median() if len(clear) else 0
+    print(f"wrote {out}: {len(obs)} rows; clear dates per field median {median:.0f}")
 
 
 if __name__ == "__main__":

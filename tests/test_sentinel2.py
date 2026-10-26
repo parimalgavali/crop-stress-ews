@@ -1,7 +1,15 @@
 import numpy as np
+import pandas as pd
 import pytest
 
-from cropews.data.sentinel2 import clear_fraction, reflectance, spectral_indices, summarise_field
+from cropews.data.sentinel2 import (
+    aligned_window,
+    clear_fraction,
+    reflectance,
+    select_observations,
+    spectral_indices,
+    summarise_field,
+)
 
 
 def test_reflectance_applies_offset_from_baseline_04():
@@ -48,3 +56,38 @@ def test_summarise_field_all_cloudy_gives_nan():
     out = summarise_field(np.array([9, 8]), refl)
     assert out["clear_fraction"] == 0.0
     assert np.isnan(out["ndvi"])
+
+
+def test_summarise_field_reports_scene_coverage():
+    scl = np.array([0, 0, 4, 4])
+    out = summarise_field(scl, {b: np.full(4, 0.3) for b in ("B02", "B04", "B05", "B08", "B11")})
+    assert out["coverage"] == pytest.approx(0.5)
+    assert out["clear_fraction"] == pytest.approx(1.0)
+
+
+def test_select_observations_prefers_full_coverage_over_clear_sliver():
+    obs = pd.DataFrame(
+        {
+            "field_id": ["a", "a", "a"],
+            "date": ["2024-05-01"] * 2 + ["2024-05-06"],
+            "coverage": [0.01, 1.0, 0.5],
+            "clear_fraction": [1.0, 0.8, 1.0],
+        }
+    )
+    out = select_observations(obs, min_coverage=0.9)
+    assert out[["date", "coverage", "clear_fraction"]].values.tolist() == [["2024-05-01", 1.0, 0.8]]
+
+
+def test_aligned_window_matches_ground_extent_on_finer_grid():
+    from rasterio.transform import from_origin
+    from rasterio.windows import Window, bounds
+
+    scl_transform = from_origin(400000, 5700000, 20, 20)
+    band_transform = from_origin(400000, 5700000, 10, 10)
+    scl_window = Window(col_off=3, row_off=7, width=5, height=4)
+
+    band_window = aligned_window(scl_window, scl_transform, band_transform)
+
+    assert (band_window.col_off, band_window.row_off) == (6, 14)
+    assert (band_window.width, band_window.height) == (10, 8)
+    assert bounds(band_window, band_transform) == bounds(scl_window, scl_transform)
