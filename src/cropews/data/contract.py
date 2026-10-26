@@ -99,6 +99,8 @@ def s1_observation_errors(obs: pd.DataFrame) -> list[str]:
         values = obs[col].dropna()
         if not values.between(*BACKSCATTER_DB_RANGE).all():
             errors.append(f"{col} outside {BACKSCATTER_DB_RANGE} dB")
+    if ((obs["vh_vv_db"] - (obs["vh_db"] - obs["vv_db"])).abs() > 1e-6).any():
+        errors.append("vh_vv_db != vh_db - vv_db")
     return errors
 
 

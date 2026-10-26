@@ -121,3 +121,9 @@ def test_duplicate_s1_rows_rejected():
 
 def test_missing_s1_backscatter_rejected():
     assert "missing backscatter values" in s1_observation_errors(_s1_obs(vv_db=float("nan")))
+
+
+def test_inconsistent_s1_ratio_rejected():
+    obs = _s1_obs()
+    obs["vh_vv_db"] += 1.0
+    assert "vh_vv_db != vh_db - vv_db" in s1_observation_errors(obs)
