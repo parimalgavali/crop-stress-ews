@@ -117,3 +117,7 @@ def test_duplicate_s1_rows_rejected():
     obs = pd.concat([_s1_obs(), _s1_obs()])
     with pytest.raises(DataContractError, match="duplicate"):
         validate_s1_observations(obs)
+
+
+def test_missing_s1_backscatter_rejected():
+    assert "missing backscatter values" in s1_observation_errors(_s1_obs(vv_db=float("nan")))
