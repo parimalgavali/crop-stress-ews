@@ -49,3 +49,8 @@ docs/               project memory, decisions, data contract, scope, milestones
 Europe-LAND Harmonized IACS inventory (CC BY 4.0, cite original sources), Copernicus Sentinel-2
 via Microsoft Planetary Computer, BKG administrative boundaries (dl-de/by-2-0), DWD Climate Data
 Center (CC BY 4.0), IT.NRW harvest statistics. Details: `docs/decisions/0002-data-sources.md`.
+
+## Licence
+
+Code: [MIT](LICENSE). The datasets are not included in this repository and keep their own licences
+(see above).
