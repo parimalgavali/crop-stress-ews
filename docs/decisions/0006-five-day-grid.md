@@ -10,8 +10,9 @@ data must stay visible rather than be silently filled.
 
 ## Decision
 
-- Grid dates t every 5 days from 1 April to 31 July (`PREDICTION_WINDOW`); a row summarises the
-  half-open step (t − 5 d, t], so nothing after t enters row t.
+- Grid dates t every 5 days from 5 April to 31 July (`PREDICTION_WINDOW`); a row summarises the
+  half-open step (t − 5 d, t], so nothing after t enters row t. The first step (1–5 April) lies
+  inside the satellite extraction window, which starts on 1 April.
 - Satellite values: the latest qualifying observation inside the step (Sentinel-2 clear fraction
   ≥ 0.8; Sentinel-1 per orbit direction, columns suffixed `_asc` / `_desc`). No forward-fill: if
   nothing was observed the values are NaN, `*_observed` is false, and `*_days_since` gives the
@@ -22,6 +23,7 @@ data must stay visible rather than be silently filled.
 
 ## Consequences
 
-- Soest 2024 sample: a step has a Sentinel-2 value 49% of the time, but some satellite value
-  (S2 or either S1 orbit) 89% of the time.
+- Soest 2024 sample: a step has a Sentinel-2 value 42% of the time, but some satellite value
+  (S2 or either S1 orbit) 90% of the time. Sentinel-2 revisits every 5 days, so its
+  `days_since` depends on the grid phase.
 - Masked sequence models (US-09) and tabular baselines (US-08) read the same table.

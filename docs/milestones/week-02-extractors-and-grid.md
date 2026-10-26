@@ -18,8 +18,8 @@ sources on one time axis without hiding missing data (ADRs 0004–0006).
 
 - Sentinel-1: 621 rows, median 37 acquisition dates per field, median longest gap 9 days.
 - Weather: 4,260 field-days; April–July rain 320 mm vs. 392 mm grass ET0 (wet season).
-- Grid: 500 rows (25 steps × 20 fields); Sentinel-2 observed in 49% of steps, any satellite source
-  in 89%; median days since last observation 3 (S2), 4 (S1 asc), 3 (S1 desc).
+- Grid: 480 rows (24 steps × 20 fields); Sentinel-2 observed in 42% of steps, any satellite source
+  in 90%; median days since last observation 7 (S2), 4 (S1 asc), 3 (S1 desc).
 
 ## How to run
 

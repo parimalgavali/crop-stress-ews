@@ -54,7 +54,7 @@ explicit missingness mask.
 
 | Column | Rule |
 |---|---|
-| `field_id`, `year`, `date` | (`field_id`, `date`) unique; dates every 5 days from 1 April |
+| `field_id`, `year`, `date` | (`field_id`, `date`) unique; dates every 5 days from 5 April |
 | `ndvi` … `msi` | Latest clear Sentinel-2 value in the step, else NaN (never forward-filled) |
 | `vv_db_asc` … `vh_vv_db_desc` | Latest Sentinel-1 value per orbit direction in the step, else NaN |
 | `s2_observed`, `s1_asc_observed`, `s1_desc_observed` | True iff the source has a value in the step |

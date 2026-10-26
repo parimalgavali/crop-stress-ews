@@ -32,8 +32,9 @@ WEATHER_AGG = {
 
 
 def grid_dates(year: int, step: int = STEP_DAYS) -> pd.DatetimeIndex:
+    """Step ends from window start + step - 1, so the first step lies inside the window."""
     start, end = (pd.Timestamp(f"{year}-{d}") for d in PREDICTION_WINDOW)
-    return pd.date_range(start, end, freq=f"{step}D")
+    return pd.date_range(start + pd.Timedelta(days=step - 1), end, freq=f"{step}D")
 
 
 def assign_step(dates: pd.Series, grid: pd.DatetimeIndex, step: int = STEP_DAYS) -> pd.Series:
@@ -74,10 +75,12 @@ def _add_source(
     grid: pd.DatetimeIndex,
     prefix: str,
     suffix: str = "",
+    step: int = STEP_DAYS,
 ) -> pd.DataFrame:
     obs = obs.assign(date=pd.to_datetime(obs["date"])).sort_values("date")
-    obs = obs.assign(step=assign_step(obs["date"], grid)).dropna(subset=["step"])
-    latest = obs.groupby(["field_id", "step"], as_index=False).last()
+    obs = obs.assign(step=assign_step(obs["date"], grid, step)).dropna(subset=["step"])
+    # Whole latest row per step: groupby.last() would fill NaN columns from earlier dates.
+    latest = obs.groupby(["field_id", "step"]).tail(1)
     latest = latest.rename(columns={"step": "date_step"})[["field_id", "date_step", *values]]
     latest = latest.rename(columns={v: f"{v}{suffix}" for v in values})
     out = base.merge(
@@ -100,13 +103,13 @@ def build_grid(
 
     clear = s2[s2["clear_fraction"] >= S2_CLEAR_THRESHOLD].dropna(subset=["ndvi"])
     clear = clear.assign(date=pd.to_datetime(clear["date"]))
-    out = _add_source(out, clear, S2_VALUES, grid, "s2")
+    out = _add_source(out, clear, S2_VALUES, grid, "s2", step=step)
     out["s2_days_since"] = _days_since(out, clear[["field_id", "date"]])
 
     s1 = s1.assign(date=pd.to_datetime(s1["date"]))
     for orbit, sfx in ORBIT_SUFFIX.items():
         part = s1[s1["orbit_state"] == orbit]
-        out = _add_source(out, part, S1_VALUES, grid, f"s1_{sfx}", f"_{sfx}")
+        out = _add_source(out, part, S1_VALUES, grid, f"s1_{sfx}", f"_{sfx}", step)
         out[f"s1_{sfx}_days_since"] = _days_since(out, part[["field_id", "date"]])
 
     w = weather.assign(date=pd.to_datetime(weather["date"])).sort_values("date")

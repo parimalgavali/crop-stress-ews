@@ -8,17 +8,17 @@ from cropews.data.grid import assign_step, build_grid, grid_dates
 
 def test_grid_dates_cover_prediction_window_every_5_days():
     g = grid_dates(2024)
-    assert g[0] == pd.Timestamp("2024-04-01")
-    assert g[1] == pd.Timestamp("2024-04-06")
+    assert g[0] == pd.Timestamp("2024-04-05")  # first step is 1-5 April
+    assert g[1] == pd.Timestamp("2024-04-10")
     assert g[-1] <= pd.Timestamp("2024-07-31")
 
 
 def test_assign_step_uses_half_open_interval():
     g = grid_dates(2024)
-    out = assign_step(pd.Series(["2024-03-27", "2024-03-28", "2024-04-01", "2024-04-02"]), g)
+    out = assign_step(pd.Series(["2024-03-31", "2024-04-01", "2024-04-05", "2024-04-06"]), g)
     assert out.isna().tolist() == [True, False, False, False]
-    assert out[1] == out[2] == pd.Timestamp("2024-04-01")
-    assert out[3] == pd.Timestamp("2024-04-06")
+    assert out[1] == out[2] == pd.Timestamp("2024-04-05")
+    assert out[3] == pd.Timestamp("2024-04-10")
 
 
 def _s2(dates, ndvi, clear=1.0):
@@ -65,16 +65,16 @@ def _weather(year=2024):
 
 
 def test_build_grid_masks_missing_and_never_forward_fills():
-    s2 = _s2(["2024-03-20", "2024-04-03", "2024-04-04", "2024-04-20"], [0.5, 0.6, 0.7, np.nan])
+    s2 = _s2(["2024-03-20", "2024-04-07", "2024-04-08", "2024-04-20"], [0.5, 0.6, 0.7, np.nan])
     s2.loc[3, "clear_fraction"] = 0.2
-    grid = validate_grid(build_grid(["a"], 2024, s2, _s1(["2024-04-05"]), _weather()))
+    grid = validate_grid(build_grid(["a"], 2024, s2, _s1(["2024-04-09"]), _weather()))
     rows = grid.set_index("date")
 
     first, second, third = (
-        rows.loc[pd.Timestamp(d)] for d in ("2024-04-01", "2024-04-06", "2024-04-11")
+        rows.loc[pd.Timestamp(d)] for d in ("2024-04-05", "2024-04-10", "2024-04-15")
     )
     assert not first["s2_observed"] and np.isnan(first["ndvi"])
-    assert first["s2_days_since"] == 12  # 20 March, before the window, still counts
+    assert first["s2_days_since"] == 16  # 20 March, before the window, still counts
     assert second["s2_observed"] and second["ndvi"] == 0.7  # latest clear in the step
     assert second["s2_days_since"] == 2
     assert not third["s2_observed"] and np.isnan(third["ndvi"])
@@ -88,11 +88,25 @@ def test_build_grid_aggregates_weather_over_step():
     first = grid.iloc[0]
     assert first["pr_mm"] == 5.0 and first["et0_mm"] == 10.0
     assert first["weather_days"] == 5 and first["weather_observed"]
-    assert first["soil_moist_pct"] == pd.Timestamp("2024-04-01").dayofyear - 1  # last day
+    assert first["soil_moist_pct"] == pd.Timestamp("2024-04-05").dayofyear - 1  # last day
 
 
 def test_validate_grid_rejects_inconsistent_mask():
     grid = build_grid(["a"], 2024, _s2(["2024-04-03"], [0.6]), _s1([]), _weather())
-    grid.loc[2, "s2_observed"] = True  # 11 April: last clear 8 days earlier
+    grid.loc[2, "s2_observed"] = True  # 15 April: last clear 12 days earlier
     with pytest.raises(DataContractError, match="days_since"):
         validate_grid(grid)
+
+
+def test_latest_row_is_not_mixed_with_earlier_dates():
+    s2 = _s2(["2024-04-06", "2024-04-08"], [0.6, 0.7])
+    s2.loc[1, "ndre"] = np.nan
+    row = build_grid(["a"], 2024, s2, _s1([]), _weather()).iloc[1]
+    assert row["ndvi"] == 0.7 and np.isnan(row["ndre"])
+
+
+def test_non_default_step_applies_to_satellite_sources():
+    grid = build_grid(["a"], 2024, _s2(["2024-04-02"], [0.6]), _s1(["2024-04-03"]), _weather(), 10)
+    first = grid.iloc[0]
+    assert first["date"] == pd.Timestamp("2024-04-10")
+    assert first["s2_observed"] and first["s1_asc_observed"] and first["weather_days"] == 10
