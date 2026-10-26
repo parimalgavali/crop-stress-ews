@@ -5,8 +5,10 @@ from cropews.data.contract import (
     DataContractError,
     field_errors,
     observation_errors,
+    s1_observation_errors,
     validate_fields,
     validate_observations,
+    validate_s1_observations,
 )
 
 
@@ -76,3 +78,42 @@ def test_invalid_observations_are_reported(obs, column, value, message):
     else:
         bad.loc[0, column] = value
     assert any(message in e for e in observation_errors(bad))
+
+
+def _s1_obs(**overrides):
+    row = {
+        "field_id": "a",
+        "year": 2024,
+        "date": "2024-05-01",
+        "orbit_state": "ascending",
+        "relative_orbit": 15,
+        "coverage": 1.0,
+        "vv_db": -10.0,
+        "vh_db": -17.0,
+        "vh_vv_db": -7.0,
+    }
+    row.update(overrides)
+    return pd.DataFrame([row])
+
+
+def test_valid_s1_observations_pass():
+    assert s1_observation_errors(_s1_obs()) == []
+
+
+@pytest.mark.parametrize(
+    "overrides, message",
+    [
+        ({"orbit_state": "up"}, "orbit_state"),
+        ({"coverage": 1.5}, "coverage"),
+        ({"vv_db": 0.1 * -32768}, "vv_db"),
+    ],
+)
+def test_invalid_s1_observations(overrides, message):
+    errors = s1_observation_errors(_s1_obs(**overrides))
+    assert any(message in e for e in errors)
+
+
+def test_duplicate_s1_rows_rejected():
+    obs = pd.concat([_s1_obs(), _s1_obs()])
+    with pytest.raises(DataContractError, match="duplicate"):
+        validate_s1_observations(obs)
