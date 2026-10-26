@@ -12,6 +12,7 @@ a production product for farmers.
 - Data sources and access — [0002](decisions/0002-data-sources.md)
 - Test season is 2024 (wet year), not 2022: in NRW, 2022 was a good wheat year.
 - Sentinel-1 RTC backscatter per field, ascending/descending kept separate — [0004](decisions/0004-sentinel1-rtc.md)
+- Weather from DWD HYRAS + AMBAV 1 km daily grids at field points — [0005](decisions/0005-dwd-weather-grids.md)
 - Code is MIT-licensed; datasets are not redistributed and keep their own licences — [0003](decisions/0003-code-licence.md)
 
 ## Week-1 data inspection results (2026-10-26)
@@ -36,7 +37,7 @@ a production product for farmers.
 ## Open questions / next steps
 
 - Stress-label definition and its sanity check against district yields (week 2).
-- DWD weather extractor (week 2). Sentinel-1 extractor done (`scripts/extract_s1.py`).
+- Sentinel-1 (`scripts/extract_s1.py`) and DWD weather (`scripts/extract_weather.py`) extractors done.
 - User stories are GitHub Issues (label `user-story`, milestones W1–W8), each linked to its branch and PR.
 - Free Regionalstatistik account for automated district yields; until then use IT.NRW PDFs.
 - YieldSAT access, licence and whether its German wheat fields are in NRW.

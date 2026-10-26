@@ -33,6 +33,19 @@ S1_OBSERVATION_COLUMNS = (
     "vh_vv_db",
 )
 ORBIT_STATES = ("ascending", "descending")
+WEATHER_COLUMNS = (
+    "field_id",
+    "year",
+    "date",
+    "pr_mm",
+    "tas_c",
+    "tasmin_c",
+    "tasmax_c",
+    "hurs_pct",
+    "vpd_kpa",
+    "et0_mm",
+    "soil_moist_pct",
+)
 # Plausible gamma0 range for agricultural fields; values outside indicate a unit or nodata bug.
 BACKSCATTER_DB_RANGE = (-40.0, 10.0)
 
@@ -100,6 +113,25 @@ def s1_observation_errors(obs: pd.DataFrame) -> list[str]:
     return errors
 
 
+def weather_errors(weather: pd.DataFrame) -> list[str]:
+    missing = _missing(weather, WEATHER_COLUMNS)
+    if missing:
+        return [f"missing columns: {missing}"]
+    errors = []
+    if weather.duplicated(["field_id", "date"]).any():
+        errors.append("duplicate (field_id, date)")
+    if weather[list(WEATHER_COLUMNS[3:])].isna().any().any():
+        errors.append("missing weather values (field outside the DWD grids?)")
+    for col in ("pr_mm", "vpd_kpa", "et0_mm", "soil_moist_pct"):
+        if (weather[col] < 0).any():
+            errors.append(f"{col} must be >= 0")
+    if not weather["hurs_pct"].dropna().between(0, 100).all():
+        errors.append("hurs_pct outside [0, 100]")
+    if (weather["tasmin_c"] > weather["tasmax_c"]).any():
+        errors.append("tasmin_c > tasmax_c")
+    return errors
+
+
 def validate_fields(fields: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     errors = field_errors(fields)
     if errors:
@@ -119,3 +151,10 @@ def validate_s1_observations(obs: pd.DataFrame) -> pd.DataFrame:
     if errors:
         raise DataContractError("; ".join(errors))
     return obs
+
+
+def validate_weather(weather: pd.DataFrame) -> pd.DataFrame:
+    errors = weather_errors(weather)
+    if errors:
+        raise DataContractError("; ".join(errors))
+    return weather

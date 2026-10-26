@@ -35,5 +35,17 @@ Implemented in `src/cropews/data/contract.py`; violations raise `DataContractErr
 | `vv_db`, `vh_db` | float | Median gamma0 in dB, within [−40, 10] |
 | `vh_vv_db` | float | `vh_db − vv_db` |
 
+## Weather (one row per field and day, 1 January – 31 July)
+
+| Column | Type | Rule |
+|---|---|---|
+| `field_id`, `year`, `date` | | (`field_id`, `date`) unique; no missing values |
+| `pr_mm` | float | Daily precipitation (HYRAS), ≥ 0 |
+| `tas_c`, `tasmin_c`, `tasmax_c` | float | Daily mean/min/max air temperature (HYRAS); `tasmin_c` ≤ `tasmax_c` |
+| `hurs_pct` | float | Daily mean relative humidity (HYRAS), in [0, 100] |
+| `vpd_kpa` | float | FAO-56 vapour-pressure deficit, ≥ 0 |
+| `et0_mm` | float | Potential evapotranspiration over grass (AMBAV `evapo_p`), ≥ 0 |
+| `soil_moist_pct` | float | Soil moisture under grass, % plant-available water (AMBAV), ≥ 0 |
+
 Downstream code must treat Sentinel-2 observations with `clear_fraction < 0.8` as missing and carry an
 explicit missingness mask.

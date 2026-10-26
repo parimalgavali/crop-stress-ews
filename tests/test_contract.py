@@ -9,6 +9,8 @@ from cropews.data.contract import (
     validate_fields,
     validate_observations,
     validate_s1_observations,
+    validate_weather,
+    weather_errors,
 )
 
 
@@ -117,3 +119,43 @@ def test_duplicate_s1_rows_rejected():
     obs = pd.concat([_s1_obs(), _s1_obs()])
     with pytest.raises(DataContractError, match="duplicate"):
         validate_s1_observations(obs)
+
+
+def _weather(**overrides):
+    row = {
+        "field_id": "a",
+        "year": 2024,
+        "date": "2024-05-01",
+        "pr_mm": 2.0,
+        "tas_c": 12.0,
+        "tasmin_c": 6.0,
+        "tasmax_c": 18.0,
+        "hurs_pct": 70.0,
+        "vpd_kpa": 0.5,
+        "et0_mm": 3.0,
+        "soil_moist_pct": 90.0,
+    }
+    row.update(overrides)
+    return pd.DataFrame([row])
+
+
+def test_valid_weather_passes():
+    assert weather_errors(_weather()) == []
+
+
+@pytest.mark.parametrize(
+    "overrides, message",
+    [
+        ({"pr_mm": -1.0}, "pr_mm"),
+        ({"hurs_pct": 120.0}, "hurs_pct"),
+        ({"tasmin_c": 20.0}, "tasmin_c > tasmax_c"),
+        ({"et0_mm": float("nan")}, "missing weather"),
+    ],
+)
+def test_invalid_weather(overrides, message):
+    assert any(message in e for e in weather_errors(_weather(**overrides)))
+
+
+def test_duplicate_weather_rows_rejected():
+    with pytest.raises(DataContractError, match="duplicate"):
+        validate_weather(pd.concat([_weather(), _weather()]))
