@@ -1,6 +1,6 @@
-data/
-outputs/
-models/
+/data/
+/outputs/
+/models/
 *.parquet
 *.geoparquet
 *.zip
