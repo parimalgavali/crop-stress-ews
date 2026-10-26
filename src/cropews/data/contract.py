@@ -124,8 +124,8 @@ def weather_errors(weather: pd.DataFrame) -> list[str]:
     errors = []
     if weather.duplicated(["field_id", "date"]).any():
         errors.append("duplicate (field_id, date)")
-    if weather[list(WEATHER_COLUMNS[3:])].isna().any().any():
-        errors.append("missing weather values (field outside the DWD grids?)")
+    if weather[list(WEATHER_COLUMNS)].isna().any().any():
+        errors.append("missing weather values or keys (field outside the DWD grids?)")
     for col in ("pr_mm", "vpd_kpa", "et0_mm", "soil_moist_pct"):
         if (weather[col] < 0).any():
             errors.append(f"{col} must be >= 0")

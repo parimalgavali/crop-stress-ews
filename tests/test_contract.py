@@ -150,6 +150,8 @@ def test_valid_weather_passes():
         ({"hurs_pct": 120.0}, "hurs_pct"),
         ({"tasmin_c": 20.0}, "tasmin_c > tasmax_c"),
         ({"et0_mm": float("nan")}, "missing weather"),
+        ({"field_id": None}, "missing weather"),
+        ({"date": None}, "missing weather"),
     ],
 )
 def test_invalid_weather(overrides, message):
