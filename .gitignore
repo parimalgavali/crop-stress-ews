@@ -1,0 +1,12 @@
+data/
+outputs/
+models/
+*.parquet
+*.geoparquet
+*.zip
+__pycache__/
+*.egg-info/
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
