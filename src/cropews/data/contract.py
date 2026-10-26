@@ -106,10 +106,14 @@ def s1_observation_errors(obs: pd.DataFrame) -> list[str]:
         errors.append(f"orbit_state not in {ORBIT_STATES}")
     if not obs["coverage"].between(0, 1).all():
         errors.append("coverage outside [0, 1]")
+    if obs[["vv_db", "vh_db", "vh_vv_db"]].isna().any().any():
+        errors.append("missing backscatter values")
     for col in ("vv_db", "vh_db"):
         values = obs[col].dropna()
         if not values.between(*BACKSCATTER_DB_RANGE).all():
             errors.append(f"{col} outside {BACKSCATTER_DB_RANGE} dB")
+    if ((obs["vh_vv_db"] - (obs["vh_db"] - obs["vv_db"])).abs() > 1e-6).any():
+        errors.append("vh_vv_db != vh_db - vv_db")
     return errors
 
 
