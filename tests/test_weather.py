@@ -2,10 +2,12 @@ import io
 import tarfile
 
 import numpy as np
+import pandas as pd
 import pytest
 from rasterio.transform import from_origin
 
 from cropews.data.weather import (
+    add_vpd,
     ambav_url,
     grid_index,
     hyras_url,
@@ -111,3 +113,9 @@ def test_read_daily_stack_applies_scale_factor(tmp_path):
     out = read_daily_stack(str(path), np.array([500.0]), np.array([500.0]), 1, 1)
 
     assert out[0, 0] == pytest.approx(77.5)
+
+
+def test_saturated_humidity_is_clipped_and_vpd_non_negative():
+    frame = pd.DataFrame({"tasmin_c": [-0.5], "tasmax_c": [2.0], "hurs_pct": [100.000001]})
+    out = add_vpd(frame)
+    assert out.loc[0, "hurs_pct"] == 100.0 and out.loc[0, "vpd_kpa"] >= 0

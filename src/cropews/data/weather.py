@@ -183,7 +183,13 @@ def extract_weather(
                     values[index[day]] = v
         frame[col] = values.T.ravel()
 
+    return add_vpd(frame)[list(WEATHER_COLUMNS)]
+
+
+def add_vpd(frame: pd.DataFrame) -> pd.DataFrame:
+    """Clip humidity to 100 % (float32 scaling gives e.g. 100.000001) and derive VPD."""
+    frame["hurs_pct"] = frame["hurs_pct"].clip(upper=100.0)
     frame["vpd_kpa"] = vapour_pressure_deficit(
         frame["tasmin_c"].to_numpy(), frame["tasmax_c"].to_numpy(), frame["hurs_pct"].to_numpy()
     )
-    return frame[list(WEATHER_COLUMNS)]
+    return frame
