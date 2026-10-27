@@ -19,6 +19,7 @@ a production product for farmers.
 - Stress label reference: same-date district peers, not climatology (removes dry-spring season shifts) — [0010](decisions/0010-peer-reference-label.md)
 - Sequence models: GRU-D + LSTM on causal windows, mask + time gaps, validation-only selection, Platt calibration; torch in optional `seq` extra — [0011](decisions/0011-sequence-models.md)
 - API serves precomputed test/extra-season predictions from the validation-calibrated logistic model; reasons = summed logistic contributions; red/amber at 90%/75% validation specificity — [0012](decisions/0012-api-and-demo-model.md)
+- UI: one screen (map + accessible field list + timeline), colour never alone (symbol + word), Web Speech read-aloud EN/DE, Playwright E2E with mocked API — [0013](decisions/0013-one-screen-ui.md)
 - Code is MIT-licensed; datasets are not redistributed and keep their own licences — [0003](decisions/0003-code-licence.md)
 
 ## Week-1 data inspection results (2026-10-26)
@@ -43,6 +44,7 @@ a production product for farmers.
 ## Open questions / next steps
 
 - Label sanity check done (US-07, [week 3](milestones/week-03-label-sanity.md)); next: revised label ADR chosen on 2022, then US-09.
+- US-11 UI done ([ui.md](ui.md)): `web/` React + Vite + MapLibre; CI job `web` runs tsc, eslint, vitest, Playwright. Node 20 via nvm locally.
 - US-10 API done ([api.md](api.md)): FastAPI + PostGIS + Alembic, `docker compose up`; API tests run against a PostGIS service in CI. Next: US-11 UI.
 - US-09 sequence models ([results](sequence_models.md)): on Soest on par with LightGBM (validation-selected LSTM, test 7 d AUROC 0.77; GRU-D 0.82), Sentinel-1 is the most useful input group; CIs overlap. Next: six-district rerun, then US-10.
 - US-08b revised label (peer reference): Soest test 2024 LightGBM 0.80 vs persistence 0.66 AUROC at 7 d, logistic best at 14/21 d; CIs still overlap (40 test fields). Next: rerun on all six districts once Sentinel-1 is extracted, then US-09.
