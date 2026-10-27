@@ -13,6 +13,7 @@
 | [0009](0009-label-sanity-outcome.md) | Label tracks yield loss spatially, not across seasons; revise before US-09 | Accepted |
 | [0010](0010-peer-reference-label.md) | Stress label against same-date district peers (replaces climatology reference) | Accepted |
 | [0011](0011-sequence-models.md) | Sequence models: GRU-D and LSTM on causal windows, validation-only selection | Accepted |
+| [0012](0012-api-and-demo-model.md) | API over precomputed predictions; demo uses calibrated logistic model with contribution-based reasons | Accepted |
 
 Add a new numbered record for each decision that changes scope, data, labels, modeling or
 evaluation. Amend the status of superseded records instead of deleting them.

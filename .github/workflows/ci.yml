@@ -8,6 +8,18 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgis:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: cropews
+          POSTGRES_PASSWORD: cropews
+          POSTGRES_DB: cropews
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U cropews" --health-interval 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://cropews:cropews@localhost:5432/cropews
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -15,7 +27,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
-      - run: pip install -e ".[dev,extract,model,seq]"
+      - run: pip install -e ".[dev,extract,model,seq,api]"
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy
