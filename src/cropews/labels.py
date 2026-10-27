@@ -1,4 +1,8 @@
-"""Stress-onset labels from Sentinel-2 anomalies against a training-only baseline (ADR 0007).
+"""Stress-onset labels from Sentinel-2 anomalies (ADR 0007, reference revised in ADR 0010).
+
+Default reference (ADR 0010, ``peer``): the field's departure from the median of its district peers
+on the same clear date, scaled by the SD of that departure per (district, 10-day bin) on training
+seasons. Season-wide shifts such as a dry spring cancel out. Legacy reference (``climatology``):
 
 A field is *below* on a clear date if NDVI or NDMI is more than 1.5 SD under the mean of the same
 district and 10-day day-of-year bin, fitted on training seasons only. An event starts on the first
@@ -22,6 +26,7 @@ MIN_CONSECUTIVE = 2
 DOY_BIN_DAYS = 10
 MIN_BASELINE_N = 20
 SENESCENCE_CUTOFF = "06-30"
+MIN_PEERS = 8
 
 
 def clear_observations(s2: pd.DataFrame) -> pd.DataFrame:
@@ -46,6 +51,37 @@ def score(obs: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFrame:
     below = np.zeros(len(out), dtype=bool)
     for i in LABEL_INDICES:
         out[f"z_{i}"] = (out[i] - out[f"{i}_mean"]) / out[f"{i}_std"]
+        below |= (out[f"z_{i}"] < Z_THRESHOLD).to_numpy()
+    out["below"] = below
+    keep = ["field_id", "year", "district", "date", *(f"z_{i}" for i in LABEL_INDICES), "below"]
+    return out[keep].sort_values(["field_id", "date"]).reset_index(drop=True)
+
+
+def peer_residuals(obs: pd.DataFrame, min_peers: int = MIN_PEERS) -> pd.DataFrame:
+    """Departure from the same-date district median; dates with fewer clear peers are dropped."""
+    by = obs.groupby(["district", "date"])
+    out = obs.assign(n_peers=by["ndvi"].transform("size"))
+    for i in LABEL_INDICES:
+        out[f"r_{i}"] = out[i] - by[i].transform("median")
+    return out[out["n_peers"] >= min_peers].reset_index(drop=True)
+
+
+def fit_peer_scale(residuals: pd.DataFrame, train_years: Iterable[int]) -> pd.DataFrame:
+    """SD of the peer departure per (district, doy_bin) from training seasons only."""
+    train = residuals[residuals["year"].isin(tuple(train_years))]
+    if train.empty:
+        raise ValueError("no training-season observations to fit the peer scale")
+    agg = {f"r_{i}_std": (f"r_{i}", "std") for i in LABEL_INDICES}
+    scale = train.groupby(["district", "doy_bin"]).agg(**agg, n=("ndvi", "size")).reset_index()
+    return scale[scale["n"] >= MIN_BASELINE_N].reset_index(drop=True)
+
+
+def score_peer(residuals: pd.DataFrame, scale: pd.DataFrame) -> pd.DataFrame:
+    """Peer z-scores and the ``below`` flag; same output columns as :func:`score`."""
+    out = residuals.merge(scale, on=["district", "doy_bin"], how="inner")
+    below = np.zeros(len(out), dtype=bool)
+    for i in LABEL_INDICES:
+        out[f"z_{i}"] = out[f"r_{i}"] / out[f"r_{i}_std"]
         below |= (out[f"z_{i}"] < Z_THRESHOLD).to_numpy()
     out["below"] = below
     keep = ["field_id", "year", "district", "date", *(f"z_{i}" for i in LABEL_INDICES), "below"]

@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install -e ".[dev,extract]"
+      - run: pip install -e ".[dev,extract,model]"
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy
