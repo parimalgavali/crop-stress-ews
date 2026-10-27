@@ -15,7 +15,7 @@ def test_arable_parcels_filters_use_and_size():
         {
             "ID": [1, 2, 3],
             "AREA_HA": [3.0, 1.0, 5.0],
-            "CODE_TXT": ["Winterweichweizen", "Wintergerste", "Mähweiden"],
+            "CODE_TXT": ["Winterweichweizen ", "Wintergerste", "Mähweiden"],
             "USE_TXT": ["Getreide", "Getreide", "Dauergrünland"],
             "VALIDFROM": [2026, 2026, 2026],
             "geometry": [box(0, 0, 1, 1)] * 3,

@@ -36,7 +36,7 @@ def arable_parcels(raw: pd.DataFrame, min_size_ha: float = 2.0) -> pd.DataFrame:
         field_id="LWK-" + out["ID"].astype(str),
         year=out["VALIDFROM"].astype(int),
         area_ha=out["AREA_HA"].astype(float),
-        declared_crop=out["CODE_TXT"].astype(str),
+        declared_crop=out["CODE_TXT"].astype(str).str.strip(),
     )[["field_id", "year", "area_ha", "declared_crop", "geometry"]].reset_index(drop=True)
 
 
