@@ -47,5 +47,5 @@ seasons (dry springs 2020/2022 inflate events) — see [label_sanity.md](label_s
 Since US-08b the default reference is the median of the district peers on the same clear date
 (≥ 8 clear peers), scaled by the training-season SD of that departure per (district, 10-day bin).
 Over 2019–2023 it removes the season-level confound (ρ all −0.09 vs +0.42) and keeps the
-within-season link to yield loss (ρ −0.48). With 2024/2025 included afterwards: within-season ρ −0.35
-(p 0.03). Season-wide losses such as 2024 are, by construction, not field events.
+within-season link to yield loss (ρ −0.48). With 2024/2025 included afterwards (all 42 district-seasons): within-season ρ −0.28
+(p 0.07), weaker — mainly Coesfeld 2025 (share 0.37, yield above average). Season-wide losses such as 2024 are, by construction, not field events.
