@@ -31,7 +31,7 @@ anomaly** defined before any model is trained (ADR 0007). Code: `src/cropews/lab
 
 ## First run (Soest, 40 fields per season, 20 in 2024)
 
-Share of fields with at least one event: 2019 0.20, 2020 0.30, 2021 0.12, 2023 0.18,
+Share of fields with at least one event: 2019 0.20, 2020 0.30, 2021 0.12, 2022 0.18, 2023 0.18,
 **2024 0.35**, 2025 0.22. 2024 (wet, −15% yield) has the highest share, as hoped; 2021 does not
 stand out. Samples are small and training seasons are in-sample for the baseline, so US-07 checks
 this properly across districts and against yields. 2024 positive rates on the grid:
