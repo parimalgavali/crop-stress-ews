@@ -14,7 +14,8 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install -e ".[dev,extract,model]"
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -e ".[dev,extract,model,seq]"
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy
