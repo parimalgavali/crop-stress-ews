@@ -21,6 +21,7 @@ a production product for farmers.
 - API serves precomputed test/extra-season predictions from the validation-calibrated logistic model; reasons = summed logistic contributions; red/amber at 90%/75% validation specificity — [0012](decisions/0012-api-and-demo-model.md)
 - UI: one screen (map + accessible field list + timeline), colour never alone (symbol + word), Web Speech read-aloud EN/DE, Playwright E2E with mocked API — [0013](decisions/0013-one-screen-ui.md)
 - Live demo: GitHub Pages static build reading committed `web/public/demo/<year>.json` (only exception to the no-derived-data rule); FastAPI + PostGIS stays the local/CI backend — [0014](decisions/0014-static-pages-demo.md)
+- Live season 2026/27: Pages job every 5 days writes `live/latest.json` (180 arable LWK parcels, observations only; forecasts from 5 April 2027) — [0015](decisions/0015-live-season.md)
 - Code is MIT-licensed; datasets are not redistributed and keep their own licences — [0003](decisions/0003-code-licence.md)
 
 ## Week-1 data inspection results (2026-10-26)
@@ -64,6 +65,8 @@ How it works:
 - Details and trade-off table: [ADR 0014](decisions/0014-static-pages-demo.md).
 
 ## Open questions / next steps
+
+- W9 live season (Issues #34–#40): US-15 live pipeline done (ADR 0015). Next: US-16 winter checks (emergence, waterlogging), US-17 check my field, US-18 in-season winter-wheat mapping (needed before 5 April 2027), US-19 forecast weather, US-20 prospective forecast log, US-21 alerts. LWK `TSCHLAG` = current declared parcels (dl-de/by-2-0); HYRAS current-year file is updated daily; AMBAV is monthly.
 
 - US-14 six-district rerun (Issue #31; Sentinel-1 42/42 done): test 2024, 190 fields. Served logistic AUROC 0.74 / 0.80 / 0.77 (7/14/21 d) vs persistence 0.72 / 0.72 / 0.70; best research model GRU-D 30-day window 0.83 / 0.81 / 0.80. CIs still overlap persistence (ADR 0008 gate not met). Red alarms before 21/29 onsets, median 15 d. Sentinel-1 ablation no longer shows an effect on validation (test −0.03 only), so the earlier "Sentinel-1 matters most" Soest claim is withdrawn. Düren had no 2024 onsets; Coesfeld has many false alarms. Next: 2-minute video; per-district calibration is a candidate improvement (choose on validation).
 - Label sanity check done (US-07, [week 3](milestones/week-03-label-sanity.md)); next: revised label ADR chosen on 2022, then US-09.

@@ -122,3 +122,44 @@ export const fetchRisk = (fieldId: string, year: number, date: string) =>
   STATIC_DEMO
     ? loadSeason(year).then((s) => staticRisk(s, fieldId, date))
     : get<FieldRisk>(`/fields/${encodeURIComponent(fieldId)}/risk`, { year, date })
+
+// Live season (ADR 0015): current conditions for monitored parcels, refreshed every 5 days.
+export interface Conditions {
+  s2_date?: string
+  s2_days_ago?: number
+  ndvi?: number
+  ndmi?: number
+  ndvi_change?: number | null
+  s1_date?: string
+  s1_days_ago?: number
+  vh_vv_db?: number
+  vv_change_db?: number | null
+  weather_to?: string
+  rain_30d_mm?: number
+  tmean_7d_c?: number
+  tmin_7d_c?: number
+}
+
+export interface LiveFieldProps extends FieldProps {
+  declared_crop: string
+}
+
+export interface LiveSeason {
+  as_of: string
+  attribution: string
+  fields: { type: 'FeatureCollection'; features: { type: 'Feature'; id: string; geometry: GeoJSON.Geometry; properties: LiveFieldProps }[] }
+  conditions: Record<string, Conditions>
+}
+
+let live: Promise<LiveSeason> | null = null
+
+export function loadLive(): Promise<LiveSeason> {
+  if (!live) {
+    live = fetch(`${import.meta.env.BASE_URL}live/latest.json`).then((res) => {
+      if (!res.ok) throw new Error(`live/latest.json: ${res.status}`)
+      return res.json() as Promise<LiveSeason>
+    })
+    live.catch(() => (live = null))
+  }
+  return live
+}
