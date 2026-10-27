@@ -16,6 +16,7 @@ a production product for farmers.
 - 5-day grid (t − 5 d, t], satellite values never forward-filled, `*_observed`/`*_days_since` masks — [0006](decisions/0006-five-day-grid.md)
 - Stress label: NDVI/NDMI z < −1.5 vs training-only (district, 10-day bin) baseline, ≥ 2 clear dates, onset ≤ 30 June — [0007](decisions/0007-stress-label.md), [labels](labels.md)
 - Label sanity outcome: tracks yield loss within seasons (ρ −0.46), not across seasons; revise before US-09 — [0009](decisions/0009-label-sanity-outcome.md), [results](label_sanity.md)
+- Stress label reference: same-date district peers, not climatology (removes dry-spring season shifts) — [0010](decisions/0010-peer-reference-label.md)
 - Code is MIT-licensed; datasets are not redistributed and keep their own licences — [0003](decisions/0003-code-licence.md)
 
 ## Week-1 data inspection results (2026-10-26)
@@ -40,6 +41,7 @@ a production product for farmers.
 ## Open questions / next steps
 
 - Label sanity check done (US-07, [week 3](milestones/week-03-label-sanity.md)); next: revised label ADR chosen on 2022, then US-09.
+- US-08b revised label (peer reference): Soest test 2024 LightGBM 0.80 vs persistence 0.66 AUROC at 7 d, logistic best at 14/21 d; CIs still overlap (40 test fields). Next: rerun on all six districts once Sentinel-1 is extracted, then US-09.
 - US-08 baselines ([docs/baselines.md](baselines.md), ADR 0008): on Soest (40 fields/season) LightGBM does not beat persistence (test AUROC 0.71–0.76 vs 0.75–0.79, CIs overlap); the gate says revisit the label before US-09. Weather-only rule ≈ chance.
 - Sentinel-1, DWD weather and 5-day grid done ([week 2](milestones/week-02-extractors-and-grid.md)); stress label implemented (US-06).
 - User stories are GitHub Issues (label `user-story`, milestones W1–W8), each linked to its branch and PR.

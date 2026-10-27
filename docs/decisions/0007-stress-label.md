@@ -1,6 +1,6 @@
 # 0007 — Stress-onset label: Sentinel-2 anomaly against a training-only baseline
 
-Status: Accepted (2026-10-26)
+Status: Accepted; reference amended by [0010](0010-peer-reference-label.md) (2026-10-26)
 
 ## Context
 
