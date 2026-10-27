@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from cropews.sanity import event_rates, rate_yield_correlation
+from cropews.sanity import event_rates, rate_yield_correlation, within_season_correlation
 
 
 def test_event_rates_count_fields_once_and_fill_zero():
@@ -25,3 +25,15 @@ def test_correlation_negative_when_events_track_yield_loss():
     )
     out = rate_yield_correlation(table)
     assert out["rho"] == pytest.approx(-1.0) and out["n"] == 4
+
+
+def test_within_season_correlation_removes_season_level_effect():
+    table = pd.DataFrame(
+        {
+            "year": [1, 1, 1, 2, 2, 2],
+            "share": [0.1, 0.2, 0.3, 0.55, 0.7, 0.9],
+            "yield_anomaly": [0.0, -0.1, -0.2, 0.33, 0.2, 0.04],
+        }
+    )
+    assert rate_yield_correlation(table)["rho"] > 0
+    assert within_season_correlation(table)["rho"] == pytest.approx(-1.0)

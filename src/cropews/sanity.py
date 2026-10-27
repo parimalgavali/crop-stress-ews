@@ -29,3 +29,14 @@ def rate_yield_correlation(table: pd.DataFrame) -> dict[str, float]:
     joined = table.dropna(subset=["share", "yield_anomaly"])
     rho, p = spearmanr(joined["share"], joined["yield_anomaly"])
     return {"rho": float(rho), "p": float(p), "n": float(len(joined))}
+
+
+def within_season_correlation(table: pd.DataFrame) -> dict[str, float]:
+    """Spearman of ``share`` vs ``yield_anomaly`` after removing each season's mean, i.e. do
+    districts with more events than their peers in the same season lose more yield?"""
+    joined = table.dropna(subset=["share", "yield_anomaly"])
+    demeaned = joined[["share", "yield_anomaly"]] - joined.groupby("year")[
+        ["share", "yield_anomaly"]
+    ].transform("mean")
+    rho, p = spearmanr(demeaned["share"], demeaned["yield_anomaly"])
+    return {"rho": float(rho), "p": float(p), "n": float(len(joined))}

@@ -17,7 +17,7 @@ import pandas as pd
 
 from cropews.config import CORE_DISTRICTS, SEASONS
 from cropews.data.yields import parse_district_yields, yield_anomaly
-from cropews.sanity import event_rates, rate_yield_correlation
+from cropews.sanity import event_rates, rate_yield_correlation, within_season_correlation
 
 
 def main() -> None:
@@ -28,7 +28,7 @@ def main() -> None:
     parser.add_argument(
         "--districts", type=Path, default=Path("data/raw/vg2500/vg2500/VG2500_KRS.shp")
     )
-    parser.add_argument("--figure", type=Path, default=Path("docs/figures/label_sanity_map.png"))
+    parser.add_argument("--figure", type=Path, default=Path("data/outputs/label_sanity_map.png"))
     args = parser.parse_args()
 
     fields, events = [], []
@@ -56,17 +56,19 @@ def main() -> None:
     print(table.pivot(index="district", columns="year", values="share").round(2).to_string())
     print(by_year.round(3).to_string())
     print(f"Spearman(share, yield anomaly) over district-seasons: {corr}")
+    print(f"Spearman within seasons: {within_season_correlation(table)}")
     rho_year = by_year["share"].corr(by_year["yield_anomaly"], method="spearman")
     print(f"Spearman over season means: {rho_year:.2f}")
 
     years = sorted(table["year"].unique())
+    vmax = max(0.5, float(table["share"].max()))
     fig, axes = plt.subplots(1, len(years), figsize=(2.6 * len(years), 3.2))
     for ax, year in zip(axes, years, strict=True):
         share = table[table["year"] == year].set_index("ags")["share"]
         kreise.boundary.plot(ax=ax, color="0.8", linewidth=0.3)
         sel = kreise[kreise["AGS"].isin(share.index)]
         sel.assign(share=sel["AGS"].map(share)).plot(
-            column="share", ax=ax, cmap="Reds", vmin=0, vmax=0.5, edgecolor="0.3", linewidth=0.4
+            column="share", ax=ax, cmap="Reds", vmin=0, vmax=vmax, edgecolor="0.3", linewidth=0.4
         )
         ax.set_title(str(year))
         ax.set_axis_off()

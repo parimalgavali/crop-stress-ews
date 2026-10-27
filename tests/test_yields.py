@@ -38,3 +38,10 @@ def test_anomaly_is_against_other_years_of_same_district():
     assert a.iloc[2] == pytest.approx(6 / 8 - 1)
     assert a.iloc[0] == pytest.approx(8 / 7 - 1)
     assert np.isnan(a.iloc[3])  # single year: no reference
+
+
+def test_anomaly_ignores_missing_years_in_reference():
+    y = pd.DataFrame({"year": [1, 2, 3], "ags": ["a", "a", "a"], "yield_t_ha": [8.0, np.nan, 6.0]})
+    a = yield_anomaly(y)["yield_anomaly"]
+    assert a.iloc[0] == pytest.approx(8 / 6 - 1)
+    assert np.isnan(a.iloc[1])

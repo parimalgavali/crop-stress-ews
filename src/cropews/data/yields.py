@@ -44,5 +44,5 @@ def yield_anomaly(yields: pd.DataFrame) -> pd.DataFrame:
     """Relative yield anomaly vs the mean of the district's other years in the table."""
     by = yields.groupby("ags")["yield_t_ha"]
     total, count = by.transform("sum"), by.transform("count")
-    others = (total - yields["yield_t_ha"]) / (count - 1)
+    others = (total - yields["yield_t_ha"]) / (count - 1).where(count > 1)
     return yields.assign(yield_anomaly=yields["yield_t_ha"] / others - 1)
