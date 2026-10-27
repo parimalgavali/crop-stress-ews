@@ -77,3 +77,29 @@ Label chosen on 2019–2023 only (ADR 0010), then this single test run. Same pro
   positive rows per horizon and CIs of ±0.15–0.2. On validation (2022) LightGBM beats persistence
   by 0.15–0.20 AUROC at 7/14 d. The multi-district rerun (6 × 30 fields, Sentinel-1 extraction
   running) is the fix; no further label tuning on the test season.
+
+## Six districts, test 2024 (2026-10-27)
+
+Same label (ADR 0010), features and protocol; 190 field-seasons per season (756 train), no
+retuning. Positive rows: 3.8% (7 d), 4.9% (14 d), 5.9% (21 d).
+
+| Horizon | Model | AUROC [95% CI] | AUPRC | Sensitivity | FA/100 |
+|---|---|---|---|---|---|
+| 7 d | persistence | 0.718 [0.616–0.812] | 0.107 | 0.39 | 46 |
+| 7 d | weather rule | 0.531 [0.459–0.607] | 0.039 | 0.00 | 0 |
+| 7 d | logistic | 0.742 [0.653–0.834] | 0.103 | 0.32 | 35 |
+| 7 d | LightGBM | 0.761 [0.692–0.829] | 0.097 | 0.34 | 63 |
+| 14 d | persistence | 0.722 [0.631–0.813] | 0.129 | 0.40 | 79 |
+| 14 d | weather rule | 0.457 [0.382–0.530] | 0.043 | 0.00 | 0 |
+| 14 d | logistic | 0.795 [0.723–0.864] | 0.177 | 0.31 | 39 |
+| 14 d | LightGBM | 0.792 [0.738–0.851] | 0.149 | 0.35 | 66 |
+| 21 d | persistence | 0.704 [0.611–0.790] | 0.135 | 0.34 | 89 |
+| 21 d | weather rule | 0.428 [0.357–0.502] | 0.050 | 0.00 | 0 |
+| 21 d | logistic | 0.768 [0.683–0.846] | 0.180 | 0.36 | 71 |
+| 21 d | LightGBM | 0.737 [0.668–0.810] | 0.150 | 0.30 | 83 |
+
+- CIs are about half as wide as on Soest alone (±0.07–0.09).
+- Logistic regression and LightGBM beat persistence on every point estimate, with fewer false
+  alarms at 14/21 d (logistic). The **ADR 0008 gate (non-overlapping CIs) is still not met**:
+  e.g. 14 d logistic [0.723–0.864] vs persistence [0.631–0.813].
+- The weather-only rule stays at chance.

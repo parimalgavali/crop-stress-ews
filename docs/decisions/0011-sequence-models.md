@@ -30,3 +30,9 @@ observed (clouds, orbit gaps), and the grid never forward-fills them (ADR 0006).
 
 - Ablations are compared on validation; test numbers per ablation are descriptive only.
 - With 40 Soest fields per season CIs are ±0.15–0.2; the six-district run is the decisive one.
+
+## Amendment (2026-10-27): six-district rerun
+
+On six districts the validation-selected configuration is GRU-D with a 30-day window. The
+Sentinel-1 ablation shows no validation effect (≤ 0.004 AUROC) and a 0.03 test drop, so the Soest
+conclusion that Sentinel-1 is the most useful input group is withdrawn. Protocol unchanged.

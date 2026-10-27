@@ -20,8 +20,14 @@ Read the README on GitHub; the Mermaid diagram renders natively.
 - Verify: `pytest tests/test_static_demo.py`, `npx vitest run`, then
   `VITE_STATIC_DEMO=1 npm run build && npx vite preview` and pick a field.
 
+## US-14: six-district rerun
+- Sentinel-1 finished for all 42 district-seasons; grids and peer labels rebuilt; baselines,
+  sequence models, served predictions, error analysis and the static demo JSON regenerated.
+- Results now cover 190 test field-seasons; README, model card, baselines, sequence-model and
+  error-analysis docs updated; ADR 0011 and 0012 amended.
+- Verify: `python scripts/train_baselines.py`, `python scripts/train_sequence.py`,
+  `python scripts/export_predictions.py && python scripts/error_analysis.py && python scripts/export_static.py`.
+
 ## Out of scope / next
 - Demo goes live once the stacked PRs are merged to `main`.
-- Regenerate the demo JSON after the six-district rerun.
 - 2-minute video.
-- Refresh the results table after the six-district rerun.
