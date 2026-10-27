@@ -51,3 +51,29 @@ alarms per 100 field-seasons at the frozen threshold.
   trajectory (onset = change, not level), or exclude rows whose current peer anomaly is already
   below −1 SD so the task is "new" stress only.
 - Re-run with all six core districts once Sentinel-1 extraction finishes.
+
+## Revised label (ADR 0010, same-date peers): Soest, test 2024 (2026-10-27)
+
+Label chosen on 2019–2023 only (ADR 0010), then this single test run. Same protocol and features.
+
+| Horizon | Model | AUROC [95% CI] | AUPRC (prev.) | Sensitivity | FA/100 |
+|---|---|---|---|---|---|
+| 7 d | persistence | 0.664 [0.490–0.866] | 0.130 (0.039) | 0.42 | 85 |
+| 7 d | weather rule | 0.542 [0.434–0.695] | 0.046 | 0.00 | 0 |
+| 7 d | logistic | 0.795 [0.635–0.937] | 0.223 | 0.17 | 25 |
+| 7 d | LightGBM | 0.800 [0.618–0.948] | 0.196 | 0.33 | 45 |
+| 14 d | persistence | 0.698 [0.537–0.863] | 0.159 (0.059) | 0.42 | 138 |
+| 14 d | weather rule | 0.510 [0.367–0.645] | 0.065 | 0.00 | 0 |
+| 14 d | logistic | 0.777 [0.623–0.905] | 0.211 | 0.31 | 62 |
+| 14 d | LightGBM | 0.715 [0.533–0.922] | 0.231 | 0.31 | 28 |
+| 21 d | persistence | 0.686 [0.544–0.827] | 0.163 (0.072) | 0.35 | 135 |
+| 21 d | weather rule | 0.453 [0.306–0.596] | 0.071 | 0.00 | 0 |
+| 21 d | logistic | 0.735 [0.530–0.898] | 0.213 | 0.47 | 132 |
+| 21 d | LightGBM | 0.659 [0.446–0.896] | 0.267 | 0.29 | 30 |
+
+- Persistence is no longer the model to beat: learned models lead at 7 d (LightGBM 0.80 vs 0.66)
+  and logistic regression leads at 14/21 d, with fewer false alarms per 100 fields than persistence.
+- **Gate (beyond CI overlap) still not met on test**, because 40 test fields give only 16–25
+  positive rows per horizon and CIs of ±0.15–0.2. On validation (2022) LightGBM beats persistence
+  by 0.15–0.20 AUROC at 7/14 d. The multi-district rerun (6 × 30 fields, Sentinel-1 extraction
+  running) is the fix; no further label tuning on the test season.

@@ -9,7 +9,7 @@ Status: Accepted (2026-10-26)
 | Sentinel-1 GRD/RTC | Cloud-independent signal | Planetary Computer | Copernicus free and open |
 | DWD Climate Data Center | Weather, phenology | opendata.dwd.de | CC BY 4.0 |
 | BKG VG2500/VG250 | District boundaries | daten.gdz.bkg.bund.de | dl-de/by-2-0 |
-| IT.NRW harvest reports | District/state yields for label sanity checks | Yearly PDF reports; Regionalstatistik API needs free registration (guest access ended 2025) | Open, cite source |
+| IT.NRW harvest reports | District/state yields for label sanity checks | Landesdatenbank NRW table 41241-03i, open CSV download without account (`scripts/download_yields.py`); yearly PDF reports as backup | Datenlizenz Deutschland – Namensnennung 2.0 |
 | YieldSAT | Field-level yield validation | Request via yieldsat.github.io | To confirm on download |
 | UFZ Drought Monitor | Optional soil-moisture cross-check | ufz.de | Non-commercial only, no redistribution |
 

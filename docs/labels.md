@@ -36,3 +36,16 @@ Share of fields with at least one event: 2019 0.20, 2020 0.30, 2021 0.12, 2022 0
 stand out. Samples are small and training seasons are in-sample for the baseline, so US-07 checks
 this properly across districts and against yields. 2024 positive rates on the grid:
 7 d 7.9%, 14 d 10.3%, 21 d 13.1%.
+
+## Sanity check (US-07)
+
+Across six core districts, event share tracks district yield loss within a season but not across
+seasons (dry springs 2020/2022 inflate events) — see [label_sanity.md](label_sanity.md) and ADR 0009.
+
+## Revised reference (ADR 0010)
+
+Since US-08b the default reference is the median of the district peers on the same clear date
+(≥ 8 clear peers), scaled by the training-season SD of that departure per (district, 10-day bin).
+Over 2019–2023 it removes the season-level confound (ρ all −0.09 vs +0.42) and keeps the
+within-season link to yield loss (ρ −0.48). With 2024/2025 included afterwards (all 42 district-seasons): within-season ρ −0.28
+(p 0.07), weaker — mainly Coesfeld 2025 (share 0.37, yield above average). Season-wide losses such as 2024 are, by construction, not field events.

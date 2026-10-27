@@ -1,6 +1,6 @@
 # 0007 — Stress-onset label: Sentinel-2 anomaly against a training-only baseline
 
-Status: Accepted (2026-10-26)
+Status: Accepted; reference amended by [0010](0010-peer-reference-label.md) (2026-10-26)
 
 ## Context
 
@@ -19,3 +19,5 @@ cutoff.
 - Threshold, bin width and cutoff are fixed now; changing them after seeing test results would
   be leakage. The validation season (2022) is where they may be tuned.
 - The label must pass the US-07 sanity check (more events in 2024 and 2021 than in 2022/2025).
+
+US-07 outcome: passes within seasons, fails across seasons — see [0009](0009-label-sanity-outcome.md).
