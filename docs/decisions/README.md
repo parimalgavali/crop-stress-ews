@@ -15,6 +15,7 @@
 | [0011](0011-sequence-models.md) | Sequence models: GRU-D and LSTM on causal windows, validation-only selection | Accepted |
 | [0012](0012-api-and-demo-model.md) | API over precomputed predictions; demo uses calibrated logistic model with contribution-based reasons | Accepted |
 | [0013](0013-one-screen-ui.md) | One-screen accessible UI: React/Vite/MapLibre, symbol+word lights, Web Speech read-aloud | Accepted |
+| [0014](0014-static-pages-demo.md) | Live demo on GitHub Pages from a small precomputed JSON file (exception to the derived-data rule) | Accepted |
 
 Add a new numbered record for each decision that changes scope, data, labels, modeling or
 evaluation. Amend the status of superseded records instead of deleting them.

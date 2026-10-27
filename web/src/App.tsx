@@ -105,7 +105,7 @@ export default function App() {
       <main className="main">
         <MapView fields={fields} selected={selected} onSelect={setSelected} />
         <aside className="panel">
-          {error && <p role="alert">API not reachable.</p>}
+          {error && <p role="alert">Data not reachable.</p>}
           <label className="field-label" htmlFor="field-select">
             {s.field}
           </label>

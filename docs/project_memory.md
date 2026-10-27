@@ -20,6 +20,7 @@ a production product for farmers.
 - Sequence models: GRU-D + LSTM on causal windows, mask + time gaps, validation-only selection, Platt calibration; torch in optional `seq` extra — [0011](decisions/0011-sequence-models.md)
 - API serves precomputed test/extra-season predictions from the validation-calibrated logistic model; reasons = summed logistic contributions; red/amber at 90%/75% validation specificity — [0012](decisions/0012-api-and-demo-model.md)
 - UI: one screen (map + accessible field list + timeline), colour never alone (symbol + word), Web Speech read-aloud EN/DE, Playwright E2E with mocked API — [0013](decisions/0013-one-screen-ui.md)
+- Live demo: GitHub Pages static build reading committed `web/public/demo/<year>.json` (only exception to the no-derived-data rule); FastAPI + PostGIS stays the local/CI backend — [0014](decisions/0014-static-pages-demo.md)
 - Code is MIT-licensed; datasets are not redistributed and keep their own licences — [0003](decisions/0003-code-licence.md)
 
 ## Week-1 data inspection results (2026-10-26)
@@ -41,10 +42,31 @@ a production product for farmers.
   pixels are SCL 4/5): median 15 clear dates per field in 2022, 12 in 2024; median longest gap
   ~25 days. Sentinel-1 is needed for the 14/21-day horizons.
 
+## US-13 live demo hosting (decided 2026-10-27)
+
+Options presented to the owner:
+
+- **A) GitHub Pages + precomputed JSON (chosen, recommended).** Free, no accounts, never sleeps.
+  The same React UI loads `demo/2024.json` / `demo/2025.json` (demo fields, dates, 7/14/21-day
+  risk, level, reason codes, EN/DE texts, attribution). Needs one exception to the
+  "no derived data in git" rule, for these files only; sources allow redistribution with credit.
+- **B) Render / Fly.io with the full FastAPI + PostGIS stack (rejected).** Needs the owner's
+  account and an API token; free tiers sleep, so the first load is slow; DB must be reloaded.
+
+How it works:
+
+- Generate: `python scripts/export_predictions.py && python scripts/export_static.py`
+  (writes `web/public/demo/<year>.json`; commit them).
+- Build: `VITE_STATIC_DEMO=1 VITE_BASE=/crop-stress-ews/ npm run build` in `web/`.
+- Deploy: `.github/workflows/pages.yml` on every push to `main` (Pages source = GitHub Actions).
+- URL: https://parimalgavali.github.io/crop-stress-ews/ (live once the stacked PRs reach `main`).
+- Regenerate the JSON after any change to served predictions (next: six-district rerun).
+- Details and trade-off table: [ADR 0014](decisions/0014-static-pages-demo.md).
+
 ## Open questions / next steps
 
 - Label sanity check done (US-07, [week 3](milestones/week-03-label-sanity.md)); next: revised label ADR chosen on 2022, then US-09.
-- US-13 README rewritten (results table, architecture diagram, UI screenshot `docs/img/ui.png`, full pipeline). Live demo and video still open; the demo needs a hosting decision (static export vs. API + DB host).
+- US-13 README rewritten (results table, architecture diagram, UI screenshot `docs/img/ui.png`, full pipeline). Live demo decided and built (see below); 2-minute video still open.
 - US-12 error analysis + model card ([error_analysis.md](error_analysis.md), [model_card.md](model_card.md)): Soest 2024 red alarms preceded 6/9 onsets (median 17.5 d); sensitivity drops with long S2 cloud gaps. Preliminary until six districts. Next: US-13 publish.
 - US-11 UI done ([ui.md](ui.md)): `web/` React + Vite + MapLibre; CI job `web` runs tsc, eslint, vitest, Playwright. Node 20 via nvm locally.
 - US-10 API done ([api.md](api.md)): FastAPI + PostGIS + Alembic, `docker compose up`; API tests run against a PostGIS service in CI. Next: US-11 UI.
