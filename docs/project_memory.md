@@ -44,6 +44,7 @@ a production product for farmers.
 ## Open questions / next steps
 
 - Label sanity check done (US-07, [week 3](milestones/week-03-label-sanity.md)); next: revised label ADR chosen on 2022, then US-09.
+- US-13 README rewritten (results table, architecture diagram, UI screenshot `docs/img/ui.png`, full pipeline). Live demo and video still open; the demo needs a hosting decision (static export vs. API + DB host).
 - US-12 error analysis + model card ([error_analysis.md](error_analysis.md), [model_card.md](model_card.md)): Soest 2024 red alarms preceded 6/9 onsets (median 17.5 d); sensitivity drops with long S2 cloud gaps. Preliminary until six districts. Next: US-13 publish.
 - US-11 UI done ([ui.md](ui.md)): `web/` React + Vite + MapLibre; CI job `web` runs tsc, eslint, vitest, Playwright. Node 20 via nvm locally.
 - US-10 API done ([api.md](api.md)): FastAPI + PostGIS + Alembic, `docker compose up`; API tests run against a PostGIS service in CI. Next: US-11 UI.
