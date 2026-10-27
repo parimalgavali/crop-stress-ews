@@ -68,14 +68,14 @@ def extract_backscatter_series(
     if fields.empty:
         return empty
     if catalog is None:
-        catalog = pystac_client.Client.open(STAC_URL, modifier=planetary_computer.sign_inplace)
+        catalog = pystac_client.Client.open(STAC_URL)
     bbox = tuple(fields.to_crs(4326).total_bounds)
     items = catalog.search(collections=[COLLECTION], bbox=bbox, datetime=f"{start}/{end}").items()
 
     rows = []
     for item in sorted(items, key=lambda i: i.datetime):
         props = item.properties
-        with rasterio.open(item.assets["vv"].href) as src:
+        with rasterio.open(planetary_computer.sign(item.assets["vv"].href)) as src:
             local = fields.to_crs(src.crs)
             local = local.assign(geometry=local.buffer(-inward_buffer_m))
             local = local[~local.geometry.is_empty]
@@ -86,7 +86,7 @@ def extract_backscatter_series(
             vv = src.read(1, window=window, boundless=True, fill_value=NO_DATA)
             vv_transform = src.transform
             transform = src.window_transform(window)
-        with rasterio.open(item.assets["vh"].href) as src:
+        with rasterio.open(planetary_computer.sign(item.assets["vh"].href)) as src:
             vh = src.read(
                 1,
                 window=aligned_window(window, vv_transform, src.transform),
