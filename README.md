@@ -5,6 +5,9 @@ field and date, it predicts the risk that the field starts falling behind its ne
 **7, 14 and 21 days**. Inputs are Sentinel-2 optical data, Sentinel-1 radar and DWD weather. The
 reasons are written in plain language, and a one-screen web app can read them aloud.
 
+**Live demo:** <https://parimalgavali.github.io/crop-stress-ews/> (static build, precomputed
+2024/2025 predictions; [ADR 0014](docs/decisions/0014-static-pages-demo.md)).
+
 ![One-screen UI: field map, 7/14/21-day traffic lights with reasons, read-aloud and season replay](docs/img/ui.png)
 
 ## Results (test season 2024, held out; preliminary: Soest, 40 fields)
@@ -72,6 +75,13 @@ docker compose up -d --build && docker compose exec api python scripts/load_db.p
 cd web && npm install && npm run dev          # http://localhost:5173
 ```
 
+Static version, as deployed to GitHub Pages (no API or database):
+
+```bash
+python scripts/export_static.py               # writes web/public/demo/<year>.json
+cd web && VITE_STATIC_DEMO=1 npm run build && npx vite preview
+```
+
 API: [docs/api.md](docs/api.md) · UI: [docs/ui.md](docs/ui.md)
 
 ## Data pipeline
@@ -99,6 +109,7 @@ python scripts/download_yields.py && python scripts/label_sanity.py --districts 
 # 5. Models (needs all seasons 2019–2025) and error analysis
 python scripts/train_baselines.py && python scripts/train_sequence.py
 python scripts/export_predictions.py && python scripts/error_analysis.py
+python scripts/export_static.py   # demo JSON for GitHub Pages
 ```
 
 ## Layout
