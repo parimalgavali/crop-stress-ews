@@ -60,14 +60,15 @@ How it works:
 - Build: `VITE_STATIC_DEMO=1 VITE_BASE=/crop-stress-ews/ npm run build` in `web/`.
 - Deploy: `.github/workflows/pages.yml` on every push to `main` (Pages source = GitHub Actions).
 - URL: https://parimalgavali.github.io/crop-stress-ews/ (live once the stacked PRs reach `main`).
-- Regenerate the JSON after any change to served predictions (next: six-district rerun).
+- Regenerate the JSON after any change to served predictions. Current JSON: six districts, 190 fields per season (~0.64 MB each).
 - Details and trade-off table: [ADR 0014](decisions/0014-static-pages-demo.md).
 
 ## Open questions / next steps
 
+- US-14 six-district rerun (Issue #31; Sentinel-1 42/42 done): test 2024, 190 fields. Served logistic AUROC 0.74 / 0.80 / 0.77 (7/14/21 d) vs persistence 0.72 / 0.72 / 0.70; best research model GRU-D 30-day window 0.83 / 0.81 / 0.80. CIs still overlap persistence (ADR 0008 gate not met). Red alarms before 21/29 onsets, median 15 d. Sentinel-1 ablation no longer shows an effect on validation (test −0.03 only), so the earlier "Sentinel-1 matters most" Soest claim is withdrawn. Düren had no 2024 onsets; Coesfeld has many false alarms. Next: 2-minute video; per-district calibration is a candidate improvement (choose on validation).
 - Label sanity check done (US-07, [week 3](milestones/week-03-label-sanity.md)); next: revised label ADR chosen on 2022, then US-09.
 - US-13 README rewritten (results table, architecture diagram, UI screenshot `docs/img/ui.png`, full pipeline). Live demo decided and built (see below); 2-minute video still open.
-- US-12 error analysis + model card ([error_analysis.md](error_analysis.md), [model_card.md](model_card.md)): Soest 2024 red alarms preceded 6/9 onsets (median 17.5 d); sensitivity drops with long S2 cloud gaps. Preliminary until six districts. Next: US-13 publish.
+- US-12 error analysis + model card ([error_analysis.md](error_analysis.md), [model_card.md](model_card.md)): Soest 2024 red alarms preceded 6/9 onsets (median 17.5 d); sensitivity drops with long S2 cloud gaps. Superseded by US-14 six-district numbers.
 - US-11 UI done ([ui.md](ui.md)): `web/` React + Vite + MapLibre; CI job `web` runs tsc, eslint, vitest, Playwright. Node 20 via nvm locally.
 - US-10 API done ([api.md](api.md)): FastAPI + PostGIS + Alembic, `docker compose up`; API tests run against a PostGIS service in CI. Next: US-11 UI.
 - US-09 sequence models ([results](sequence_models.md)): on Soest on par with LightGBM (validation-selected LSTM, test 7 d AUROC 0.77; GRU-D 0.82), Sentinel-1 is the most useful input group; CIs overlap. Next: six-district rerun, then US-10.

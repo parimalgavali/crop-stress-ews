@@ -10,23 +10,25 @@ reasons are written in plain language, and a one-screen web app can read them al
 
 ![One-screen UI: field map, 7/14/21-day traffic lights with reasons, read-aloud and season replay](docs/img/ui.png)
 
-## Results (test season 2024, held out; preliminary: Soest, 40 fields)
+## Results (test season 2024, held out; six districts, 190 fields)
 
 | Horizon | Served model (logistic, calibrated) AUROC [95% CI] | Persistence baseline | Red alarm: sensitivity / false alarms per 100 fields |
 |---|---|---|---|
-| 7 d | 0.80 [0.64–0.94] | 0.66 | 0.17 / 25 |
-| 14 d | 0.78 [0.62–0.91] | 0.70 | 0.31 / 62 |
-| 21 d | 0.74 [0.53–0.90] | 0.69 | 0.47 / 132 |
+| 7 d | 0.74 [0.65–0.83] | 0.72 | 0.32 / 35 |
+| 14 d | 0.80 [0.72–0.86] | 0.72 | 0.31 / 39 |
+| 21 d | 0.77 [0.68–0.85] | 0.70 | 0.36 / 71 |
 
-- **Early warning:** red alarms came before 6 of 9 stress onsets, a median of **17.5 days**
-  ahead ([error analysis](docs/error_analysis.md)).
-- **Inputs that matter:** removing Sentinel-1 radar causes the largest accuracy drop of any input
-  group ([sequence models](docs/sequence_models.md)).
-- **Model choice:** GRU-D/LSTM and LightGBM perform on par with the served model; the confidence
-  intervals overlap. The demo serves the simplest model, whose reasons are its own coefficient
-  contributions ([ADR 0012](docs/decisions/0012-api-and-demo-model.md)).
-- **Next:** the six-district rerun (about 5× the test fields) is pending the Sentinel-1
-  extraction. See the [model card](docs/model_card.md) for limitations.
+- **Early warning:** red alarms came before 21 of 29 stress onsets (72%), a median of
+  **15 days** ahead; amber or red before 25 of 29 (86%) ([error analysis](docs/error_analysis.md)).
+- **Best research model:** the validation-selected GRU-D (30-day window) reaches AUROC
+  0.83 / 0.81 / 0.80 at 7 / 14 / 21 days. It beats persistence on every point estimate, but the
+  95% CIs still overlap, so by the project's own rule ([ADR 0008](docs/decisions/0008-evaluation-protocol.md))
+  this is "better on point estimates", not a proven win ([sequence models](docs/sequence_models.md)).
+- **Model choice:** GRU-D/LSTM, LightGBM and the served model overlap in CI. The demo serves the
+  simplest model, whose reasons are its own coefficient contributions
+  ([ADR 0012](docs/decisions/0012-api-and-demo-model.md)).
+- **Honest caveats:** the label is relative to neighbouring fields, Düren had no test-season
+  onsets, and false alarms rise at 21 days. See the [model card](docs/model_card.md) for limitations.
 
 ## Why it is built this way
 
