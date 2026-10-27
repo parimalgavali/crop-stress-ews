@@ -39,6 +39,7 @@ a production product for farmers.
 ## Open questions / next steps
 
 - Label sanity check against district yields (US-07).
+- US-08 baselines ([docs/baselines.md](baselines.md), ADR 0008): on Soest (40 fields/season) LightGBM does not beat persistence (test AUROC 0.71–0.76 vs 0.75–0.79, CIs overlap); the gate says revisit the label before US-09. Weather-only rule ≈ chance.
 - Sentinel-1, DWD weather and 5-day grid done ([week 2](milestones/week-02-extractors-and-grid.md)); stress label implemented (US-06).
 - User stories are GitHub Issues (label `user-story`, milestones W1–W8), each linked to its branch and PR.
 - Free Regionalstatistik account for automated district yields; until then use IT.NRW PDFs.
