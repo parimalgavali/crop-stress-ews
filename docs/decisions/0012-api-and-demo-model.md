@@ -26,3 +26,9 @@ US-10 needs one backend for the UI and the replay demo: fields on a map and, per
 
 - Swapping in a better model later only changes the export script.
 - The demo shows exactly the evaluated predictions; nothing is tuned on test.
+
+## Amendment (2026-10-27): six-district rerun
+
+The served logistic model stays: on six districts its test AUROC (0.74 / 0.80 / 0.77) is within
+the CIs of LightGBM and the selected GRU-D (0.83 / 0.81 / 0.80). Predictions, PostGIS load and the
+static demo JSON were regenerated.
