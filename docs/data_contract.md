@@ -35,5 +35,28 @@ Implemented in `src/cropews/data/contract.py`; violations raise `DataContractErr
 | `vv_db`, `vh_db` | float | Median gamma0 in dB, within [−40, 10] |
 | `vh_vv_db` | float | `vh_db − vv_db` |
 
+## Weather (one row per field and day, 1 January – 31 July)
+
+| Column | Type | Rule |
+|---|---|---|
+| `field_id`, `year`, `date` | | (`field_id`, `date`) unique; no missing values |
+| `pr_mm` | float | Daily precipitation (HYRAS), ≥ 0 |
+| `tas_c`, `tasmin_c`, `tasmax_c` | float | Daily mean/min/max air temperature (HYRAS); `tasmin_c` ≤ `tasmax_c` |
+| `hurs_pct` | float | Daily mean relative humidity (HYRAS), in [0, 100] |
+| `vpd_kpa` | float | FAO-56 vapour-pressure deficit, ≥ 0 |
+| `et0_mm` | float | Potential evapotranspiration over grass (AMBAV `evapo_p`), ≥ 0 |
+| `soil_moist_pct` | float | Soil moisture under grass, % plant-available water (AMBAV), ≥ 0 |
+
 Downstream code must treat Sentinel-2 observations with `clear_fraction < 0.8` as missing and carry an
 explicit missingness mask.
+
+## 5-day grid (one row per field and grid date t; step is (t − 5 d, t])
+
+| Column | Rule |
+|---|---|
+| `field_id`, `year`, `date` | (`field_id`, `date`) unique; dates every 5 days from 5 April |
+| `ndvi` … `msi` | Latest clear Sentinel-2 value in the step, else NaN (never forward-filled) |
+| `vv_db_asc` … `vh_vv_db_desc` | Latest Sentinel-1 value per orbit direction in the step, else NaN |
+| `s2_observed`, `s1_asc_observed`, `s1_desc_observed` | True iff the source has a value in the step |
+| `*_days_since` | Days since latest observation on or before t (< 5 when observed; NaN if none yet) |
+| weather columns | Step sums (`pr_mm`, `et0_mm`), means, min/max, last `soil_moist_pct`; `weather_observed` = 5 days present |

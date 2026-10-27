@@ -33,6 +33,19 @@ S1_OBSERVATION_COLUMNS = (
     "vh_vv_db",
 )
 ORBIT_STATES = ("ascending", "descending")
+WEATHER_COLUMNS = (
+    "field_id",
+    "year",
+    "date",
+    "pr_mm",
+    "tas_c",
+    "tasmin_c",
+    "tasmax_c",
+    "hurs_pct",
+    "vpd_kpa",
+    "et0_mm",
+    "soil_moist_pct",
+)
 # Plausible gamma0 range for agricultural fields; values outside indicate a unit or nodata bug.
 BACKSCATTER_DB_RANGE = (-40.0, 10.0)
 
@@ -104,6 +117,41 @@ def s1_observation_errors(obs: pd.DataFrame) -> list[str]:
     return errors
 
 
+def weather_errors(weather: pd.DataFrame) -> list[str]:
+    missing = _missing(weather, WEATHER_COLUMNS)
+    if missing:
+        return [f"missing columns: {missing}"]
+    errors = []
+    if weather.duplicated(["field_id", "date"]).any():
+        errors.append("duplicate (field_id, date)")
+    if weather[list(WEATHER_COLUMNS)].isna().any().any():
+        errors.append("missing weather values or keys (field outside the DWD grids?)")
+    for col in ("pr_mm", "vpd_kpa", "et0_mm", "soil_moist_pct"):
+        if (weather[col] < 0).any():
+            errors.append(f"{col} must be >= 0")
+    if not weather["hurs_pct"].dropna().between(0, 100).all():
+        errors.append("hurs_pct outside [0, 100]")
+    if (weather["tasmin_c"] > weather["tasmax_c"]).any():
+        errors.append("tasmin_c > tasmax_c")
+    return errors
+
+
+def grid_errors(grid: pd.DataFrame) -> list[str]:
+    """Checks for the 5-day grid: unique keys, no satellite values without an observed flag."""
+    errors = []
+    if grid.duplicated(["field_id", "date"]).any():
+        errors.append("duplicate (field_id, date)")
+    for flag in [c for c in grid.columns if c.endswith("_observed") and c != "weather_observed"]:
+        source = flag.removesuffix("_observed")
+        if (grid[f"{source}_days_since"] < 0).any():
+            errors.append(f"{source}_days_since < 0")
+        if (grid.loc[grid[flag], f"{source}_days_since"] >= 5).any():
+            errors.append(f"{source} observed but days_since >= step")
+    if "weather_observed" in grid and not grid["weather_observed"].all():
+        errors.append("incomplete weather in some steps")
+    return errors
+
+
 def validate_fields(fields: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     errors = field_errors(fields)
     if errors:
@@ -123,3 +171,17 @@ def validate_s1_observations(obs: pd.DataFrame) -> pd.DataFrame:
     if errors:
         raise DataContractError("; ".join(errors))
     return obs
+
+
+def validate_weather(weather: pd.DataFrame) -> pd.DataFrame:
+    errors = weather_errors(weather)
+    if errors:
+        raise DataContractError("; ".join(errors))
+    return weather
+
+
+def validate_grid(grid: pd.DataFrame) -> pd.DataFrame:
+    errors = grid_errors(grid)
+    if errors:
+        raise DataContractError("; ".join(errors))
+    return grid
