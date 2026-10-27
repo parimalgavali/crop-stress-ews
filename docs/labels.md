@@ -36,3 +36,8 @@ Share of fields with at least one event: 2019 0.20, 2020 0.30, 2021 0.12, 2022 0
 stand out. Samples are small and training seasons are in-sample for the baseline, so US-07 checks
 this properly across districts and against yields. 2024 positive rates on the grid:
 7 d 7.9%, 14 d 10.3%, 21 d 13.1%.
+
+## Sanity check (US-07)
+
+Across six core districts, event share tracks district yield loss within a season but not across
+seasons (dry springs 2020/2022 inflate events) — see [label_sanity.md](label_sanity.md) and ADR 0009.

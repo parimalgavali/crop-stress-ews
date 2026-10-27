@@ -15,6 +15,7 @@ a production product for farmers.
 - Weather from DWD HYRAS + AMBAV 1 km daily grids at field points — [0005](decisions/0005-dwd-weather-grids.md)
 - 5-day grid (t − 5 d, t], satellite values never forward-filled, `*_observed`/`*_days_since` masks — [0006](decisions/0006-five-day-grid.md)
 - Stress label: NDVI/NDMI z < −1.5 vs training-only (district, 10-day bin) baseline, ≥ 2 clear dates, onset ≤ 30 June — [0007](decisions/0007-stress-label.md), [labels](labels.md)
+- Label sanity outcome: tracks yield loss within seasons (ρ −0.46), not across seasons; revise before US-09 — [0009](decisions/0009-label-sanity-outcome.md), [results](label_sanity.md)
 - Code is MIT-licensed; datasets are not redistributed and keep their own licences — [0003](decisions/0003-code-licence.md)
 
 ## Week-1 data inspection results (2026-10-26)
@@ -38,8 +39,8 @@ a production product for farmers.
 
 ## Open questions / next steps
 
-- Label sanity check against district yields (US-07).
+- Label sanity check done (US-07, [week 3](milestones/week-03-label-sanity.md)); next: revised label ADR chosen on 2022, then US-09.
 - Sentinel-1, DWD weather and 5-day grid done ([week 2](milestones/week-02-extractors-and-grid.md)); stress label implemented (US-06).
 - User stories are GitHub Issues (label `user-story`, milestones W1–W8), each linked to its branch and PR.
-- Free Regionalstatistik account for automated district yields; until then use IT.NRW PDFs.
+- District yields: Landesdatenbank NRW table 41241-03i (open CSV, dl-de/by-2-0), no account needed.
 - YieldSAT access, licence and whether its German wheat fields are in NRW.
