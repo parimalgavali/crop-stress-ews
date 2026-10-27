@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: cropews
+      POSTGRES_PASSWORD: cropews  # local development only
+      POSTGRES_DB: cropews
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cropews"]
+      interval: 5s
+      retries: 20
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  api:
+    build: .
+    environment:
+      DATABASE_URL: postgresql+psycopg://cropews:cropews@db:5432/cropews
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data/outputs:/app/data/outputs:ro
+volumes:
+  pgdata:

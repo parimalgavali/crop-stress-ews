@@ -8,14 +8,46 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgis:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: cropews
+          POSTGRES_PASSWORD: cropews
+          POSTGRES_DB: cropews
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U cropews" --health-interval 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://cropews:cropews@localhost:5432/cropews
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install -e ".[dev,extract]"
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -e ".[dev,extract,model,seq,api]"
       - run: ruff check .
       - run: ruff format --check .
       - run: mypy
       - run: pytest -q
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npx tsc -b
+      - run: npx eslint .
+      - run: npx vitest run
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test

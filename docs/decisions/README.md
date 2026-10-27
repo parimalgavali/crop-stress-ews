@@ -9,7 +9,13 @@
 | [0005](0005-dwd-weather-grids.md) | Daily weather from DWD HYRAS + AMBAV 1 km grids per field | Accepted |
 | [0006](0006-five-day-grid.md) | Regular 5-day grid with explicit observed masks, no forward-fill | Accepted |
 | [0007](0007-stress-label.md) | Stress-onset label: Sentinel-2 anomaly vs training-only baseline | Accepted |
+| [0008](0008-evaluation-protocol.md) | Evaluation protocol: season splits, validation-frozen thresholds, baselines | Accepted |
 | [0009](0009-label-sanity-outcome.md) | Label tracks yield loss spatially, not across seasons; revise before US-09 | Accepted |
+| [0010](0010-peer-reference-label.md) | Stress label against same-date district peers (replaces climatology reference) | Accepted |
+| [0011](0011-sequence-models.md) | Sequence models: GRU-D and LSTM on causal windows, validation-only selection | Accepted |
+| [0012](0012-api-and-demo-model.md) | API over precomputed predictions; demo uses calibrated logistic model with contribution-based reasons | Accepted |
+| [0013](0013-one-screen-ui.md) | One-screen accessible UI: React/Vite/MapLibre, symbol+word lights, Web Speech read-aloud | Accepted |
+| [0014](0014-static-pages-demo.md) | Live demo on GitHub Pages from a small precomputed JSON file (exception to the derived-data rule) | Accepted |
 
 Add a new numbered record for each decision that changes scope, data, labels, modeling or
 evaluation. Amend the status of superseded records instead of deleting them.

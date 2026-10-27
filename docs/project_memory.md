@@ -16,6 +16,11 @@ a production product for farmers.
 - 5-day grid (t − 5 d, t], satellite values never forward-filled, `*_observed`/`*_days_since` masks — [0006](decisions/0006-five-day-grid.md)
 - Stress label: NDVI/NDMI z < −1.5 vs training-only (district, 10-day bin) baseline, ≥ 2 clear dates, onset ≤ 30 June — [0007](decisions/0007-stress-label.md), [labels](labels.md)
 - Label sanity outcome: tracks yield loss within seasons (ρ −0.46), not across seasons; revise before US-09 — [0009](decisions/0009-label-sanity-outcome.md), [results](label_sanity.md)
+- Stress label reference: same-date district peers, not climatology (removes dry-spring season shifts) — [0010](decisions/0010-peer-reference-label.md)
+- Sequence models: GRU-D + LSTM on causal windows, mask + time gaps, validation-only selection, Platt calibration; torch in optional `seq` extra — [0011](decisions/0011-sequence-models.md)
+- API serves precomputed test/extra-season predictions from the validation-calibrated logistic model; reasons = summed logistic contributions; red/amber at 90%/75% validation specificity — [0012](decisions/0012-api-and-demo-model.md)
+- UI: one screen (map + accessible field list + timeline), colour never alone (symbol + word), Web Speech read-aloud EN/DE, Playwright E2E with mocked API — [0013](decisions/0013-one-screen-ui.md)
+- Live demo: GitHub Pages static build reading committed `web/public/demo/<year>.json` (only exception to the no-derived-data rule); FastAPI + PostGIS stays the local/CI backend — [0014](decisions/0014-static-pages-demo.md)
 - Code is MIT-licensed; datasets are not redistributed and keep their own licences — [0003](decisions/0003-code-licence.md)
 
 ## Week-1 data inspection results (2026-10-26)
@@ -37,9 +42,38 @@ a production product for farmers.
   pixels are SCL 4/5): median 15 clear dates per field in 2022, 12 in 2024; median longest gap
   ~25 days. Sentinel-1 is needed for the 14/21-day horizons.
 
+## US-13 live demo hosting (decided 2026-10-27)
+
+Options presented to the owner:
+
+- **A) GitHub Pages + precomputed JSON (chosen, recommended).** Free, no accounts, never sleeps.
+  The same React UI loads `demo/2024.json` / `demo/2025.json` (demo fields, dates, 7/14/21-day
+  risk, level, reason codes, EN/DE texts, attribution). Needs one exception to the
+  "no derived data in git" rule, for these files only; sources allow redistribution with credit.
+- **B) Render / Fly.io with the full FastAPI + PostGIS stack (rejected).** Needs the owner's
+  account and an API token; free tiers sleep, so the first load is slow; DB must be reloaded.
+
+How it works:
+
+- Generate: `python scripts/export_predictions.py && python scripts/export_static.py`
+  (writes `web/public/demo/<year>.json`; commit them).
+- Build: `VITE_STATIC_DEMO=1 VITE_BASE=/crop-stress-ews/ npm run build` in `web/`.
+- Deploy: `.github/workflows/pages.yml` on every push to `main` (Pages source = GitHub Actions).
+- URL: https://parimalgavali.github.io/crop-stress-ews/ (live once the stacked PRs reach `main`).
+- Regenerate the JSON after any change to served predictions. Current JSON: six districts, 190 fields per season (~0.64 MB each).
+- Details and trade-off table: [ADR 0014](decisions/0014-static-pages-demo.md).
+
 ## Open questions / next steps
 
+- US-14 six-district rerun (Issue #31; Sentinel-1 42/42 done): test 2024, 190 fields. Served logistic AUROC 0.74 / 0.80 / 0.77 (7/14/21 d) vs persistence 0.72 / 0.72 / 0.70; best research model GRU-D 30-day window 0.83 / 0.81 / 0.80. CIs still overlap persistence (ADR 0008 gate not met). Red alarms before 21/29 onsets, median 15 d. Sentinel-1 ablation no longer shows an effect on validation (test −0.03 only), so the earlier "Sentinel-1 matters most" Soest claim is withdrawn. Düren had no 2024 onsets; Coesfeld has many false alarms. Next: 2-minute video; per-district calibration is a candidate improvement (choose on validation).
 - Label sanity check done (US-07, [week 3](milestones/week-03-label-sanity.md)); next: revised label ADR chosen on 2022, then US-09.
+- US-13 README rewritten (results table, architecture diagram, UI screenshot `docs/img/ui.png`, full pipeline). Live demo decided and built (see below); 2-minute video still open.
+- US-12 error analysis + model card ([error_analysis.md](error_analysis.md), [model_card.md](model_card.md)): Soest 2024 red alarms preceded 6/9 onsets (median 17.5 d); sensitivity drops with long S2 cloud gaps. Superseded by US-14 six-district numbers.
+- US-11 UI done ([ui.md](ui.md)): `web/` React + Vite + MapLibre; CI job `web` runs tsc, eslint, vitest, Playwright. Node 20 via nvm locally.
+- US-10 API done ([api.md](api.md)): FastAPI + PostGIS + Alembic, `docker compose up`; API tests run against a PostGIS service in CI. Next: US-11 UI.
+- US-09 sequence models ([results](sequence_models.md)): on Soest on par with LightGBM (validation-selected LSTM, test 7 d AUROC 0.77; GRU-D 0.82), Sentinel-1 is the most useful input group; CIs overlap. Next: six-district rerun, then US-10.
+- US-08b revised label (peer reference): Soest test 2024 LightGBM 0.80 vs persistence 0.66 AUROC at 7 d, logistic best at 14/21 d; CIs still overlap (40 test fields). Next: rerun on all six districts once Sentinel-1 is extracted, then US-09.
+- US-08 baselines ([docs/baselines.md](baselines.md), ADR 0008): on Soest (40 fields/season) LightGBM does not beat persistence (test AUROC 0.71–0.76 vs 0.75–0.79, CIs overlap); the gate says revisit the label before US-09. Weather-only rule ≈ chance.
 - Sentinel-1, DWD weather and 5-day grid done ([week 2](milestones/week-02-extractors-and-grid.md)); stress label implemented (US-06).
 - User stories are GitHub Issues (label `user-story`, milestones W1–W8), each linked to its branch and PR.
 - District yields: Landesdatenbank NRW table 41241-03i (open CSV, dl-de/by-2-0), no account needed.

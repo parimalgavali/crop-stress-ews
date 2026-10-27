@@ -17,6 +17,7 @@ result future sessions need. If yes, update `docs/project_memory.md` and add or 
 ## Data policy
 
 `data/` and `outputs/` are git-ignored. Do not commit raw or derived data, models, or caches.
+Only exception: the static demo files `web/public/demo/<year>.json` (ADR 0014).
 Respect source licences (see `docs/decisions/0002-data-sources.md`); UFZ drought-monitor data is
 non-commercial and must not be redistributed.
 
