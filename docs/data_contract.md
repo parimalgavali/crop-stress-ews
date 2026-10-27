@@ -24,5 +24,16 @@ Implemented in `src/cropews/data/contract.py`; violations raise `DataContractErr
 | `ndvi`, `ndmi`, `ndre` | float | Median over clear pixels, in [-1, 1] or NaN if no clear pixels |
 | `evi`, `msi` | float | Median over clear pixels, or NaN |
 
-Downstream code must treat observations with `clear_fraction < 0.8` as missing and carry an
+## Sentinel-1 observations (one row per field, acquisition date and orbit direction)
+
+| Column | Type | Rule |
+|---|---|---|
+| `field_id`, `year`, `date` | | (`field_id`, `date`, `orbit_state`) unique (overlapping slices: best coverage kept) |
+| `orbit_state` | str | `ascending` or `descending` |
+| `relative_orbit` | int | Sentinel-1 relative orbit number |
+| `coverage` | float | Share of field pixels valid in VV and VH, in [0, 1]; rows below 0.9 are dropped |
+| `vv_db`, `vh_db` | float | Median gamma0 in dB, within [−40, 10] |
+| `vh_vv_db` | float | `vh_db − vv_db` |
+
+Downstream code must treat Sentinel-2 observations with `clear_fraction < 0.8` as missing and carry an
 explicit missingness mask.

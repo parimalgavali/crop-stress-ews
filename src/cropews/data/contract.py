@@ -21,6 +21,20 @@ OBSERVATION_COLUMNS = (
     "msi",
 )
 NORMALISED_INDICES = ("ndvi", "ndmi", "ndre")
+S1_OBSERVATION_COLUMNS = (
+    "field_id",
+    "year",
+    "date",
+    "orbit_state",
+    "relative_orbit",
+    "coverage",
+    "vv_db",
+    "vh_db",
+    "vh_vv_db",
+)
+ORBIT_STATES = ("ascending", "descending")
+# Plausible gamma0 range for agricultural fields; values outside indicate a unit or nodata bug.
+BACKSCATTER_DB_RANGE = (-40.0, 10.0)
 
 
 class DataContractError(ValueError):
@@ -68,6 +82,28 @@ def observation_errors(obs: pd.DataFrame) -> list[str]:
     return errors
 
 
+def s1_observation_errors(obs: pd.DataFrame) -> list[str]:
+    missing = _missing(obs, S1_OBSERVATION_COLUMNS)
+    if missing:
+        return [f"missing columns: {missing}"]
+    errors = []
+    if obs.duplicated(["field_id", "date", "orbit_state"]).any():
+        errors.append("duplicate (field_id, date, orbit_state)")
+    if not obs["orbit_state"].isin(ORBIT_STATES).all():
+        errors.append(f"orbit_state not in {ORBIT_STATES}")
+    if not obs["coverage"].between(0, 1).all():
+        errors.append("coverage outside [0, 1]")
+    if obs[["vv_db", "vh_db", "vh_vv_db"]].isna().any().any():
+        errors.append("missing backscatter values")
+    for col in ("vv_db", "vh_db"):
+        values = obs[col].dropna()
+        if not values.between(*BACKSCATTER_DB_RANGE).all():
+            errors.append(f"{col} outside {BACKSCATTER_DB_RANGE} dB")
+    if ((obs["vh_vv_db"] - (obs["vh_db"] - obs["vv_db"])).abs() > 1e-6).any():
+        errors.append("vh_vv_db != vh_db - vv_db")
+    return errors
+
+
 def validate_fields(fields: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     errors = field_errors(fields)
     if errors:
@@ -77,6 +113,13 @@ def validate_fields(fields: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
 
 def validate_observations(obs: pd.DataFrame) -> pd.DataFrame:
     errors = observation_errors(obs)
+    if errors:
+        raise DataContractError("; ".join(errors))
+    return obs
+
+
+def validate_s1_observations(obs: pd.DataFrame) -> pd.DataFrame:
+    errors = s1_observation_errors(obs)
     if errors:
         raise DataContractError("; ".join(errors))
     return obs

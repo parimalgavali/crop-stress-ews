@@ -101,7 +101,7 @@ def extract_field_series(
     if fields.empty:
         return empty
     if catalog is None:
-        catalog = pystac_client.Client.open(STAC_URL, modifier=planetary_computer.sign_inplace)
+        catalog = pystac_client.Client.open(STAC_URL)
     bbox = tuple(fields.to_crs(4326).total_bounds)
     items = catalog.search(
         collections=["sentinel-2-l2a"],
@@ -113,7 +113,7 @@ def extract_field_series(
     rows = []
     for item in sorted(items, key=lambda i: i.datetime):
         baseline = str(item.properties.get("s2:processing_baseline", "00.00"))
-        with rasterio.open(item.assets["SCL"].href) as src:
+        with rasterio.open(planetary_computer.sign(item.assets["SCL"].href)) as src:
             local = fields.to_crs(src.crs)
             local = local.assign(geometry=local.buffer(-inward_buffer_m))
             local = local[~local.geometry.is_empty]
@@ -126,7 +126,7 @@ def extract_field_series(
             transform = src.window_transform(window)
         refl = {}
         for band in BANDS:
-            with rasterio.open(item.assets[band].href) as src:
+            with rasterio.open(planetary_computer.sign(item.assets[band].href)) as src:
                 win = aligned_window(window, scl_transform, src.transform)
                 dn = src.read(
                     1,
