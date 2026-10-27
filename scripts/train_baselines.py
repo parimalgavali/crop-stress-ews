@@ -75,9 +75,9 @@ def main() -> None:
             entry: dict[str, object] = {"threshold": thr}
             for split_name in ("test", "extra_check"):
                 ev = d[d.split == split_name]
-                ev = ev.assign(score=predict(ev))
-                if ev.empty or ev["y"].nunique() < 2:
+                if ev["y"].nunique() < 2:
                     continue
+                ev = ev.assign(score=predict(ev))
                 m = metrics(ev, thr)
                 m["auroc_ci"] = bootstrap_ci(
                     ev, lambda s, t=thr: metrics(s, t)["auroc"], n=args.bootstrap
