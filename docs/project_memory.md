@@ -41,5 +41,5 @@ a production product for farmers.
 - Label sanity check against district yields (US-07).
 - Sentinel-1, DWD weather and 5-day grid done ([week 2](milestones/week-02-extractors-and-grid.md)); stress label implemented (US-06).
 - User stories are GitHub Issues (label `user-story`, milestones W1–W8), each linked to its branch and PR.
-- Free Regionalstatistik account for automated district yields; until then use IT.NRW PDFs.
+- District yields: Landesdatenbank NRW table 41241-03i (open CSV, dl-de/by-2-0), no account needed.
 - YieldSAT access, licence and whether its German wheat fields are in NRW.
