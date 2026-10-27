@@ -49,3 +49,14 @@ Implemented in `src/cropews/data/contract.py`; violations raise `DataContractErr
 
 Downstream code must treat Sentinel-2 observations with `clear_fraction < 0.8` as missing and carry an
 explicit missingness mask.
+
+## 5-day grid (one row per field and grid date t; step is (t − 5 d, t])
+
+| Column | Rule |
+|---|---|
+| `field_id`, `year`, `date` | (`field_id`, `date`) unique; dates every 5 days from 5 April |
+| `ndvi` … `msi` | Latest clear Sentinel-2 value in the step, else NaN (never forward-filled) |
+| `vv_db_asc` … `vh_vv_db_desc` | Latest Sentinel-1 value per orbit direction in the step, else NaN |
+| `s2_observed`, `s1_asc_observed`, `s1_desc_observed` | True iff the source has a value in the step |
+| `*_days_since` | Days since latest observation on or before t (< 5 when observed; NaN if none yet) |
+| weather columns | Step sums (`pr_mm`, `et0_mm`), means, min/max, last `soil_moist_pct`; `weather_observed` = 5 days present |
