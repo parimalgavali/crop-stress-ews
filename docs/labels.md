@@ -28,3 +28,11 @@ anomaly** defined before any model is trained (ADR 0007). Code: `src/cropews/lab
 - In-event exclusion uses the recovery date, which is in the future at t. This only filters
   training/evaluation rows; a deployed model must use current z-scores as features instead.
 - One district baseline per bin ignores within-district soil differences.
+
+## First run (Soest, 40 fields per season, 20 in 2024)
+
+Share of fields with at least one event: 2019 0.20, 2020 0.30, 2021 0.12, 2023 0.18,
+**2024 0.35**, 2025 0.22. 2024 (wet, −15% yield) has the highest share, as hoped; 2021 does not
+stand out. Samples are small and training seasons are in-sample for the baseline, so US-07 checks
+this properly across districts and against yields. 2024 positive rates on the grid:
+7 d 7.9%, 14 d 10.3%, 21 d 13.1%.
