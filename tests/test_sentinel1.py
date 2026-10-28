@@ -49,3 +49,35 @@ def test_select_backscatter_keeps_best_slice_per_orbit():
         ["ascending", 1.0],
         ["descending", 1.0],
     ]
+
+
+def test_extract_skips_a_scene_that_cannot_be_read(monkeypatch):
+    from datetime import datetime
+    from types import SimpleNamespace
+
+    import geopandas as gpd
+    import rasterio
+    from shapely.geometry import box
+
+    from cropews.data.sentinel1 import READ_ATTEMPTS, extract_backscatter_series
+
+    calls = []
+
+    def broken(*args, **kwargs):
+        calls.append(args)
+        raise rasterio.errors.RasterioIOError("Read failed")
+
+    monkeypatch.setattr(rasterio, "open", broken)
+    monkeypatch.setattr("planetary_computer.sign", lambda href: href)
+    asset = SimpleNamespace(href="https://example.com/x.tif")
+    item = SimpleNamespace(
+        id="s1", datetime=datetime(2026, 10, 1), properties={}, assets={"vv": asset, "vh": asset}
+    )
+    catalog = SimpleNamespace(search=lambda **kw: SimpleNamespace(items=lambda: [item]))
+    fields = gpd.GeoDataFrame(
+        {"field_id": ["a"], "year": [2027]},
+        geometry=[box(400000, 5700000, 400200, 5700200)],
+        crs=25832,
+    )
+    out = extract_backscatter_series(fields, "2026-10-01", "2026-10-02", catalog=catalog)
+    assert out.empty and len(calls) == READ_ATTEMPTS

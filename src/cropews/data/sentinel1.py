@@ -14,6 +14,8 @@ from cropews.data.sentinel2 import STAC_URL, aligned_window
 COLLECTION = "sentinel-1-rtc"
 NO_DATA = -32768.0
 
+READ_ATTEMPTS = 3
+
 
 def to_db(linear: float) -> float:
     return float(10 * np.log10(linear)) if linear > 0 else float("nan")
@@ -75,25 +77,32 @@ def extract_backscatter_series(
     rows = []
     for item in sorted(items, key=lambda i: i.datetime):
         props = item.properties
-        with rasterio.open(planetary_computer.sign(item.assets["vv"].href)) as src:
-            local = fields.to_crs(src.crs)
-            local = local.assign(geometry=local.buffer(-inward_buffer_m))
-            local = local[~local.geometry.is_empty]
-            if local.empty:
-                return empty
-            window = from_bounds(*local.total_bounds, transform=src.transform)
-            window = window.round_offsets().round_lengths()
-            vv = src.read(1, window=window, boundless=True, fill_value=NO_DATA)
-            vv_transform = src.transform
-            transform = src.window_transform(window)
-        with rasterio.open(planetary_computer.sign(item.assets["vh"].href)) as src:
-            vh = src.read(
-                1,
-                window=aligned_window(window, vv_transform, src.transform),
-                out_shape=vv.shape,
-                boundless=True,
-                fill_value=NO_DATA,
-            )
+        for attempt in range(READ_ATTEMPTS):
+            try:
+                with rasterio.open(planetary_computer.sign(item.assets["vv"].href)) as src:
+                    local = fields.to_crs(src.crs)
+                    local = local.assign(geometry=local.buffer(-inward_buffer_m))
+                    local = local[~local.geometry.is_empty]
+                    if local.empty:
+                        return empty
+                    window = from_bounds(*local.total_bounds, transform=src.transform)
+                    window = window.round_offsets().round_lengths()
+                    vv = src.read(1, window=window, boundless=True, fill_value=NO_DATA)
+                    vv_transform = src.transform
+                    transform = src.window_transform(window)
+                with rasterio.open(planetary_computer.sign(item.assets["vh"].href)) as src:
+                    vh = src.read(
+                        1,
+                        window=aligned_window(window, vv_transform, src.transform),
+                        out_shape=vv.shape,
+                        boundless=True,
+                        fill_value=NO_DATA,
+                    )
+                break
+            except rasterio.errors.RasterioIOError as err:
+                print(f"S1 {item.id}: read failed ({attempt + 1}/{READ_ATTEMPTS}): {err}")
+        else:
+            continue  # skip a scene that cannot be read rather than fail the whole run
         for field_id, year, geom in zip(
             local["field_id"], local["year"], local.geometry, strict=False
         ):
