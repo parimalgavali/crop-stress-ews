@@ -35,6 +35,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Restore the satellite observation cache (ADR 0025)
+        if: github.event_name != 'push'
+        uses: actions/cache/restore@v4
+        with:
+          path: data/live_cache
+          key: live-obs-${{ github.run_id }}
+          restore-keys: live-obs-
       - name: Live season data (ADR 0015); the demo still deploys if this fails
         id: live
         continue-on-error: true
@@ -67,7 +74,7 @@ jobs:
           unzip -q -o data/raw/vg2500.zip -d data/raw/vg2500
           python scripts/live_update.py --lwk data/raw/lwk/V_OD_LWK_TSCHLAG.shp \
             --districts "$(find data/raw/vg2500 -name VG2500_KRS.shp | head -1)" \
-            --cropmap models --risk-model models/risk_live.joblib
+            --cropmap models --risk-model models/risk_live.joblib --cache data/live_cache
       - name: Pipeline health (ADR 0023); opens, updates or closes the pipeline-health issue
         id: health
         if: github.event_name != 'push'
@@ -96,6 +103,12 @@ jobs:
               gh issue create -t "Live pipeline run unhealthy" -l pipeline-health -b "$msg"
             fi
           fi
+      - name: Save the satellite observation cache (ADR 0025)
+        if: github.event_name != 'push' && steps.health.outputs.healthy == '1'
+        uses: actions/cache/save@v4
+        with:
+          path: data/live_cache
+          key: live-obs-${{ github.run_id }}
       - name: Prospective forecast log (ADR 0020), on the forecast-log branch, never main
         if: github.event_name != 'push' && steps.health.outputs.healthy == '1'
         continue-on-error: true

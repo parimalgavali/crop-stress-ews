@@ -110,3 +110,41 @@ def test_health_problem_flags_missing_or_mostly_empty_payloads():
         "s2_scenes_skipped": [],
         "minutes": 2.1,
     }
+
+
+def test_cache_since_only_trusts_a_cache_that_covers_the_fields_and_window():
+    from datetime import date
+
+    from cropews.live import cache_since
+
+    meta = {"start": "2026-10-01", "through": "2026-11-20", "fields": ["a", "b"]}
+    start, as_of = date(2026, 10, 1), date(2026, 11, 25)
+    assert cache_since(meta, {"a"}, start, as_of) == date(2026, 11, 10)
+    assert cache_since(meta, {"a", "c"}, start, as_of) == start
+    assert cache_since(meta, {"a"}, date(2026, 9, 1), as_of) == date(2026, 9, 1)
+    assert cache_since(meta, {"a"}, start, date(2026, 11, 1)) == start
+    assert cache_since(None, {"a"}, start, as_of) == start
+
+
+def test_merge_cached_keeps_old_rows_and_lets_new_rows_win():
+    from datetime import date
+
+    from cropews.live import merge_cached
+
+    old = pd.DataFrame(
+        {
+            "field_id": ["a", "a", "z"],
+            "date": pd.to_datetime(["2026-09-01", "2026-11-12", "2026-11-12"]),
+            "ndvi": [0.1, 0.2, 0.9],
+        }
+    )
+    new = pd.DataFrame({"field_id": ["a"], "date": pd.to_datetime(["2026-11-12"]), "ndvi": [0.3]})
+    new.attrs["skipped_scenes"] = ["x"]
+    out = merge_cached(old, new, {"a"}, date(2026, 10, 1), date(2026, 11, 25), ["field_id", "date"])
+    assert out["ndvi"].tolist() == [0.3]
+    assert out.attrs["skipped_scenes"] == ["x"]
+    old2 = old.assign(date=pd.to_datetime(["2026-10-05", "2026-11-01", "2026-11-12"]))
+    out2 = merge_cached(
+        old2, new, {"a"}, date(2026, 10, 1), date(2026, 11, 25), ["field_id", "date"]
+    )
+    assert out2["ndvi"].tolist() == [0.1, 0.2, 0.3]

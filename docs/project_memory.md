@@ -117,3 +117,15 @@ How it works:
 ## US-28 yearly retraining (ADR 0026, Issue #63)
 - `scripts/retrain.py --holdout Y --add ...`; `cropews.retrain.fit_bundle` is shared with `export_live_model.py` (reproduces risk-v1 exactly). Gate: `decide()` = mean AUROC gain and no horizon < −0.01.
 - Backtest holdout 2025 + add 2024: −0.011 mean, not promoted. Harvest-2026 labels already in the LWK file (`VALIDFROM` 2026), see docs/retraining.md.
+||||||| f1bdfae
+
+## US-27 incremental live extraction (ADR 0025, Issue #61)
+- `live_update.py --cache data/live_cache`: S2/S1 Parquet + meta.json, via actions/cache (restore on non-push runs, save only when health is ok). Districts whose fields are all cached re-read from `through − 10 d` (`cache_since`/`merge_cached` in `cropews.live`).
+- Default `--n 60`; the stable hash sample keeps the earlier 30 as a subset.
+- To force a full re-read (e.g. after changing scene selection), change the `live-obs-` cache key prefix.
+||||||| f1bdfae
+
+
+## US-26 stable Live sample (ADR 0015 amended, Issue #59)
+- Live parcels: `stable_sample(parcels, n, "<season>/<season+1>")` (hash of season + field_id), not `sample_fields`, so weekly LWK edits don't swap the monitored fields; forecast log and ntfy topics depend on stable field_ids.
+- The 28 Oct 2026 deploy used the old sample; the next live run switches once to the new one.
