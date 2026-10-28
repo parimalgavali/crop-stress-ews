@@ -18,6 +18,10 @@ TEMP_DAYS = 7
 CHANGE_MIN_GAP_DAYS = 20
 
 
+# Parcels at or above this crop-map probability enter spring monitoring (ADR 0018).
+WHEAT_THRESHOLD = 0.5
+
+
 def _clean(v: Any) -> Any:
     if isinstance(v, float):
         return None if math.isnan(v) else round(v, 3)
@@ -123,4 +127,5 @@ def live_payload(
         "attribution": attribution,
         "fields": {"type": "FeatureCollection", "features": features},
         "conditions": {k: v for k, v in cond.items() if k in set(f["field_id"])},
+        "spring_monitoring": sorted(k for k, p in wheat_p.items() if p >= WHEAT_THRESHOLD),
     }

@@ -6,6 +6,10 @@ before the spring forecasts start and long before crop declarations are publishe
 
 from __future__ import annotations
 
+from datetime import date
+from pathlib import Path
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
@@ -72,3 +76,26 @@ def per_group_scores(frame: pd.DataFrame, prob: np.ndarray, target: str, by: str
             }
         )
     return pd.DataFrame(rows)
+
+
+def season_start(as_of: date) -> date:
+    """1 October of the current winter season (harvest year = as_of.year or as_of.year + 1)."""
+    return date(as_of.year if as_of.month >= 10 else as_of.year - 1, 10, 1)
+
+
+def save_model(path: Path, model: Any, columns: list[str], threshold: float) -> None:
+    import joblib
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump({"model": model, "columns": columns, "threshold": threshold}, path)
+
+
+def predict(path: Path, s1: pd.DataFrame, s2: pd.DataFrame) -> dict[str, float]:
+    """field_id -> probability of winter wheat; months not yet observed stay missing."""
+    import joblib
+
+    bundle = joblib.load(path)
+    feats = features(s1, s2)
+    x = feats.reindex(columns=bundle["columns"])
+    prob = bundle["model"].predict_proba(x)[:, 1]
+    return dict(zip(feats["field_id"], prob.astype(float), strict=True))

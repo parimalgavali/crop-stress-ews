@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from cropews.cropmap import features, per_group_scores, targets
+from cropews.cropmap import features, per_group_scores, save_model, targets
 
 SPLITS = {"train": (2020, 2021, 2023), "validation": (2022,), "test": (2024,), "extra": (2025,)}
 
@@ -39,6 +39,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--interim", type=Path, default=Path("data/interim"))
     parser.add_argument("--out", type=Path, default=Path("data/processed/cropmap_metrics.json"))
+    parser.add_argument("--models", type=Path, default=Path("models"))
     args = parser.parse_args()
 
     data = load(args.interim)
@@ -86,6 +87,7 @@ def main() -> None:
             print(f"{s}: AUROC {auc:.3f}\n{table.round(2).to_string(index=False)}")
             out[s] = {"auroc": auc, "per_district": table.to_dict(orient="records")}
         report[target] = out
+        save_model(args.models / f"cropmap_{target}.joblib", fitted[best], cols, 0.5)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(report, indent=2, default=lambda v: np.asarray(v).item()))
     print(f"wrote {args.out}")

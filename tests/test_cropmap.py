@@ -1,7 +1,9 @@
+from datetime import date
+
 import numpy as np
 import pandas as pd
 
-from cropews.cropmap import features, per_group_scores, targets
+from cropews.cropmap import features, per_group_scores, season_start, targets
 
 
 def _s1() -> pd.DataFrame:
@@ -56,3 +58,8 @@ def test_targets_and_scores() -> None:
     scores = per_group_scores(crops, np.array([0.9, 0.6, 0.1, 0.2]), "y_wheat", "district")
     overall = scores.set_index("district").loc["all"]
     assert overall["precision"] == 0.5 and overall["recall"] == 0.5
+
+
+def test_season_start() -> None:
+    assert season_start(date(2026, 11, 3)) == date(2026, 10, 1)
+    assert season_start(date(2027, 3, 31)) == date(2026, 10, 1)
