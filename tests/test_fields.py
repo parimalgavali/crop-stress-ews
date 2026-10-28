@@ -44,3 +44,24 @@ def test_sample_fields_is_deterministic_and_capped(raw_parcels):
         == sample_fields(raw_parcels, 2, seed=1)["field_id"].tolist()
     )
     assert len(sample_fields(raw_parcels, 10)) == 4
+
+
+def test_stable_sample_survives_edits_elsewhere_and_changes_by_season():
+    import geopandas as gpd
+    import pandas as pd
+    from shapely.geometry import Point
+
+    from cropews.data.fields import stable_sample
+
+    ids = [f"LWK-{i}" for i in range(500)]
+    parcels = gpd.GeoDataFrame({"field_id": ids}, geometry=[Point(i, 0) for i in range(500)])
+    picked = set(stable_sample(parcels, 30, "2026/2027")["field_id"])
+    dropped = sorted(picked)[0]
+    edited = parcels[parcels["field_id"] != dropped].sample(frac=1, random_state=1)
+    edited = gpd.GeoDataFrame(
+        pd.concat([edited, gpd.GeoDataFrame({"field_id": ["LWK-new"]}, geometry=[Point(0, 1)])])
+    )
+    again = set(stable_sample(edited, 30, "2026/2027")["field_id"])
+    assert len(picked - again) == 1 and dropped not in again
+    assert len(again) == 30
+    assert set(stable_sample(parcels, 30, "2027/2028")["field_id"]) != picked
