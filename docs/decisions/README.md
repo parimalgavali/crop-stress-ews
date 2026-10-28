@@ -25,3 +25,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0019](0019-weather-forecast.md) | 5-day DWD ICON forecast shown on Live cards, evaluated but not a model input | Accepted |
 | [0020](0020-forecast-log.md) | Prospective forecast log on the forecast-log branch, scored after the window | Accepted |
 | [0021](0021-live-spring-risk.md) | Live spring risk from 5 April, model without AMBAV features | Accepted |
+| [0022](0022-alerts-ntfy.md) | Alerts through public ntfy.sh topics per field | Accepted |

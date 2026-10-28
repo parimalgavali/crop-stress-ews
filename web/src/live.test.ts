@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conditionLines, greenness, radarChanged, scoreLine, trend } from './live'
+import { conditionLines, greenness, radarChanged, LIVE_STRINGS, scoreLine, trend } from './live'
 
 describe('live conditions', () => {
   it('maps numbers to plain words', () => {
@@ -55,5 +55,12 @@ describe('scoreLine', () => {
     expect(scoreLine({ as_of: '2027-05-01', horizons: { '14': h } }, 'en')).toBe(
       'Forecast check: 250 forecasts checked so far. A red alarm came before 5 of 8 stress events (14 days ahead).',
     )
+  })
+})
+
+describe('alert text', () => {
+  it('exists in both languages', () => {
+    expect(LIVE_STRINGS.en.alert).toMatch(/red/)
+    expect(LIVE_STRINGS.de.alert).toMatch(/rot/)
   })
 })

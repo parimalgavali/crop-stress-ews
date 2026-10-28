@@ -40,6 +40,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           pip install -e ".[extract,model]"
+          # Last deployed run, to alert only on fields that newly turned red (ADR 0022).
+          curl -sfL -o ../previous.json "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/live/latest.json" || true
           # Crop-map model (ADR 0018), published as a release asset; Live runs without it if absent.
           gh release download cropmap-v1 -p "cropmap_y_wheat_*.joblib" -D models || true
           # Spring risk model (ADR 0021); used from 5 April only.
@@ -67,6 +69,12 @@ jobs:
             git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" \
               commit -qm "Forecasts issued $(date -u +%FT%TZ)" && git push -q origin forecast-log || true
           fi
+      - name: Alerts for fields that turned red (ADR 0022), opt-in ntfy.sh topics
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        working-directory: .
+        run: |
+          [ -f web/public/live/latest.json ] && python scripts/send_alerts.py --previous ../previous.json || true
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
