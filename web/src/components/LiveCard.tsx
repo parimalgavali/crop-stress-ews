@@ -8,12 +8,13 @@ interface Props {
   crop: string;
   district: string;
   lang: Lang;
+  wheatP?: number | null;
 }
 
-export function LiveCard({ cond, crop, district, lang }: Props) {
+export function LiveCard({ cond, crop, district, lang, wheatP }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
-  const lines = conditionLines(cond, crop, lang);
+  const lines = conditionLines(cond, crop, lang, wheatP);
   const [speaking, setSpeaking] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 

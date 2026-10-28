@@ -21,4 +21,11 @@ describe('live conditions', () => {
     expect(lines.some((t) => t.endsWith('Frost'))).toBe(true)
     expect(lines.at(-1)).toBe('Crop declared this year: Mais')
   })
+
+  it('shows the winter-wheat guess with how sure it is', () => {
+    const yes = conditionLines({}, '', 'en', 0.83).map((l) => l.text)
+    expect(yes).toContain('Probably winter wheat (83% sure, satellite guess)')
+    const no = conditionLines({}, '', 'de', 0.1).map((l) => l.text)
+    expect(no.some((t) => t.startsWith('Wahrscheinlich kein Winterweizen (zu 90 %'))).toBe(true)
+  })
 })

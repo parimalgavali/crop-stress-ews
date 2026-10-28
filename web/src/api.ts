@@ -142,6 +142,7 @@ export interface Conditions {
 
 export interface LiveFieldProps extends FieldProps {
   declared_crop: string
+  wheat_p?: number | null
 }
 
 export interface LiveSeason {

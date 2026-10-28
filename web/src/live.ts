@@ -45,6 +45,8 @@ const T = {
     temp: (m: number, lo: number) =>
       `Last 7 days: ${m.toFixed(0)} °C on average, lowest ${lo.toFixed(0)} °C`,
     frost: "Frost",
+    wheat: (yes: boolean, sure: number) =>
+      `${yes ? "Probably winter wheat" : "Probably not winter wheat"} (${sure}% sure, satellite guess)`,
     noLive: "Live data is not available right now.",
   },
   de: {
@@ -74,6 +76,8 @@ const T = {
     temp: (m: number, lo: number) =>
       `Letzte 7 Tage: im Mittel ${m.toFixed(0)} °C, tiefster Wert ${lo.toFixed(0)} °C`,
     frost: "Frost",
+    wheat: (yes: boolean, sure: number) =>
+      `${yes ? "Wahrscheinlich Winterweizen" : "Wahrscheinlich kein Winterweizen"} (zu ${sure} % sicher, Schätzung aus Satellitendaten)`,
     noLive: "Aktuelle Daten sind gerade nicht verfügbar.",
   },
 };
@@ -89,6 +93,7 @@ export function conditionLines(
   c: Conditions,
   crop: string,
   lang: Lang,
+  wheatP?: number | null,
 ): Line[] {
   const s = T[lang];
   const lines: Line[] = [];
@@ -116,6 +121,11 @@ export function conditionLines(
       icon: c.tmin_7d_c < 0 ? "❄" : "🌡",
       text: `${s.temp(c.tmean_7d_c, c.tmin_7d_c)}${c.tmin_7d_c < 0 ? ` · ${s.frost}` : ""}`,
     });
+  }
+  if (wheatP != null) {
+    const yes = wheatP >= 0.5;
+    const sure = Math.round(100 * (yes ? wheatP : 1 - wheatP));
+    lines.push({ icon: yes ? "🌾" : "❔", text: s.wheat(yes, sure) });
   }
   lines.push({ icon: "🌾", text: s.prevCrop(crop) });
   return lines;
