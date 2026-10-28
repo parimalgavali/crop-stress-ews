@@ -203,6 +203,7 @@ export default function App() {
                 crop={liveField.properties.declared_crop}
                 district={liveField.properties.district}
                 lang={lang}
+                wheatP={liveField.properties.wheat_p}
               />
             ) : (
               <p className="hint">{selected ? s.noData : s.pickHint}</p>

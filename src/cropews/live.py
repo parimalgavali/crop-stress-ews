@@ -18,6 +18,10 @@ TEMP_DAYS = 7
 CHANGE_MIN_GAP_DAYS = 20
 
 
+# Parcels at or above this crop-map probability enter spring monitoring (ADR 0018).
+WHEAT_THRESHOLD = 0.5
+
+
 def _clean(v: Any) -> Any:
     if isinstance(v, float):
         return None if math.isnan(v) else round(v, 3)
@@ -96,7 +100,10 @@ def live_payload(
     cond: dict[str, dict[str, Any]],
     as_of: date,
     attribution: str,
+    wheat_p: dict[str, float] | None = None,
 ) -> dict[str, Any]:
+    """``wheat_p``: field_id -> probability of winter wheat from the crop map (ADR 0018)."""
+    wheat_p = wheat_p or {}
     f = fields.to_crs(4326).sort_values("field_id")
     features = [
         {
@@ -109,6 +116,7 @@ def live_payload(
                 "area_ha": round(float(r.area_ha), 2),
                 "declared_crop": r.declared_crop,
                 "level": None,
+                "wheat_p": _clean(wheat_p.get(r.field_id)),
             },
         }
         for r in f.itertuples(index=False)
@@ -119,4 +127,5 @@ def live_payload(
         "attribution": attribution,
         "fields": {"type": "FeatureCollection", "features": features},
         "conditions": {k: v for k, v in cond.items() if k in set(f["field_id"])},
+        "spring_monitoring": sorted(k for k, p in wheat_p.items() if p >= WHEAT_THRESHOLD),
     }

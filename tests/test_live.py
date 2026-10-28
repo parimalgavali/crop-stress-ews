@@ -81,5 +81,10 @@ def test_missing_sources_and_payload():
     p = live_payload(fields, cond, AS_OF, "attr")
     assert p["as_of"] == "2026-11-01"
     assert p["fields"]["features"][0]["properties"]["declared_crop"] == "Mais"
+    assert p["fields"]["features"][0]["properties"]["wheat_p"] is None
+    with_map = live_payload(fields, cond, AS_OF, "attr", wheat_p={"a": 0.81234})
+    assert with_map["fields"]["features"][0]["properties"]["wheat_p"] == 0.812
+    assert with_map["spring_monitoring"] == ["a"]
+    assert p["spring_monitoring"] == []
     lon = p["fields"]["features"][0]["geometry"]["coordinates"][0][0][0]
     assert 7 < lon < 9
