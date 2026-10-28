@@ -19,3 +19,4 @@
 
 Add a new numbered record for each decision that changes scope, data, labels, modeling or
 evaluation. Amend the status of superseded records instead of deleting them.
+| [0015](0015-live-season.md) | Live season 2026/27: current conditions for monitored LWK parcels, no winter model scores | Accepted |
