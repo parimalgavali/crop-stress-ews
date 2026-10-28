@@ -12,6 +12,7 @@ interface Props {
   forecast?: Forecast;
   board?: Scoreboard | null;
   spring?: boolean;
+  alertTopic?: string;
 }
 
 export function LiveCard({
@@ -23,6 +24,7 @@ export function LiveCard({
   forecast,
   board,
   spring = false,
+  alertTopic,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -66,6 +68,17 @@ export function LiveCard({
         ))}
       </ul>
       {!spring && <p className="hint">{l.springNote}</p>}
+      {alertTopic && (
+        <p>
+          <a
+            href={`https://ntfy.sh/${alertTopic}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            🔔 {l.alert}
+          </a>
+        </p>
+      )}
       <p className="hint" data-testid="scoreboard">
         {scoreLine(board, lang)}
       </p>

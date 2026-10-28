@@ -221,6 +221,11 @@ export default function App() {
                   forecast={live.forecast?.[liveField.properties.district]}
                   board={board}
                   spring={Boolean(live.risk?.[liveField.properties.field_id])}
+                  alertTopic={
+                    live.risk?.[liveField.properties.field_id]
+                      ? `cropews-nrw-${liveField.properties.field_id.toLowerCase()}`
+                      : undefined
+                  }
                 />
               </>
             ) : (

@@ -59,11 +59,15 @@ const T = {
     wheat: (yes: boolean, sure: number) =>
       `${yes ? "Probably winter wheat" : "Probably not winter wheat"} (${sure}% sure, satellite guess)`,
     noLive: "Live data is not available right now.",
+    alert:
+      "Get a message when this field turns red (free ntfy app, no sign-up)",
   },
   de: {
     live: "Aktuell",
     asOf: "Daten vom",
     title: "Zustand jetzt",
+    alert:
+      "Nachricht erhalten, wenn dieses Feld rot wird (kostenlose ntfy-App, ohne Anmeldung)",
     springNote:
       "Stress-Vorhersagen beginnen am 5. April, wenn der Winterweizen wieder wächst.",
     prevCrop: (c: string) => `Angebaute Kultur dieses Jahr: ${c}`,
