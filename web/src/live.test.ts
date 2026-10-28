@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conditionLines, greenness, radarChanged, LIVE_STRINGS, scoreLine, trend } from './live'
+import { conditionLines, greenness, radarChanged, LIVE_STRINGS, scoreLine, staleNotice, trend } from './live'
 
 describe('live conditions', () => {
   it('maps numbers to plain words', () => {
@@ -62,5 +62,14 @@ describe('alert text', () => {
   it('exists in both languages', () => {
     expect(LIVE_STRINGS.en.alert).toMatch(/red/)
     expect(LIVE_STRINGS.de.alert).toMatch(/rot/)
+  })
+
+  it('warns when live data is more than a week old', () => {
+    const today = new Date(2026, 10, 10)
+    expect(staleNotice('2026-11-05', 'en', today)).toBeNull()
+    expect(staleNotice('2026-11-01', 'en', today)).toBe(
+      'This data is 9 days old. The last update may have failed; it is retried every 5 days.',
+    )
+    expect(staleNotice('2026-11-01', 'de', today)).toMatch(/^Diese Daten sind 9 Tage alt/)
   })
 })

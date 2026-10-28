@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: write # forecast-log branch (ADR 0020)
+  issues: write # pipeline-health issue (ADR 0023)
   pages: write
   id-token: write
 
@@ -33,6 +34,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Live season data (ADR 0015); the demo still deploys if this fails
+        id: live
         continue-on-error: true
         timeout-minutes: 120
         working-directory: .
@@ -64,8 +66,36 @@ jobs:
           python scripts/live_update.py --lwk data/raw/lwk/V_OD_LWK_TSCHLAG.shp \
             --districts "$(find data/raw/vg2500 -name VG2500_KRS.shp | head -1)" \
             --cropmap models --risk-model models/risk_live.joblib
-      - name: Prospective forecast log (ADR 0020), on the forecast-log branch, never main
+      - name: Pipeline health (ADR 0023); opens, updates or closes the pipeline-health issue
+        id: health
         if: github.event_name != 'push'
+        continue-on-error: true
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LIVE_OUTCOME: ${{ steps.live.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          open=$(gh issue list --label pipeline-health --state open --json number -q '.[0].number' || true)
+          summary=$(python scripts/check_live_health.py web/public/live/latest.json 2>&1) && ok=1 || ok=0
+          [ "$LIVE_OUTCOME" = success ] || ok=0
+          echo "healthy=$ok" >> "$GITHUB_OUTPUT"
+          if [ $ok = 1 ]; then
+            echo "healthy: $summary"
+            if [ -n "$open" ]; then gh issue close "$open" -c "Healthy again: $summary. $RUN_URL"; fi
+          else
+            msg="The live run failed or produced too little data (live step: $LIVE_OUTCOME; $summary). The site keeps the last deployed data. $RUN_URL"
+            echo "unhealthy: $msg"
+            # Keep the last good data on the site; the UI then shows the stale-data notice.
+            if [ -s ../previous.json ]; then mkdir -p web/public/live && cp ../previous.json web/public/live/latest.json; fi
+            if [ -n "$open" ]; then gh issue comment "$open" -b "$msg"
+            else
+              gh label create pipeline-health -c B60205 -d "Live pipeline run failed" 2>/dev/null || true
+              gh issue create -t "Live pipeline run unhealthy" -l pipeline-health -b "$msg"
+            fi
+          fi
+      - name: Prospective forecast log (ADR 0020), on the forecast-log branch, never main
+        if: github.event_name != 'push' && steps.health.outputs.healthy == '1'
         continue-on-error: true
         working-directory: .
         run: |
@@ -80,7 +110,7 @@ jobs:
               commit -qm "Forecasts issued $(date -u +%FT%TZ)" && git push -q origin forecast-log || true
           fi
       - name: Alerts for fields that turned red (ADR 0022), opt-in ntfy.sh topics
-        if: github.event_name != 'push'
+        if: github.event_name != 'push' && steps.health.outputs.healthy == '1'
         continue-on-error: true
         working-directory: .
         run: |

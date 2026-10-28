@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, timedelta
 from pathlib import Path
@@ -24,7 +25,13 @@ from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
 from cropews.data.sentinel1 import extract_backscatter_series
 from cropews.data.sentinel2 import extract_field_series
 from cropews.data.weather import extract_weather
-from cropews.live import WHEAT_THRESHOLD, conditions, forecast_summary, live_payload
+from cropews.live import (
+    WHEAT_THRESHOLD,
+    conditions,
+    forecast_summary,
+    live_payload,
+    run_health,
+)
 from cropews.live_risk import load_bundle, score_live, spring_active
 
 ATTRIBUTION = (
@@ -82,6 +89,7 @@ def main() -> None:
         "--cropmap", type=Path, help="directory with cropmap_y_wheat_<cutoff>.joblib (ADR 0018)"
     )
     args = parser.parse_args()
+    started = time.monotonic()
 
     use_map = args.cropmap is not None and args.cropmap.is_dir()
     parcels = assign_districts(load_arable_parcels(args.lwk), gpd.read_file(args.districts))
@@ -91,6 +99,10 @@ def main() -> None:
     ]
     with ProcessPoolExecutor(args.workers) as pool:
         results = list(pool.map(_district, [(f, args.as_of, args.days, use_map) for f in sets]))
+    skipped = {
+        k: [x for r in results for x in r[i].attrs.get("skipped_scenes", [])]
+        for k, i in (("s2", 0), ("s1", 1))
+    }
     s2, s1, daily = (pd.concat([r[i] for r in results], ignore_index=True) for i in range(3))
     fields = gpd.GeoDataFrame(pd.concat(sets, ignore_index=True), crs=parcels.crs)
     wheat_p = predict(args.cropmap, args.as_of, s1, s2) if use_map else None
@@ -114,6 +126,13 @@ def main() -> None:
         rows,
     )
 
+    payload["health"] = run_health(
+        len(fields),
+        len(payload["conditions"]),
+        skipped["s1"],
+        skipped["s2"],
+        time.monotonic() - started,
+    )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, separators=(",", ":"), ensure_ascii=False))
     n = len(payload["conditions"])

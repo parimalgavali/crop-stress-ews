@@ -75,6 +75,7 @@ def extract_backscatter_series(
     items = catalog.search(collections=[COLLECTION], bbox=bbox, datetime=f"{start}/{end}").items()
 
     rows = []
+    skipped: list[str] = []
     for item in sorted(items, key=lambda i: i.datetime):
         props = item.properties
         for attempt in range(READ_ATTEMPTS):
@@ -102,6 +103,7 @@ def extract_backscatter_series(
             except rasterio.errors.RasterioIOError as err:
                 print(f"S1 {item.id}: read failed ({attempt + 1}/{READ_ATTEMPTS}): {err}")
         else:
+            skipped.append(item.id)
             continue  # skip a scene that cannot be read rather than fail the whole run
         for field_id, year, geom in zip(
             local["field_id"], local["year"], local.geometry, strict=False
@@ -119,6 +121,6 @@ def extract_backscatter_series(
                     **summarise_backscatter(vv[mask], vh[mask]),
                 }
             )
-    if not rows:
-        return empty
-    return select_backscatter(pd.DataFrame(rows), min_coverage)
+    out = select_backscatter(pd.DataFrame(rows), min_coverage) if rows else empty
+    out.attrs["skipped_scenes"] = skipped  # read by live_update.py for run health
+    return out

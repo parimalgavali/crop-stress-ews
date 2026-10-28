@@ -154,3 +154,33 @@ def live_payload(
         "forecasts": forecasts or [],
         "spring_monitoring": sorted(k for k, p in wheat_p.items() if p >= WHEAT_THRESHOLD),
     }
+
+
+# A live run is unhealthy if fewer than this share of sampled parcels got any data (ADR 0023).
+MIN_DATA_SHARE = 0.5
+
+
+def run_health(
+    parcels: int, with_data: int, skipped_s1: list[str], skipped_s2: list[str], seconds: float
+) -> dict[str, Any]:
+    """Per-run health block for ``latest.json``; checked by scripts/check_live_health.py."""
+    return {
+        "parcels": parcels,
+        "with_data": with_data,
+        "s1_scenes_skipped": sorted(set(skipped_s1)),
+        "s2_scenes_skipped": sorted(set(skipped_s2)),
+        "minutes": round(seconds / 60, 1),
+    }
+
+
+def health_problem(payload: dict[str, Any] | None) -> str | None:
+    """Why a live payload is unhealthy, or None if it is fine."""
+    if not payload:
+        return "no live/latest.json was written"
+    parcels = len(payload.get("fields", {}).get("features", []))
+    with_data = len(payload.get("conditions", {}))
+    if parcels == 0:
+        return "no parcels were sampled"
+    if with_data < MIN_DATA_SHARE * parcels:
+        return f"only {with_data} of {parcels} parcels have data"
+    return None

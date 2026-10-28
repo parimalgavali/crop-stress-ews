@@ -88,3 +88,25 @@ def test_missing_sources_and_payload():
     assert p["spring_monitoring"] == []
     lon = p["fields"]["features"][0]["geometry"]["coordinates"][0][0][0]
     assert 7 < lon < 9
+
+
+def test_health_problem_flags_missing_or_mostly_empty_payloads():
+    from cropews.live import health_problem, run_health
+
+    feats = {"features": [{}] * 4}
+    assert health_problem(None) == "no live/latest.json was written"
+    assert health_problem({"fields": {"features": []}, "conditions": {}}) == (
+        "no parcels were sampled"
+    )
+    assert health_problem({"fields": feats, "conditions": {"a": {}}}) == (
+        "only 1 of 4 parcels have data"
+    )
+    assert health_problem({"fields": feats, "conditions": dict.fromkeys("ab", {})}) is None
+    h = run_health(4, 2, ["b", "a", "a"], [], 125)
+    assert h == {
+        "parcels": 4,
+        "with_data": 2,
+        "s1_scenes_skipped": ["a", "b"],
+        "s2_scenes_skipped": [],
+        "minutes": 2.1,
+    }

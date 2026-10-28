@@ -16,7 +16,7 @@ import { LiveCard } from "./components/LiveCard";
 import { CheckPanel } from "./components/CheckPanel";
 import { RiskCard } from "./components/RiskCard";
 import { formatDate, STRINGS, type Lang } from "./i18n";
-import { LIVE_STRINGS } from "./live";
+import { LIVE_STRINGS, staleNotice } from "./live";
 
 const YEARS = [2024, 2025];
 const RANK: Record<Level, number> = { green: 0, amber: 1, red: 2 };
@@ -44,6 +44,7 @@ export default function App() {
   const shown: FieldCollection | null = isLive
     ? (live?.fields ?? null)
     : fields;
+  const stale = isLive && live ? staleNotice(live.as_of, lang) : null;
   const liveField = isLive
     ? live?.fields.features.find((f) => f.properties.field_id === selected)
     : undefined;
@@ -226,6 +227,7 @@ export default function App() {
                       ? `cropews-nrw-${liveField.properties.field_id.toLowerCase()}`
                       : undefined
                   }
+                  notice={stale}
                 />
               </>
             ) : (
@@ -247,6 +249,11 @@ export default function App() {
               {live ? formatDate(live.as_of, lang) : "–"}
             </strong>
           </p>
+          {stale && (
+            <p className="hint" role="status" data-testid="live-stale">
+              <span aria-hidden="true">⚠</span> {stale}
+            </p>
+          )}
         </footer>
       ) : (
         <footer className="bar timeline">
