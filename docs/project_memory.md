@@ -114,6 +114,12 @@ How it works:
 - `web/public/manifest.webmanifest` + `web/public/sw.js` (registered in `main.tsx`, PROD only). Same-origin only: navigations/JSON network-first with cache fallback, `/assets/` cache-first; OSM tiles never cached.
 - Bump `CACHE` in `sw.js` when changing caching rules. Playwright config sets `serviceWorkers: 'block'`; `e2e/offline.spec.ts` allows them.
 
+## US-27 incremental live extraction (ADR 0025, Issue #61)
+- `live_update.py --cache data/live_cache`: S2/S1 Parquet + meta.json, via actions/cache (restore on non-push runs, save only when health is ok). Districts whose fields are all cached re-read from `through − 10 d` (`cache_since`/`merge_cached` in `cropews.live`).
+- Default `--n 60`; the stable hash sample keeps the earlier 30 as a subset.
+- To force a full re-read (e.g. after changing scene selection), change the `live-obs-` cache key prefix.
+||||||| f1bdfae
+
 
 ## US-26 stable Live sample (ADR 0015 amended, Issue #59)
 - Live parcels: `stable_sample(parcels, n, "<season>/<season+1>")` (hash of season + field_id), not `sample_fields`, so weekly LWK edits don't swap the monitored fields; forecast log and ntfy topics depend on stable field_ids.
