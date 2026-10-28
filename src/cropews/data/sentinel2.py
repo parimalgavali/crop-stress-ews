@@ -17,6 +17,8 @@ NO_DATA_SCL = 0
 BANDS = ("B02", "B04", "B05", "B08", "B11")
 STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"
 
+READ_ATTEMPTS = 3
+
 
 def reflectance(dn: np.ndarray, processing_baseline: str) -> np.ndarray:
     """Convert L2A digital numbers to reflectance (baseline >= 04.00 adds a -1000 offset)."""
@@ -113,30 +115,37 @@ def extract_field_series(
     rows = []
     for item in sorted(items, key=lambda i: i.datetime):
         baseline = str(item.properties.get("s2:processing_baseline", "00.00"))
-        with rasterio.open(planetary_computer.sign(item.assets["SCL"].href)) as src:
-            local = fields.to_crs(src.crs)
-            local = local.assign(geometry=local.buffer(-inward_buffer_m))
-            local = local[~local.geometry.is_empty]
-            if local.empty:
-                return empty
-            window = from_bounds(*local.total_bounds, transform=src.transform)
-            window = window.round_offsets().round_lengths()
-            scl = src.read(1, window=window, boundless=True, fill_value=NO_DATA_SCL)
-            scl_transform = src.transform
-            transform = src.window_transform(window)
-        refl = {}
-        for band in BANDS:
-            with rasterio.open(planetary_computer.sign(item.assets[band].href)) as src:
-                win = aligned_window(window, scl_transform, src.transform)
-                dn = src.read(
-                    1,
-                    window=win,
-                    out_shape=scl.shape,
-                    boundless=True,
-                    fill_value=0,
-                    resampling=Resampling.average,
-                )
-            refl[band] = reflectance(dn, baseline)
+        for attempt in range(READ_ATTEMPTS):
+            try:
+                with rasterio.open(planetary_computer.sign(item.assets["SCL"].href)) as src:
+                    local = fields.to_crs(src.crs)
+                    local = local.assign(geometry=local.buffer(-inward_buffer_m))
+                    local = local[~local.geometry.is_empty]
+                    if local.empty:
+                        return empty
+                    window = from_bounds(*local.total_bounds, transform=src.transform)
+                    window = window.round_offsets().round_lengths()
+                    scl = src.read(1, window=window, boundless=True, fill_value=NO_DATA_SCL)
+                    scl_transform = src.transform
+                    transform = src.window_transform(window)
+                refl = {}
+                for band in BANDS:
+                    with rasterio.open(planetary_computer.sign(item.assets[band].href)) as src:
+                        win = aligned_window(window, scl_transform, src.transform)
+                        dn = src.read(
+                            1,
+                            window=win,
+                            out_shape=scl.shape,
+                            boundless=True,
+                            fill_value=0,
+                            resampling=Resampling.average,
+                        )
+                    refl[band] = reflectance(dn, baseline)
+                break
+            except rasterio.errors.RasterioIOError as err:
+                print(f"S2 {item.id}: read failed ({attempt + 1}/{READ_ATTEMPTS}): {err}")
+        else:
+            continue  # skip a scene that cannot be read rather than fail the whole run
         for field_id, year, geom in zip(
             local["field_id"], local["year"], local.geometry, strict=False
         ):
