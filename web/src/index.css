@@ -48,3 +48,13 @@ h1 { font-size: 1.3rem; margin: 0; }
   .main { grid-template-columns: 1fr; grid-template-rows: 45vh auto; }
   .panel { border-left: none; border-top: 1px solid #ddd; }
 }
+
+.live-title { font-size: 1.1rem; margin: 0 0 0.4rem; }
+.live-lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.live-lines li { padding: 0.6rem; border: 2px solid #ccc; border-radius: 10px; background: #fafaf7; }
+
+.check-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

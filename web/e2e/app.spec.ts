@@ -77,3 +77,58 @@ test('keyboard only: tab to the field list and the read-aloud button', async ({ 
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: /Listen/ })).toBeFocused()
 })
+
+test('live mode shows current conditions in plain words', async ({ page }) => {
+  await page.route('**/live/latest.json', (r) =>
+    r.fulfill({
+      json: {
+        as_of: '2026-11-01',
+        attribution: 'test',
+        fields: {
+          type: 'FeatureCollection',
+          features: [
+            { type: 'Feature', id: 'LWK-1', geometry: square(8.0), properties: { field_id: 'LWK-1', district: 'Soest', area_ha: 4, declared_crop: 'Mais', level: null } },
+          ],
+        },
+        conditions: {
+          'LWK-1': { s2_date: '2026-10-28', s2_days_ago: 4, ndvi: 0.7, ndvi_change: 0.2, s1_days_ago: 1, vv_change_db: 0.1, rain_30d_mm: 55, tmean_7d_c: 6, tmin_7d_c: 1 },
+        },
+      },
+    }),
+  )
+  await page.goto('/')
+  await page.getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('button', { name: 'Live' }).click()
+  await expect(page.getByTestId('live-date')).toHaveText('1 November')
+  await page.getByLabel('Field', { exact: true }).selectOption('LWK-1')
+  const lines = page.getByTestId('live-lines')
+  await expect(lines).toContainText('Last clear satellite image: 4 days ago')
+  await expect(lines).toContainText('Green crop cover, getting greener')
+  await expect(lines).toContainText('Rain in the last 30 days: 55 mm')
+  await page.getByRole('button', { name: /Listen/ }).click()
+  const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
+  expect(spoken.at(-1)).toMatch(/^en-GB\|Field, Soest\. Last clear satellite image/)
+})
+
+test('check my field: draw corners, then read satellite data for that polygon', async ({ page }) => {
+  await page.route('**/live/latest.json', (r) =>
+    r.fulfill({ json: { as_of: '2026-11-01', attribution: 'test', fields: { type: 'FeatureCollection', features: [] }, conditions: {} } }),
+  )
+  let searched: unknown = null
+  await page.route('https://planetarycomputer.microsoft.com/api/stac/v1/search', (r) => {
+    searched = r.request().postDataJSON()
+    return r.fulfill({ json: { type: 'FeatureCollection', features: [] } })
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('button', { name: 'Live' }).click()
+  await page.getByRole('button', { name: /Check my field/ }).click()
+  const map = page.locator('.map')
+  const box = (await map.boundingBox())!
+  const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2]
+  for (const [dx, dy] of [[0, 0], [60, 0], [0, 60]]) await page.mouse.click(cx + dx, cy + dy)
+  await expect(page.getByTestId('corners')).toHaveText('Corners: 3')
+  await page.getByRole('button', { name: /Done/ }).click()
+  await expect(page.getByRole('alert')).toHaveText('No satellite images found for this field in the last 60 days.')
+  expect((searched as { intersects: { type: string } }).intersects.type).toBe('Polygon')
+})

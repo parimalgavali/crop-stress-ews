@@ -147,8 +147,12 @@ def extract_weather(
     start: str = "01-01",
     end: str = "07-31",
     cache_dir: Path = Path("data/raw/dwd"),
+    ambav: bool = True,
 ) -> pd.DataFrame:
     """One row per (field, day) with DWD 1 km weather at the field's representative point.
+
+    ``ambav=False`` skips ET0 and soil moisture (left NaN): AMBAV is published monthly, so the
+    current month is missing in live runs (ADR 0015).
 
     The window starts on 1 January by default so cumulative features (rain deficit, GDD)
     have a lead-in before predictions start on 1 April.
@@ -176,7 +180,7 @@ def extract_weather(
     index = {d: i for i, d in enumerate(days)}
     for col, (product, scale) in AMBAV.items():
         values = np.full((len(days), n), np.nan)
-        for month in range(first.month, last.month + 1):
+        for month in range(first.month, last.month + 1) if ambav else []:
             tgz = fetch(ambav_url(product, year, month), cache_dir / product)
             for day, v in read_ascii_month(tgz, xs, ys, scale).items():
                 if day in index:
