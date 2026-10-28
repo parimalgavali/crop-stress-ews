@@ -86,6 +86,13 @@ def main() -> None:
             auc = float(roc_auc_score(part[target], prob))
             print(f"{s}: AUROC {auc:.3f}\n{table.round(2).to_string(index=False)}")
             out[s] = {"auroc": auc, "per_district": table.to_dict(orient="records")}
+            if s == "test":
+                flagged = part.assign(flag=prob >= 0.5)
+                mix = flagged.groupby("EC_hcat_n")["flag"].agg(["size", "sum"])
+                mix = mix.rename(columns={"size": "parcels", "sum": "flagged"})
+                mix = mix.sort_values("parcels", ascending=False).head(10)
+                print(f"test parcels flagged as {target} by declared crop:\n{mix.to_string()}")
+                out["test_flagged_by_crop"] = mix.reset_index().to_dict(orient="records")
         report[target] = out
         save_model(args.models / f"cropmap_{target}.joblib", fitted[best], cols, 0.5)
     args.out.parent.mkdir(parents=True, exist_ok=True)
