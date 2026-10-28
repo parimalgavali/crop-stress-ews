@@ -1,4 +1,10 @@
-import type { Conditions, Forecast, Scoreboard, WinterCheck } from "./api";
+import type {
+  Conditions,
+  Forecast,
+  Scoreboard,
+  SeriesPoint,
+  WinterCheck,
+} from "./api";
 import { formatDate, type Lang } from "./i18n";
 
 export type Greenness = "bare" | "some" | "green";
@@ -18,6 +24,10 @@ export const radarChanged = (db: number | null | undefined) =>
   db != null && Math.abs(db) >= 2;
 
 export const WET_5D_MM = 20;
+
+export type Compare = "above" | "same" | "below";
+/** NDVI gap to the peer median that counts as a difference (same scale as ``trend``). */
+export const COMPARE_NDVI = 0.05;
 
 const T = {
   en: {
@@ -69,6 +79,17 @@ const T = {
       "No internet. Showing the last saved data; map background and Check my field need internet.",
     stale: (d: number) =>
       `This data is ${d} days old. The last update may have failed; it is retried every 5 days.`,
+    chartTitle: "Greenness since 1 October",
+    chartField: "This field",
+    chartPeers: (cereal: boolean) =>
+      cereal ? "Neighbouring winter cereal fields" : "Other monitored fields nearby",
+    chartSummary: (n: number, from: string, to: string) =>
+      `Greenness since 1 October: from ${from} to ${to}, on ${n} clear satellite images`,
+    chartCompare: {
+      above: "greener than the neighbours",
+      same: "about as green as the neighbours",
+      below: "less green than the neighbours",
+    } as Record<Compare, string>,
     alert:
       "Get a message when this field turns red (free ntfy app, no sign-up)",
   },
@@ -76,6 +97,17 @@ const T = {
     live: "Aktuell",
     asOf: "Daten vom",
     title: "Zustand jetzt",
+    chartTitle: "Pflanzengrün seit 1. Oktober",
+    chartField: "Dieses Feld",
+    chartPeers: (cereal: boolean) =>
+      cereal ? "Benachbarte Wintergetreide-Felder" : "Andere beobachtete Felder in der Nähe",
+    chartSummary: (n: number, from: string, to: string) =>
+      `Pflanzengrün seit 1. Oktober: von ${from} auf ${to}, auf ${n} klaren Satellitenbildern`,
+    chartCompare: {
+      above: "grüner als die Nachbarn",
+      same: "etwa so grün wie die Nachbarn",
+      below: "weniger grün als die Nachbarn",
+    } as Record<Compare, string>,
     alert:
       "Nachricht erhalten, wenn dieses Feld rot wird (kostenlose ntfy-App, ohne Anmeldung)",
     springNote:
@@ -224,4 +256,31 @@ export function scoreLine(
   return h && h.scored > 0
     ? s.scoreSome(h.scored, h.red_hits, h.onsets)
     : s.scoreNone;
+}
+
+/** Field vs peer median on the latest peer date at or before the field's last clear image. */
+export function compareToPeers(
+  series: SeriesPoint[],
+  peers: SeriesPoint[] | undefined,
+): Compare | null {
+  const last = series.at(-1);
+  const peer = peers?.filter(([d]) => last && d <= last[0]).at(-1);
+  if (!last || !peer) return null;
+  const gap = last[1] - peer[1];
+  return gap > COMPARE_NDVI ? "above" : gap < -COMPARE_NDVI ? "below" : "same";
+}
+
+/** One sentence for screen readers and read-aloud; null below 2 clear images. */
+export function chartSummary(
+  series: SeriesPoint[] | undefined,
+  peers: SeriesPoint[] | undefined,
+  lang: Lang,
+): string | null {
+  if (!series || series.length < 2) return null;
+  const t = T[lang];
+  const fmt = (v: number) =>
+    lang === "de" ? v.toFixed(2).replace(".", ",") : v.toFixed(2);
+  const base = t.chartSummary(series.length, fmt(series[0][1]), fmt(series.at(-1)![1]));
+  const cmp = compareToPeers(series, peers);
+  return cmp ? `${base}; ${t.chartCompare[cmp]}` : base;
 }

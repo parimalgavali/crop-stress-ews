@@ -148,3 +148,25 @@ def test_merge_cached_keeps_old_rows_and_lets_new_rows_win():
         old2, new, {"a"}, date(2026, 10, 1), date(2026, 11, 25), ["field_id", "date"]
     )
     assert out2["ndvi"].tolist() == [0.1, 0.2, 0.3]
+
+
+def test_season_series_keeps_clear_dates_since_october_and_peer_medians_with_enough_peers():
+    from cropews.live import season_series
+
+    ids = [f"f{i}" for i in range(6)]
+    rows = []
+    for i, fid in enumerate(ids):
+        rows += [
+            (fid, date(2026, 9, 25), 1.0, 0.9),  # before 1 October
+            (fid, date(2026, 10, 10), 1.0, 0.2 + i / 100),
+            (fid, date(2026, 10, 20), 0.3, 0.9),  # cloudy
+            (fid, date(2026, 10, 28), 1.0 if i < 4 else 0.0, 0.4),
+        ]
+    s2 = pd.DataFrame(rows, columns=["field_id", "date", "clear_fraction", "ndvi"])
+    district = pd.Series("Soest", index=ids)
+    out = season_series(s2, district, set(ids), AS_OF)
+    assert out["fields"]["f0"] == [["2026-10-10", 0.2], ["2026-10-28", 0.4]]
+    assert out["fields"]["f5"] == [["2026-10-10", 0.25]]
+    # 28 Oct has only 4 clear peers, below the minimum of 5
+    assert out["peers"] == {"Soest": [["2026-10-10", 0.225]]}
+    assert season_series(s2, district, set(), AS_OF)["peers"] == {}

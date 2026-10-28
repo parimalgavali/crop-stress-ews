@@ -31,3 +31,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0024](0024-installable-offline.md) | Installable web app: manifest and service worker with last-data fallback | Accepted |
 | [0025](0025-incremental-live.md) | Incremental live extraction (observation cache) and 60 fields per district | Accepted |
 | [0026](0026-yearly-retraining.md) | Yearly champion/challenger retraining of the Live risk model | Accepted |
+| [0027](0027-season-chart.md) | Season greenness chart on Live cards: field vs district peer median since 1 October | Accepted |

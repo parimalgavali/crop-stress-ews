@@ -127,3 +127,8 @@ How it works:
 ## US-26 stable Live sample (ADR 0015 amended, Issue #59)
 - Live parcels: `stable_sample(parcels, n, "<season>/<season+1>")` (hash of season + field_id), not `sample_fields`, so weekly LWK edits don't swap the monitored fields; forecast log and ntfy topics depend on stable field_ids.
 - The 28 Oct 2026 deploy used the old sample; the next live run switches once to the new one.
+
+## US-30 season chart (ADR 0027, Issue #67)
+- `latest.json` has `season` = {fields: id -> [[date, ndvi]], peers: district -> [[date, median]], peer_kind}; built by `cropews.live.season_series` (clear ≥ 0.8, since 1 Oct, ≥ 5 peers per date).
+- Web: `components/SeasonChart.tsx`; `chartSummary`/`compareToPeers` in `live.ts` give the accessible name and read-aloud sentence.
+- Research list for next stories (Oct 2026): satellite photo of the field, DWD phenology growth stage, GD NRW BK50 soil (dl-de/by-2.0) as a tested feature, Open-Meteo soil moisture as a tested feature, "I checked it" feedback, axe/Lighthouse in CI. Not doing: disease models (ISIP/ProgPuc exist, no labels), spray advice.

@@ -93,6 +93,11 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
         conditions: {
           'LWK-1': { s2_date: '2026-10-28', s2_days_ago: 4, ndvi: 0.7, ndvi_change: 0.2, s1_days_ago: 1, vv_change_db: 0.1, rain_30d_mm: 55, tmean_7d_c: 6, tmin_7d_c: 1 },
         },
+        season: {
+          fields: { 'LWK-1': [['2026-10-08', 0.5], ['2026-10-28', 0.7]] },
+          peers: { Soest: [['2026-10-08', 0.45], ['2026-10-28', 0.5]] },
+          peer_kind: 'all',
+        },
       },
     }),
   )
@@ -105,9 +110,11 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await expect(lines).toContainText('Last clear satellite image: 4 days ago')
   await expect(lines).toContainText('Green crop cover, getting greener')
   await expect(lines).toContainText('Rain in the last 30 days: 55 mm')
+  await expect(page.getByRole('img', { name: /greener than the neighbours/ })).toBeVisible()
   await page.getByRole('button', { name: /Listen/ }).click()
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
   expect(spoken.at(-1)).toMatch(/^en-GB\|Field, Soest\. Last clear satellite image/)
+  expect(spoken.at(-1)).toContain('Greenness since 1 October: from 0.50 to 0.70')
 })
 
 test('check my field: draw corners, then read satellite data for that polygon', async ({ page }) => {

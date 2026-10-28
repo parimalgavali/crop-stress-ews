@@ -245,6 +245,9 @@ export default function App() {
                   }
                   notice={[offline, stale].filter(Boolean).join(" ") || null}
                   winter={live.winter?.[liveField.properties.field_id]}
+                  series={live.season?.fields[liveField.properties.field_id]}
+                  peers={live.season?.peers[liveField.properties.district]}
+                  peerKind={live.season?.peer_kind}
                 />
               </>
             ) : (

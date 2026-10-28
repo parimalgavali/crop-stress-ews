@@ -33,6 +33,7 @@ from cropews.live import (
     live_payload,
     merge_cached,
     run_health,
+    season_series,
 )
 from cropews.live_risk import load_bundle, score_live, spring_active
 from cropews.winter import live_winter
@@ -151,9 +152,14 @@ def main() -> None:
         ids = scored.set_index("field_id")["district"]
         risk, rows = score_live(bundle, ids, s2, s1, daily, args.as_of)
     winter = {}
+    cereals = fields.iloc[:0]
     if wheat_p is not None:
         cereals = fields[fields["field_id"].map(wheat_p).fillna(0) >= WHEAT_THRESHOLD]
         winter = live_winter(s2, s1, daily, cereals.set_index("field_id")["district"], args.as_of)
+    district = fields.set_index("field_id")["district"]
+    peer_ids = set(cereals["field_id"]) if wheat_p is not None else set(district.index)
+    season_chart = season_series(s2, district, peer_ids, args.as_of)
+    season_chart["peer_kind"] = "cereal" if wheat_p is not None else "all"
     payload = live_payload(
         fields,
         cond,
@@ -164,6 +170,7 @@ def main() -> None:
         risk,
         rows,
         winter,
+        season_chart,
     )
 
     payload["health"] = run_health(
