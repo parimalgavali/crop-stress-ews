@@ -24,3 +24,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0018](0018-winter-wheat-map.md) | In-season winter-wheat map from Oct–Mar Sentinel-1/2, held-out 2024 | Proposed |
 | [0019](0019-weather-forecast.md) | 5-day DWD ICON forecast shown on Live cards, evaluated but not a model input | Accepted |
 | [0020](0020-forecast-log.md) | Prospective forecast log on the forecast-log branch, scored after the window | Accepted |
+| [0021](0021-live-spring-risk.md) | Live spring risk from 5 April, model without AMBAV features | Accepted |

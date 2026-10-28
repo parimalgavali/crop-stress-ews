@@ -120,6 +120,8 @@ def live_payload(
     attribution: str,
     wheat_p: dict[str, float] | None = None,
     forecast: dict[str, dict[str, Any]] | None = None,
+    risk: dict[str, dict[str, Any]] | None = None,
+    forecasts: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """``wheat_p``: field_id -> P(winter wheat) (ADR 0018); ``forecast``: district -> summary
     from :func:`forecast_summary` (ADR 0019)."""
@@ -148,5 +150,7 @@ def live_payload(
         "fields": {"type": "FeatureCollection", "features": features},
         "conditions": {k: v for k, v in cond.items() if k in set(f["field_id"])},
         "forecast": {k: {n: _clean(v) for n, v in d.items()} for k, d in (forecast or {}).items()},
+        "risk": risk or {},
+        "forecasts": forecasts or [],
         "spring_monitoring": sorted(k for k, p in wheat_p.items() if p >= WHEAT_THRESHOLD),
     }

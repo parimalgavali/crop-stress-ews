@@ -42,6 +42,8 @@ jobs:
           pip install -e ".[extract,model]"
           # Crop-map model (ADR 0018), published as a release asset; Live runs without it if absent.
           gh release download cropmap-v1 -p "cropmap_y_wheat_*.joblib" -D models || true
+          # Spring risk model (ADR 0021); used from 5 April only.
+          gh release download risk-v1 -p risk_live.joblib -D models || true
           mkdir -p data/raw/lwk data/raw/vg2500
           curl -sfL -o data/raw/lwk.zip https://www.opengeodata.nrw.de/produkte/umwelt_klima/bodennutzung/landwirtschaft/LWK-TSCHLAG_EPSG25832_Shape.zip
           unzip -q -o data/raw/lwk.zip -d data/raw/lwk
@@ -49,7 +51,7 @@ jobs:
           unzip -q -o data/raw/vg2500.zip -d data/raw/vg2500
           python scripts/live_update.py --lwk data/raw/lwk/V_OD_LWK_TSCHLAG.shp \
             --districts "$(find data/raw/vg2500 -name VG2500_KRS.shp | head -1)" \
-            --cropmap models
+            --cropmap models --risk-model models/risk_live.joblib
       - name: Prospective forecast log (ADR 0020), on the forecast-log branch, never main
         if: github.event_name != 'push'
         continue-on-error: true

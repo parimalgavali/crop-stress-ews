@@ -187,15 +187,24 @@ export default function App() {
           {isLive && liveError && <p role="alert">{l.noLive}</p>}
           {isLive ? (
             liveField && live?.conditions[liveField.properties.field_id] ? (
-              <LiveCard
-                cond={live.conditions[liveField.properties.field_id]}
-                crop={liveField.properties.declared_crop}
-                district={liveField.properties.district}
-                lang={lang}
-                wheatP={liveField.properties.wheat_p}
-                forecast={live.forecast?.[liveField.properties.district]}
-                board={board}
-              />
+              <>
+                {live.risk?.[liveField.properties.field_id] && (
+                  <RiskCard
+                    risk={live.risk[liveField.properties.field_id]}
+                    lang={lang}
+                  />
+                )}
+                <LiveCard
+                  cond={live.conditions[liveField.properties.field_id]}
+                  crop={liveField.properties.declared_crop}
+                  district={liveField.properties.district}
+                  lang={lang}
+                  wheatP={liveField.properties.wheat_p}
+                  forecast={live.forecast?.[liveField.properties.district]}
+                  board={board}
+                  spring={Boolean(live.risk?.[liveField.properties.field_id])}
+                />
+              </>
             ) : (
               <p className="hint">{selected ? s.noData : s.pickHint}</p>
             )
