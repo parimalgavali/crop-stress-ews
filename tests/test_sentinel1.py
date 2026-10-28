@@ -81,3 +81,4 @@ def test_extract_skips_a_scene_that_cannot_be_read(monkeypatch):
     )
     out = extract_backscatter_series(fields, "2026-10-01", "2026-10-02", catalog=catalog)
     assert out.empty and len(calls) == READ_ATTEMPTS
+    assert out.attrs["skipped_scenes"] == ["s1"]

@@ -27,3 +27,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0020](0020-forecast-log.md) | Prospective forecast log on the forecast-log branch, scored after the window | Accepted |
 | [0021](0021-live-spring-risk.md) | Live spring risk from 5 April, model without AMBAV features | Accepted |
 | [0022](0022-alerts-ntfy.md) | Alerts through public ntfy.sh topics per field | Accepted |
+| [0023](0023-pipeline-health.md) | Live pipeline health: health block, pipeline-health issue, stale-data notice | Accepted |

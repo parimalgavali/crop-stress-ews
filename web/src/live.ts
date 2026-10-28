@@ -59,6 +59,8 @@ const T = {
     wheat: (yes: boolean, sure: number) =>
       `${yes ? "Probably winter wheat" : "Probably not winter wheat"} (${sure}% sure, satellite guess)`,
     noLive: "Live data is not available right now.",
+    stale: (d: number) =>
+      `This data is ${d} days old. The last update may have failed; it is retried every 5 days.`,
     alert:
       "Get a message when this field turns red (free ntfy app, no sign-up)",
   },
@@ -103,9 +105,27 @@ const T = {
     wheat: (yes: boolean, sure: number) =>
       `${yes ? "Wahrscheinlich Winterweizen" : "Wahrscheinlich kein Winterweizen"} (zu ${sure} % sicher, Schätzung aus Satellitendaten)`,
     noLive: "Aktuelle Daten sind gerade nicht verfügbar.",
+    stale: (d: number) =>
+      `Diese Daten sind ${d} Tage alt. Die letzte Aktualisierung ist vielleicht fehlgeschlagen; sie wird alle 5 Tage wiederholt.`,
   },
 };
 export const LIVE_STRINGS = T;
+
+/** Live data older than this gets a notice; runs are every 5 days (ADR 0023). */
+export const STALE_DAYS = 7;
+
+export function staleNotice(
+  asOf: string,
+  lang: Lang,
+  today: Date = new Date(),
+): string | null {
+  const days = Math.floor(
+    (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) -
+      Date.parse(`${asOf}T00:00:00Z`)) /
+      86_400_000,
+  );
+  return days > STALE_DAYS ? T[lang].stale(days) : null;
+}
 
 export interface Line {
   icon: string;

@@ -113,6 +113,7 @@ def extract_field_series(
     ).items()
 
     rows = []
+    skipped: list[str] = []
     for item in sorted(items, key=lambda i: i.datetime):
         baseline = str(item.properties.get("s2:processing_baseline", "00.00"))
         for attempt in range(READ_ATTEMPTS):
@@ -145,6 +146,7 @@ def extract_field_series(
             except rasterio.errors.RasterioIOError as err:
                 print(f"S2 {item.id}: read failed ({attempt + 1}/{READ_ATTEMPTS}): {err}")
         else:
+            skipped.append(item.id)
             continue  # skip a scene that cannot be read rather than fail the whole run
         for field_id, year, geom in zip(
             local["field_id"], local["year"], local.geometry, strict=False
@@ -156,6 +158,6 @@ def extract_field_series(
             rows.append(
                 {"field_id": field_id, "year": year, "date": item.datetime.date(), **summary}
             )
-    if not rows:
-        return empty
-    return select_observations(pd.DataFrame(rows), min_coverage)
+    out = select_observations(pd.DataFrame(rows), min_coverage) if rows else empty
+    out.attrs["skipped_scenes"] = skipped  # read by live_update.py for run health
+    return out

@@ -13,6 +13,7 @@ interface Props {
   board?: Scoreboard | null;
   spring?: boolean;
   alertTopic?: string;
+  notice?: string | null;
 }
 
 export function LiveCard({
@@ -25,6 +26,7 @@ export function LiveCard({
   board,
   spring = false,
   alertTopic,
+  notice,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -44,7 +46,7 @@ export function LiveCard({
     window.speechSynthesis.cancel();
     if (speaking) return setSpeaking(false);
     const u = new SpeechSynthesisUtterance(
-      `${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${spring ? "" : l.springNote} ${scoreLine(board, lang)}`,
+      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${spring ? "" : l.springNote} ${scoreLine(board, lang)}`,
     );
     u.lang = lang === "de" ? "de-DE" : "en-GB";
     u.rate = 0.9;

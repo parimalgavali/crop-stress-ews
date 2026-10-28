@@ -99,3 +99,8 @@ How it works:
   earlier same-orbit views. `geotiff` 2.1.3 (MIT) for range reads; own UTM projection tested
   against pyproj.
 - Drawn fields: NRW extent of the LWK parcels, 0.5–500 ha; a real check took about 10 s.
+
+## US-23 pipeline health (ADR 0023, Issue #52)
+- `latest.json` has a `health` block (parcels, with_data, skipped S1/S2 scenes, minutes).
+- Scheduled/manual runs: `scripts/check_live_health.py` + live step outcome decide `healthy`. Unhealthy runs open or comment on a `pipeline-health` issue, redeploy the previous `latest.json` and skip the forecast log and alerts; the next healthy run closes the issue.
+- The UI shows a stale-data notice (EN/DE, read aloud) when `as_of` is more than `STALE_DAYS` = 7 days old.

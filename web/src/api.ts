@@ -152,6 +152,7 @@ export interface LiveSeason {
   conditions: Record<string, Conditions>
   forecast?: Record<string, Forecast>
   risk?: Record<string, FieldRisk>
+  health?: { parcels: number; with_data: number; s1_scenes_skipped: string[]; s2_scenes_skipped: string[]; minutes: number }
 }
 
 export interface Forecast {
