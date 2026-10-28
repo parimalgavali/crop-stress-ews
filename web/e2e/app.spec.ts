@@ -109,3 +109,26 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
   expect(spoken.at(-1)).toMatch(/^en-GB\|Field, Soest\. Last clear satellite image/)
 })
+
+test('check my field: draw corners, then read satellite data for that polygon', async ({ page }) => {
+  await page.route('**/live/latest.json', (r) =>
+    r.fulfill({ json: { as_of: '2026-11-01', attribution: 'test', fields: { type: 'FeatureCollection', features: [] }, conditions: {} } }),
+  )
+  let searched: unknown = null
+  await page.route('https://planetarycomputer.microsoft.com/api/stac/v1/search', (r) => {
+    searched = r.request().postDataJSON()
+    return r.fulfill({ json: { type: 'FeatureCollection', features: [] } })
+  })
+  await page.goto('/')
+  await page.getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('button', { name: 'Live' }).click()
+  await page.getByRole('button', { name: /Check my field/ }).click()
+  const map = page.locator('.map')
+  const box = (await map.boundingBox())!
+  const [cx, cy] = [box.x + box.width / 2, box.y + box.height / 2]
+  for (const [dx, dy] of [[0, 0], [60, 0], [0, 60]]) await page.mouse.click(cx + dx, cy + dy)
+  await expect(page.getByTestId('corners')).toHaveText('Corners: 3')
+  await page.getByRole('button', { name: /Done/ }).click()
+  await expect(page.getByRole('alert')).toHaveText('No satellite images found for this field in the last 60 days.')
+  expect((searched as { intersects: { type: string } }).intersects.type).toBe('Polygon')
+})

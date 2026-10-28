@@ -67,9 +67,6 @@ How it works:
 ## Open questions / next steps
 
 - W9 live season (Issues #34–#40): US-15 live pipeline done (ADR 0015). Next: US-16 winter checks (emergence, waterlogging), US-17 check my field, US-18 in-season winter-wheat mapping (needed before 5 April 2027), US-19 forecast weather, US-20 prospective forecast log, US-21 alerts. LWK `TSCHLAG` = current declared parcels (dl-de/by-2-0); HYRAS current-year file is updated daily; AMBAV is monthly.
-
-||||||| 86e1826
-
 - US-16 winter checks (Issue #35, ADR 0016, [winter_checks.md](winter_checks.md)): extractors take `--window winter` (1 Oct – 31 Mar, `_winter` files in `data/interim/s2w`, `s1w`). Emergence peer-z flag: spring event rate 0.43–0.69 flagged vs 0.12–0.19 others, AUROC 0.69–0.75, but fails in test 2024 (0.56; cloudy winter, problems came in spring). Waterlogging = VV drop ≥ 3 dB after ≥ 20 mm/7 d rain; flags 124/240 fields in winter 2023/24 vs 28/240 in 2021/22, but does not predict which field gets a spring event. Live use waits on US-18 (which current parcels are winter cereals).
 - US-18 winter-wheat map (Issue #37, ADR 0018, [winter_wheat_map.md](winter_wheat_map.md)): training population = arable Europe-LAND parcels (`ARABLE_CROP_CODES`, matches LWK `ARABLE_USES`), files in `data/interim/s1wa`, `s2wa` with `crops_*.parquet`. One model per cutoff (1 Dec/1 Feb/1 Apr) because a full-winter model collapses to p≈0 before April. Test 2024 at 1 Apr: wheat AUROC 0.86 but recall 0.54 (late sowing after wet autumn 2023), winter cereal AUROC 0.92; 2025: 0.92/0.94. Model bundles are joblib files in `/models/` (ignored), published as release asset `cropmap-v1`; Pages workflow downloads them and passes `--cropmap models`. No guess before 1 Dec. S1 winter extraction ≈1 h per district-season.
 - US-19 weather forecast (Issue #38, ADR 0019, [weather_forecast.md](weather_forecast.md)): DWD ICON via Open-Meteo (CC BY 4.0, CORS, non-commercial free tier). Archived runs with lead time only from Feb 2024. Perfect-forecast features add nothing on 2022, so the risk model is unchanged; the forecast is display context only (`forecast[district]` in `latest.json`). Archive cached in `data/interim/forecast/icon_<district>_<year>.parquet`.
@@ -87,3 +84,14 @@ How it works:
 - User stories are GitHub Issues (label `user-story`, milestones W1–W8), each linked to its branch and PR.
 - District yields: Landesdatenbank NRW table 41241-03i (open CSV, dl-de/by-2-0), no account needed.
 - YieldSAT access, licence and whether its German wheat fields are in NRW.
+
+## US-17 check my field (ADR 0017)
+
+- Browser-only: Planetary Computer STAC search, SAS token and S2/S1 COG blobs allow CORS `*`
+  (checked 2026-10-28); DWD opendata does not, so weather comes from the nearest monitored field
+  within 15 km of `live/latest.json`.
+- `web/src/checkField.ts` mirrors `cropews.live`: S2 SCL 4/5 ≥ 0.8 clear, NDVI on a 20 m grid with
+  the baseline-04.00 offset, change against a clear view ≥ 20 days earlier; S1 VV dB change vs
+  earlier same-orbit views. `geotiff` 2.1.3 (MIT) for range reads; own UTM projection tested
+  against pyproj.
+- Drawn fields: NRW extent of the LWK parcels, 0.5–500 ha; a real check took about 10 s.

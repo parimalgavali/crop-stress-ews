@@ -31,14 +31,18 @@ interface Props {
   fields: FieldCollection | null
   selected: string | null
   onSelect: (fieldId: string) => void
+  draft?: [number, number][] | null
+  onMapClick?: (lngLat: [number, number]) => void
 }
 
-export function MapView({ fields, selected, onSelect }: Props) {
+export function MapView({ fields, selected, onSelect, draft, onMapClick }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const fitted = useRef(false)
   const onSelectRef = useRef(onSelect)
   onSelectRef.current = onSelect
+  const onMapClickRef = useRef(onMapClick)
+  onMapClickRef.current = onMapClick
 
   useEffect(() => {
     if (!container.current) return
@@ -62,7 +66,18 @@ export function MapView({ fields, selected, onSelect }: Props) {
         source: 'fields',
         paint: { 'line-color': '#000', 'line-width': ['case', ['==', ['id'], ''], 4, 1] },
       })
+      m.addSource('draft', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+      m.addLayer({ id: 'draft-line', type: 'line', source: 'draft', paint: { 'line-color': '#1565c0', 'line-width': 3 } })
+      m.addLayer({
+        id: 'draft-points',
+        type: 'circle',
+        source: 'draft',
+        filter: ['==', ['geometry-type'], 'Point'],
+        paint: { 'circle-radius': 6, 'circle-color': '#1565c0' },
+      })
+      m.on('click', (e) => onMapClickRef.current?.([e.lngLat.lng, e.lngLat.lat]))
       m.on('click', 'fields-fill', (e) => {
+        if (onMapClickRef.current) return
         const id = e.features?.[0]?.properties?.field_id
         if (typeof id === 'string') onSelectRef.current(id)
       })
@@ -108,6 +123,17 @@ export function MapView({ fields, selected, onSelect }: Props) {
       1,
     ])
   }, [selected])
+
+  useEffect(() => {
+    const src = map.current?.getSource('draft') as maplibregl.GeoJSONSource | undefined
+    if (!src) return
+    const pts = draft ?? []
+    const features: GeoJSON.Feature[] = pts.map((p) => ({ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: p } }))
+    if (pts.length > 1)
+      features.push({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [...pts, pts[0]] } })
+    src.setData({ type: 'FeatureCollection', features })
+    map.current!.getCanvas().style.cursor = onMapClick ? 'crosshair' : ''
+  }, [draft, onMapClick])
 
   return <div ref={container} className="map" role="img" aria-label="Map of wheat fields coloured by risk" />
 }
