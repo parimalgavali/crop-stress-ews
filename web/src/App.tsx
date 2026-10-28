@@ -21,6 +21,20 @@ import { LIVE_STRINGS, staleNotice } from "./live";
 const YEARS = [2024, 2025];
 const RANK: Record<Level, number> = { green: 0, amber: 1, red: 2 };
 
+function useOnline(): boolean {
+  const [online, setOnline] = useState(navigator.onLine);
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine);
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, []);
+  return online;
+}
+
 export default function App() {
   const [lang, setLang] = useState<Lang>(
     navigator.language.startsWith("de") ? "de" : "en",
@@ -44,6 +58,8 @@ export default function App() {
   const shown: FieldCollection | null = isLive
     ? (live?.fields ?? null)
     : fields;
+  const online = useOnline();
+  const offline = online ? null : l.offline;
   const stale = isLive && live ? staleNotice(live.as_of, lang) : null;
   const liveField = isLive
     ? live?.fields.features.find((f) => f.properties.field_id === selected)
@@ -227,7 +243,7 @@ export default function App() {
                       ? `cropews-nrw-${liveField.properties.field_id.toLowerCase()}`
                       : undefined
                   }
-                  notice={stale}
+                  notice={[offline, stale].filter(Boolean).join(" ") || null}
                   winter={live.winter?.[liveField.properties.field_id]}
                 />
               </>
@@ -241,6 +257,12 @@ export default function App() {
           )}
         </aside>
       </main>
+
+      {offline && (
+        <p className="hint" role="status" data-testid="offline">
+          <span aria-hidden="true">📵</span> {offline}
+        </p>
+      )}
 
       {isLive ? (
         <footer className="bar timeline">

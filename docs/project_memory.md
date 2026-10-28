@@ -109,3 +109,7 @@ How it works:
 - `live_winter` runs Nov–Mar on crop-map parcels with wheat_p ≥ 0.5 (so from 1 December), writes `latest.json` → `winter[field_id] = {emergence: behind|ok|null, z_ndvi, n_clear, radar_dates, wet_date}`.
 - Live peers: same-district crop-map parcels, `LIVE_MIN_PEERS` = 5; scale `WINTER_NDVI_PEER_STD` = pooled training-winter SD per district (recompute with `emergence_scores`' pooling if training winters change).
 - UI lines: ⚠ behind / ✓ emerged, 💧 standing water on <date> / ✓ none in 30 days (EN/DE, read aloud).
+
+## US-24 installable/offline (ADR 0024, Issue #55)
+- `web/public/manifest.webmanifest` + `web/public/sw.js` (registered in `main.tsx`, PROD only). Same-origin only: navigations/JSON network-first with cache fallback, `/assets/` cache-first; OSM tiles never cached.
+- Bump `CACHE` in `sw.js` when changing caching rules. Playwright config sets `serviceWorkers: 'block'`; `e2e/offline.spec.ts` allows them.

@@ -65,6 +65,8 @@ const T = {
     wet: (date: string) =>
       `Winter check: signs of standing water on ${date}, after heavy rain`,
     dry: "Winter check: no signs of standing water in the last 30 days",
+    offline:
+      "No internet. Showing the last saved data; map background and Check my field need internet.",
     stale: (d: number) =>
       `This data is ${d} days old. The last update may have failed; it is retried every 5 days.`,
     alert:
@@ -117,6 +119,8 @@ const T = {
     wet: (date: string) =>
       `Winter-Check: Anzeichen von stehendem Wasser am ${date}, nach starkem Regen`,
     dry: "Winter-Check: keine Anzeichen von stehendem Wasser in den letzten 30 Tagen",
+    offline:
+      "Kein Internet. Angezeigt werden die zuletzt gespeicherten Daten; Kartenhintergrund und „Mein Feld prüfen“ brauchen Internet.",
     stale: (d: number) =>
       `Diese Daten sind ${d} Tage alt. Die letzte Aktualisierung ist vielleicht fehlgeschlagen; sie wird alle 5 Tage wiederholt.`,
   },
