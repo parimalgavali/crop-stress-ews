@@ -10,6 +10,7 @@ import geopandas as gpd
 import pandas as pd
 from shapely.geometry import mapping
 
+from cropews.cropmap import season_start
 from cropews.static_demo import _round
 
 CLEAR_THRESHOLD = 0.8
@@ -113,6 +114,49 @@ def conditions(
     return {fid: {k: _clean(v) for p in parts for k, v in p.get(fid, {}).items()} for fid in ids}
 
 
+SERIES_MIN_PEERS = 5
+
+
+def season_series(
+    s2: pd.DataFrame,
+    district: pd.Series,
+    peers: set[str],
+    as_of: date,
+    min_peers: int = SERIES_MIN_PEERS,
+) -> dict[str, Any]:
+    """Clear-date NDVI since 1 October per field, and the district median of ``peers`` per date.
+
+    ``district``: field_id -> district for every monitored field. A peer median is only kept on
+    dates with at least ``min_peers`` clear peer fields (ADR 0027).
+    """
+    start = pd.Timestamp(season_start(as_of))
+    d = s2.assign(date=pd.to_datetime(s2["date"]).dt.normalize())
+    d = d[
+        (d["clear_fraction"] >= CLEAR_THRESHOLD)
+        & (d["date"] >= start)
+        & (d["date"] <= pd.Timestamp(as_of))
+        & d["field_id"].isin(district.index)
+    ].dropna(subset=["ndvi"])
+    d = d.assign(district=d["field_id"].map(district))
+    fields = {
+        str(fid): [
+            [t.date().isoformat(), round(float(v), 3)]
+            for t, v in zip(g["date"], g["ndvi"], strict=True)
+        ]
+        for fid, g in d.sort_values("date").groupby("field_id")
+    }
+    p = d[d["field_id"].isin(peers)].groupby(["district", "date"])["ndvi"].agg(["median", "size"])
+    p = p[p["size"] >= min_peers].reset_index().sort_values("date")
+    medians = {
+        str(k): [
+            [t.date().isoformat(), round(float(v), 3)]
+            for t, v in zip(g["date"], g["median"], strict=True)
+        ]
+        for k, g in p.groupby("district")
+    }
+    return {"fields": fields, "peers": medians}
+
+
 def live_payload(
     fields: gpd.GeoDataFrame,
     cond: dict[str, dict[str, Any]],
@@ -123,6 +167,7 @@ def live_payload(
     risk: dict[str, dict[str, Any]] | None = None,
     forecasts: list[dict[str, Any]] | None = None,
     winter: dict[str, dict[str, Any]] | None = None,
+    season: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """``wheat_p``: field_id -> P(winter wheat) (ADR 0018); ``forecast``: district -> summary
     from :func:`forecast_summary` (ADR 0019)."""
@@ -154,6 +199,7 @@ def live_payload(
         "risk": risk or {},
         "forecasts": forecasts or [],
         "winter": winter or {},
+        "season": season or {},
         "spring_monitoring": sorted(k for k, p in wheat_p.items() if p >= WHEAT_THRESHOLD),
     }
 

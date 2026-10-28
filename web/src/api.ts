@@ -153,7 +153,17 @@ export interface LiveSeason {
   forecast?: Record<string, Forecast>
   risk?: Record<string, FieldRisk>
   winter?: Record<string, WinterCheck>
+  season?: SeasonChart
   health?: { parcels: number; with_data: number; s1_scenes_skipped: string[]; s2_scenes_skipped: string[]; minutes: number }
+}
+
+/** [ISO date, NDVI] on clear Sentinel-2 dates since 1 October (ADR 0027). */
+export type SeriesPoint = [string, number]
+
+export interface SeasonChart {
+  fields: Record<string, SeriesPoint[]>
+  peers: Record<string, SeriesPoint[]>
+  peer_kind?: 'cereal' | 'all'
 }
 
 export interface WinterCheck {

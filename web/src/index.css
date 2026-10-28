@@ -58,3 +58,13 @@ h1 { font-size: 1.3rem; margin: 0; }
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+.season-chart { margin: 0.75rem 0; }
+.season-chart figcaption { font-weight: 600; }
+.season-chart svg { width: 100%; max-width: 360px; height: auto; border: 2px solid #ccc; border-radius: 10px; background: #fafaf7; }
+.season-chart path.field { stroke: #1b5e20; stroke-width: 3; }
+.season-chart circle.field { fill: #1b5e20; }
+.season-chart path.peers { stroke: #555; stroke-width: 2; stroke-dasharray: 6 4; }
+.season-chart .legend { margin: 0.25rem 0; }
+.season-chart .key.field { color: #1b5e20; }
+.season-chart .key.peers { color: #555; }

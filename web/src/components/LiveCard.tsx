@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
-import type { Conditions, Forecast, Scoreboard, WinterCheck } from "../api";
+import type {
+  Conditions,
+  Forecast,
+  Scoreboard,
+  SeriesPoint,
+  WinterCheck,
+} from "../api";
 import { STRINGS, type Lang } from "../i18n";
-import { conditionLines, LIVE_STRINGS, scoreLine } from "../live";
+import { chartSummary, conditionLines, LIVE_STRINGS, scoreLine } from "../live";
+import { SeasonChart } from "./SeasonChart";
 
 interface Props {
   cond: Conditions;
@@ -15,6 +22,9 @@ interface Props {
   alertTopic?: string;
   notice?: string | null;
   winter?: WinterCheck;
+  series?: SeriesPoint[];
+  peers?: SeriesPoint[];
+  peerKind?: "cereal" | "all";
 }
 
 export function LiveCard({
@@ -29,10 +39,14 @@ export function LiveCard({
   alertTopic,
   notice,
   winter,
+  series,
+  peers,
+  peerKind,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
   const lines = conditionLines(cond, crop, lang, wheatP, forecast, winter);
+  const chart = chartSummary(series, peers, lang);
   const [speaking, setSpeaking] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -48,7 +62,7 @@ export function LiveCard({
     window.speechSynthesis.cancel();
     if (speaking) return setSpeaking(false);
     const u = new SpeechSynthesisUtterance(
-      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${spring ? "" : l.springNote} ${scoreLine(board, lang)}`,
+      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${scoreLine(board, lang)}`,
     );
     u.lang = lang === "de" ? "de-DE" : "en-GB";
     u.rate = 0.9;
@@ -71,6 +85,12 @@ export function LiveCard({
           </li>
         ))}
       </ul>
+      <SeasonChart
+        series={series}
+        peers={peers}
+        peerKind={peerKind}
+        lang={lang}
+      />
       {!spring && <p className="hint">{l.springNote}</p>}
       {alertTopic && (
         <p>
