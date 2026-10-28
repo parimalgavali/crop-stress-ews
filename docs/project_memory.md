@@ -143,3 +143,6 @@ How it works:
 ## US-33 soil (ADR 0030, Issue #73)
 - `cropews.data.soil` reads GD NRW BK50 per field via WMS GetFeatureInfo (`www.wms.nrw.de/gd/bk050`, layer `Bodentyp`, geo+json): soil type, texture, nFK mm, GW_STUFE, SW_STUFE. Live caches it in `data/live_cache/soil.parquet`; `latest.json.soil[field_id]`.
 - Model-input test `scripts/soil_eval.py`: no gain on 2022 validation for the logistic model (±0.004), +0.02–0.03 on 2025 within CIs, so not adopted. Candidate for the yearly challenger (ADR 0026).
+
+## US-36 accessibility CI (ADR 0033, Issue #79)
+- `web/e2e/a11y.spec.ts`: axe WCAG 2.1 A/AA on replay + Live cards, EN/DE, in the CI Playwright step; map canvas excluded. New dev dependency `@axe-core/playwright` (installed by `npm ci`). Fixed: map container `role="region"`, underlined map credit links. Manual user testing is still needed.
