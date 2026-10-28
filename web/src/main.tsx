@@ -8,3 +8,8 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// Installable and usable offline with the last data (ADR 0024); not in dev, where it would cache HMR.
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => {})
+}

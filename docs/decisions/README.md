@@ -28,3 +28,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0021](0021-live-spring-risk.md) | Live spring risk from 5 April, model without AMBAV features | Accepted |
 | [0022](0022-alerts-ntfy.md) | Alerts through public ntfy.sh topics per field | Accepted |
 | [0023](0023-pipeline-health.md) | Live pipeline health: health block, pipeline-health issue, stale-data notice | Accepted |
+| [0024](0024-installable-offline.md) | Installable web app: manifest and service worker with last-data fallback | Accepted |
