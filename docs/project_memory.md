@@ -118,3 +118,9 @@ How it works:
 - `live_update.py --cache data/live_cache`: S2/S1 Parquet + meta.json, via actions/cache (restore on non-push runs, save only when health is ok). Districts whose fields are all cached re-read from `through − 10 d` (`cache_since`/`merge_cached` in `cropews.live`).
 - Default `--n 60`; the stable hash sample keeps the earlier 30 as a subset.
 - To force a full re-read (e.g. after changing scene selection), change the `live-obs-` cache key prefix.
+||||||| f1bdfae
+
+
+## US-26 stable Live sample (ADR 0015 amended, Issue #59)
+- Live parcels: `stable_sample(parcels, n, "<season>/<season+1>")` (hash of season + field_id), not `sample_fields`, so weekly LWK edits don't swap the monitored fields; forecast log and ntfy topics depend on stable field_ids.
+- The 28 Oct 2026 deploy used the old sample; the next live run switches once to the new one.

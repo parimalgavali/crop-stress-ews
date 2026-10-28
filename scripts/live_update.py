@@ -19,7 +19,7 @@ import requests
 
 from cropews.config import CORE_DISTRICTS, PREDICTION_WINDOW
 from cropews.cropmap import predict, season_start
-from cropews.data.fields import assign_districts, sample_fields
+from cropews.data.fields import assign_districts, stable_sample
 from cropews.data.forecast import live_forecast
 from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
 from cropews.data.sentinel1 import extract_backscatter_series
@@ -120,9 +120,10 @@ def main() -> None:
     started = time.monotonic()
 
     use_map = args.cropmap is not None and args.cropmap.is_dir()
+    season = f"{season_start(args.as_of).year}/{season_start(args.as_of).year + 1}"
     parcels = assign_districts(load_arable_parcels(args.lwk), gpd.read_file(args.districts))
     sets = [
-        sample_fields(parcels[parcels["district"] == d], args.n).assign(district=d)
+        stable_sample(parcels[parcels["district"] == d], args.n, season).assign(district=d)
         for d in CORE_DISTRICTS
     ]
     cache = _load_cache(args.cache)

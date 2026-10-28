@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -59,3 +60,13 @@ def assign_districts(
 
 def sample_fields(fields: gpd.GeoDataFrame, n: int, seed: int = 0) -> gpd.GeoDataFrame:
     return fields.sample(min(n, len(fields)), random_state=seed).reset_index(drop=True)
+
+
+def stable_sample(fields: gpd.GeoDataFrame, n: int, salt: str) -> gpd.GeoDataFrame:
+    """The n parcels with the smallest hash of (salt, field_id).
+
+    Unlike ``sample_fields``, edits elsewhere in the parcel file don't reshuffle the sample:
+    only parcels that disappear drop out (ADR 0015). Salt with the season for a new yearly draw.
+    """
+    key = fields["field_id"].map(lambda f: hashlib.sha256(f"{salt}:{f}".encode()).hexdigest())
+    return fields.loc[key.sort_values(kind="stable").index[:n]].reset_index(drop=True)

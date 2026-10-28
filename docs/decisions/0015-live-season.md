@@ -29,6 +29,10 @@ stress model can't be applied in winter anyway.
 
 ## Consequences
 
-- The sample is redrawn whenever LWK republishes parcels. Stable IDs across years are US-18 work.
+- ~~The sample is redrawn whenever LWK republishes parcels.~~ Amended (US-26, #59): `sample_fields`
+  reshuffled the whole sample after small LWK edits (23 → 27 Oct 2026: ~200 of 173,000 parcels
+  changed, all 30 Soest and Warendorf fields replaced). Live now uses `stable_sample`: per district
+  the n parcels with the smallest sha256 of (season, field_id). Only parcels that disappear drop
+  out, and each season (1 Oct) gets a new draw.
 - Thresholds in the UI wording (greenness < 0.3 bare, < 0.6 some cover; trend ±0.05; radar
   change ≥ 2 dB) are descriptive, not validated alarms.
