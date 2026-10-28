@@ -132,3 +132,6 @@ How it works:
 - `latest.json` has `season` = {fields: id -> [[date, ndvi]], peers: district -> [[date, median]], peer_kind}; built by `cropews.live.season_series` (clear ≥ 0.8, since 1 Oct, ≥ 5 peers per date).
 - Web: `components/SeasonChart.tsx`; `chartSummary`/`compareToPeers` in `live.ts` give the accessible name and read-aloud sentence.
 - Research list for next stories (Oct 2026): satellite photo of the field, DWD phenology growth stage, GD NRW BK50 soil (dl-de/by-2.0) as a tested feature, Open-Meteo soil moisture as a tested feature, "I checked it" feedback, axe/Lighthouse in CI. Not doing: disease models (ISIP/ProgPuc exist, no labels), spray advice.
+
+## US-31 field photo (ADR 0028, Issue #69)
+- Live card button loads the Sentinel-2 TCI (`visual`, 10 m) of the card's `s2_date` from Planetary Computer in the browser, clipped to the field (`web/src/fieldPhoto.ts`, `components/FieldPhoto.tsx`). On request only; not cached offline.

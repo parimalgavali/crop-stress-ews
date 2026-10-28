@@ -6,8 +6,10 @@ import type {
   SeriesPoint,
   WinterCheck,
 } from "../api";
-import { STRINGS, type Lang } from "../i18n";
+import type { Ring } from "../geo";
+import { formatDate, STRINGS, type Lang } from "../i18n";
 import { chartSummary, conditionLines, LIVE_STRINGS, scoreLine } from "../live";
+import { FieldPhoto } from "./FieldPhoto";
 import { SeasonChart } from "./SeasonChart";
 
 interface Props {
@@ -25,6 +27,7 @@ interface Props {
   series?: SeriesPoint[];
   peers?: SeriesPoint[];
   peerKind?: "cereal" | "all";
+  ring?: Ring | null;
 }
 
 export function LiveCard({
@@ -42,6 +45,7 @@ export function LiveCard({
   series,
   peers,
   peerKind,
+  ring,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -91,6 +95,14 @@ export function LiveCard({
         peerKind={peerKind}
         lang={lang}
       />
+      {ring && cond.s2_date && (
+        <FieldPhoto
+          ring={ring}
+          date={cond.s2_date}
+          dateLabel={formatDate(cond.s2_date, lang)}
+          lang={lang}
+        />
+      )}
       {!spring && <p className="hint">{l.springNote}</p>}
       {alertTopic && (
         <p>

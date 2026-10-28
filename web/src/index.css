@@ -68,3 +68,6 @@ h1 { font-size: 1.3rem; margin: 0; }
 .season-chart .legend { margin: 0.25rem 0; }
 .season-chart .key.field { color: #1b5e20; }
 .season-chart .key.peers { color: #555; }
+
+.field-photo { margin: 0.75rem 0; }
+.field-photo canvas { width: 100%; max-width: 360px; height: auto; border: 2px solid #ccc; border-radius: 10px; background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 0 0 / 16px 16px; }
