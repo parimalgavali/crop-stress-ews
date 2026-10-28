@@ -39,13 +39,23 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          pip install -e ".[extract,model]"
           # Last deployed run, to alert only on fields that newly turned red (ADR 0022).
-          curl -sfL -o ../previous.json "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/live/latest.json" || true
+          site="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          curl -sfL -o ../previous.json "$site/live/latest.json" || true
+          # Push deploys reuse the deployed live data, so a red change is only published by a
+          # scheduled or manual run, which also sends its alerts.
+          if [ "${{ github.event_name }}" = push ] && [ -s ../previous.json ]; then
+            mkdir -p web/public/live && cp ../previous.json web/public/live/latest.json
+            curl -sfL -o web/public/live/scoreboard.json "$site/live/scoreboard.json" || rm -f web/public/live/scoreboard.json
+            exit 0
+          fi
+          pip install -e ".[extract,model]"
           # Crop-map model (ADR 0018), published as a release asset; Live runs without it if absent.
           gh release download cropmap-v1 -p "cropmap_y_wheat_*.joblib" -D models || true
           # Spring risk model (ADR 0021); used from 5 April only.
           gh release download risk-v1 -p risk_live.joblib -D models || true
+          # Model files are unpickled, so only use them if they match the pinned checksums.
+          (cd models && sha256sum -c --ignore-missing ../models.sha256) || rm -rf models
           mkdir -p data/raw/lwk data/raw/vg2500
           curl -sfL -o data/raw/lwk.zip https://www.opengeodata.nrw.de/produkte/umwelt_klima/bodennutzung/landwirtschaft/LWK-TSCHLAG_EPSG25832_Shape.zip
           unzip -q -o data/raw/lwk.zip -d data/raw/lwk
@@ -70,7 +80,7 @@ jobs:
               commit -qm "Forecasts issued $(date -u +%FT%TZ)" && git push -q origin forecast-log || true
           fi
       - name: Alerts for fields that turned red (ADR 0022), opt-in ntfy.sh topics
-        if: github.event_name == 'schedule'
+        if: github.event_name != 'push'
         continue-on-error: true
         working-directory: .
         run: |

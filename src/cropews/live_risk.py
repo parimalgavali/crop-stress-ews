@@ -2,25 +2,25 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
 import joblib
 import pandas as pd
 
-from cropews.config import PREDICTION_WINDOW
 from cropews.data.grid import build_grid
 from cropews.explain import contributions, level, top_reasons
 from cropews.features import build_features
+from cropews.labels import SENESCENCE_CUTOFF
 
 SPRING_START = "04-05"
 
 
 def spring_active(as_of: date) -> bool:
-    """Forecasts start on 5 April and stop when the last horizon leaves the label window."""
+    """Forecasts start on 5 April and stop when even the 7-day horizon passes senescence."""
     start = date.fromisoformat(f"{as_of.year}-{SPRING_START}")
-    end = date.fromisoformat(f"{as_of.year}-{PREDICTION_WINDOW[1]}")
+    end = date.fromisoformat(f"{as_of.year}-{SENESCENCE_CUTOFF}") - timedelta(days=7)
     return start <= as_of <= end
 
 
@@ -56,6 +56,7 @@ def score_live(
         }
         for r in last.itertuples(index=False)
     }
+    cutoff = pd.Timestamp(f"{as_of.year}-{SENESCENCE_CUTOFF}")
     rows: list[dict[str, Any]] = []
     for h, b in sorted(bundle["horizons"].items()):
         z = b["model"].decision_function(x).reshape(-1, 1)
@@ -63,6 +64,9 @@ def score_live(
         lvl = level(risk, b["amber"], b["red"])
         reasons = top_reasons(contributions(b["model"], x))
         for i, fid in enumerate(last["field_id"]):
+            # Like the replay export: no outcome label exists past senescence (labels.py).
+            if last["date"].iat[i] + pd.Timedelta(days=int(h)) > cutoff:
+                continue
             r = round(float(risk[i]), 4)
             cards[fid]["horizons"].append(
                 {"days": int(h), "risk": r, "level": str(lvl[i]), "reasons": reasons[i]}
@@ -76,4 +80,4 @@ def score_live(
                     "level": str(lvl[i]),
                 }
             )
-    return cards, rows
+    return {k: c for k, c in cards.items() if c["horizons"]}, rows

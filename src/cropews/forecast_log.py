@@ -38,7 +38,7 @@ def outcomes_long(targets: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFr
 
 
 def scoreboard(log: pd.DataFrame, outcomes: pd.DataFrame, today: date) -> dict[str, Any]:
-    """Per horizon: forecasts scored (window passed and outcome known) vs still pending."""
+    """Per horizon: issued = pending + scored + no_outcome (window passed, no label)."""
     log = log.assign(date=pd.to_datetime(log["date"]), field_id=log["field_id"].astype(str))
     out = outcomes.assign(
         date=pd.to_datetime(outcomes["date"]), field_id=outcomes["field_id"].astype(str)
@@ -54,6 +54,7 @@ def scoreboard(log: pd.DataFrame, outcomes: pd.DataFrame, today: date) -> dict[s
             "issued": int(len(g)),
             "pending": int((~due[g.index]).sum()),
             "scored": int(len(s)),
+            "no_outcome": int(due[g.index].sum() - len(s)),
             "onsets": int(y.sum()),
             "auroc": round(float(roc_auc_score(y, s["risk"])), 3) if both else None,
             "red_hits": int((red & (y == 1)).sum()),
