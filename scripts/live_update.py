@@ -59,11 +59,11 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=len(CORE_DISTRICTS))
     parser.add_argument("--out", type=Path, default=Path("web/public/live/latest.json"))
     parser.add_argument(
-        "--cropmap", type=Path, help="models/cropmap_y_wheat.joblib; images from 1 Oct (ADR 0018)"
+        "--cropmap", type=Path, help="directory with cropmap_y_wheat_<cutoff>.joblib (ADR 0018)"
     )
     args = parser.parse_args()
 
-    use_map = args.cropmap is not None and args.cropmap.exists()
+    use_map = args.cropmap is not None and args.cropmap.is_dir()
     parcels = assign_districts(load_arable_parcels(args.lwk), gpd.read_file(args.districts))
     sets = [
         sample_fields(parcels[parcels["district"] == d], args.n).assign(district=d)
@@ -73,7 +73,7 @@ def main() -> None:
         results = list(pool.map(_district, [(f, args.as_of, args.days, use_map) for f in sets]))
     s2, s1, daily = (pd.concat([r[i] for r in results], ignore_index=True) for i in range(3))
     fields = gpd.GeoDataFrame(pd.concat(sets, ignore_index=True), crs=parcels.crs)
-    wheat_p = predict(args.cropmap, s1, s2) if use_map else None
+    wheat_p = predict(args.cropmap, args.as_of, s1, s2) if use_map else None
     cond = conditions(s2, s1, daily, args.as_of)
     payload = live_payload(fields, cond, args.as_of, ATTRIBUTION, wheat_p)
 

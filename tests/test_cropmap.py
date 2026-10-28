@@ -3,7 +3,7 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
-from cropews.cropmap import features, per_group_scores, season_start, targets
+from cropews.cropmap import cutoff_for, features, per_group_scores, season_start, targets
 
 
 def _s1() -> pd.DataFrame:
@@ -63,3 +63,11 @@ def test_targets_and_scores() -> None:
 def test_season_start() -> None:
     assert season_start(date(2026, 11, 3)) == date(2026, 10, 1)
     assert season_start(date(2027, 3, 31)) == date(2026, 10, 1)
+
+
+def test_cutoff_for() -> None:
+    assert cutoff_for(date(2026, 11, 3)) is None
+    assert cutoff_for(date(2026, 12, 5)) == "dec"
+    assert cutoff_for(date(2027, 2, 10)) == "feb"
+    assert cutoff_for(date(2027, 4, 5)) == "apr"
+    assert cutoff_for(date(2027, 7, 1)) == "apr"

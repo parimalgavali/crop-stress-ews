@@ -28,7 +28,7 @@ sample (ADR 0015) is a random sample of arable LWK parcels, so most of it is not
   read it aloud. `spring_monitoring` lists parcels with p ≥ 0.5; from 5 April that is the spring
   forecast set.
 - **Model artefact:** the fitted bundle is not committed (`/models/` stays ignored); it is
-  published as release asset `cropmap-v1`, which the Pages workflow downloads. Without it, Live
+  published as release asset `cropmap-v1` (`cropmap_y_wheat_<cutoff>.joblib`), which the Pages workflow downloads. Without it, Live
   runs as before.
 
 ## Consequences
