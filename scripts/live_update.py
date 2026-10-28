@@ -21,7 +21,7 @@ from cropews.config import CORE_DISTRICTS, PREDICTION_WINDOW
 from cropews.cropmap import predict, season_start
 from cropews.data import phenology, soil
 from cropews.data.fields import assign_districts, stable_sample
-from cropews.data.forecast import live_forecast
+from cropews.data.forecast import live_forecast, live_soil_moisture, soil_moisture_features
 from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
 from cropews.data.sentinel1 import extract_backscatter_series
 from cropews.data.sentinel2 import extract_field_series
@@ -100,6 +100,17 @@ def _forecasts(fields: gpd.GeoDataFrame, as_of: date) -> dict[str, dict[str, obj
             out[str(district)] = forecast_summary(live_forecast(c.y, c.x), as_of)
         except (requests.RequestException, RuntimeError, KeyError) as err:
             print(f"forecast {district}: {err}")
+            continue
+        try:
+            sm = soil_moisture_features(live_soil_moisture(c.y, c.x, days=10))
+        except (requests.RequestException, RuntimeError, KeyError) as err:
+            print(f"soil moisture {district}: {err}")
+            continue
+        today = sm[sm["date"] >= pd.Timestamp(as_of)].dropna().head(1)
+        if len(today):
+            out[str(district)]["fc_sm_change_5d"] = round(
+                float(today["sm_root_change_5d"].iloc[0]), 3
+            )
     return out
 
 
