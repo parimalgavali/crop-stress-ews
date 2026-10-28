@@ -11,6 +11,7 @@ import {
 } from "./api";
 import { MapView } from "./components/MapView";
 import { LiveCard } from "./components/LiveCard";
+import { CheckPanel } from "./components/CheckPanel";
 import { RiskCard } from "./components/RiskCard";
 import { formatDate, STRINGS, type Lang } from "./i18n";
 import { LIVE_STRINGS } from "./live";
@@ -33,6 +34,7 @@ export default function App() {
   const [isLive, setIsLive] = useState(false);
   const [live, setLive] = useState<LiveSeason | null>(null);
   const [liveError, setLiveError] = useState(false);
+  const [draft, setDraft] = useState<[number, number][] | null>(null);
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
   const date = dates[dateIdx];
@@ -156,7 +158,15 @@ export default function App() {
       </header>
 
       <main className="main">
-        <MapView fields={shown} selected={selected} onSelect={setSelected} />
+        <MapView
+          fields={shown}
+          selected={selected}
+          onSelect={setSelected}
+          draft={isLive ? draft : null}
+          onMapClick={
+            isLive && draft ? (p) => setDraft([...draft, p]) : undefined
+          }
+        />
         <aside className="panel">
           {error && <p role="alert">Data not reachable.</p>}
           <label className="field-label" htmlFor="field-select">
@@ -178,6 +188,14 @@ export default function App() {
             ))}
           </select>
           {isLive && liveError && <p role="alert">{l.noLive}</p>}
+          {isLive && (
+            <CheckPanel
+              lang={lang}
+              live={live}
+              draft={draft}
+              setDraft={setDraft}
+            />
+          )}
           {isLive ? (
             liveField && live?.conditions[liveField.properties.field_id] ? (
               <LiveCard

@@ -21,5 +21,6 @@
 Add a new numbered record for each decision that changes scope, data, labels, modeling or
 evaluation. Amend the status of superseded records instead of deleting them.
 | [0015](0015-live-season.md) | Live season 2026/27: current conditions for monitored LWK parcels, no winter model scores | Accepted |
+| [0017](0017-check-my-field.md) | Check my field: Sentinel COG reads in the browser, weather from nearest monitored field | Accepted |
 | [0018](0018-winter-wheat-map.md) | In-season winter-wheat map from Oct–Mar Sentinel-1/2, held-out 2024 | Proposed |
 | [0019](0019-weather-forecast.md) | 5-day DWD ICON forecast shown on Live cards, evaluated but not a model input | Accepted |
