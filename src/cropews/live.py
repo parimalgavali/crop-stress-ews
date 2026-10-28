@@ -186,3 +186,38 @@ def health_problem(payload: dict[str, Any] | None) -> str | None:
     if with_data < MIN_DATA_SHARE * parcels:
         return f"only {with_data} of {parcels} parcels have data"
     return None
+
+
+# Incremental extraction (ADR 0025): re-read this many days before the cache's last run, so late
+# scenes and scenes skipped after read errors get another chance.
+CACHE_OVERLAP_DAYS = 10
+
+
+def cache_since(meta: dict[str, Any] | None, ids: set[str], start: date, as_of: date) -> date:
+    """First image date to extract for a district: ``start`` unless the cache covers its fields."""
+    if not meta or not ids <= set(meta.get("fields", [])):
+        return start
+    through = date.fromisoformat(meta["through"])
+    if date.fromisoformat(meta["start"]) > start or through > as_of:
+        return start
+    return max(start, through - timedelta(CACHE_OVERLAP_DAYS))
+
+
+def merge_cached(
+    cached: pd.DataFrame | None,
+    new: pd.DataFrame,
+    ids: set[str],
+    start: date,
+    as_of: date,
+    keys: list[str],
+) -> pd.DataFrame:
+    """Cached rows of these fields within [start, as_of] plus new rows; new rows win on ``keys``."""
+    if cached is None or cached.empty:
+        return new
+    dates = pd.to_datetime(cached["date"])
+    old = cached[cached["field_id"].isin(ids) & (dates >= pd.Timestamp(start))]
+    old = old[pd.to_datetime(old["date"]) <= pd.Timestamp(as_of) + pd.Timedelta(days=1)]
+    out = pd.concat([old, new], ignore_index=True).drop_duplicates(keys, keep="last")
+    out = out.sort_values(keys).reset_index(drop=True)
+    out.attrs = new.attrs
+    return out
