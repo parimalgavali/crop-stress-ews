@@ -113,3 +113,8 @@ How it works:
 ## US-24 installable/offline (ADR 0024, Issue #55)
 - `web/public/manifest.webmanifest` + `web/public/sw.js` (registered in `main.tsx`, PROD only). Same-origin only: navigations/JSON network-first with cache fallback, `/assets/` cache-first; OSM tiles never cached.
 - Bump `CACHE` in `sw.js` when changing caching rules. Playwright config sets `serviceWorkers: 'block'`; `e2e/offline.spec.ts` allows them.
+
+
+## US-26 stable Live sample (ADR 0015 amended, Issue #59)
+- Live parcels: `stable_sample(parcels, n, "<season>/<season+1>")` (hash of season + field_id), not `sample_fields`, so weekly LWK edits don't swap the monitored fields; forecast log and ntfy topics depend on stable field_ids.
+- The 28 Oct 2026 deploy used the old sample; the next live run switches once to the new one.
