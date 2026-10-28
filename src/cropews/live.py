@@ -96,7 +96,10 @@ def live_payload(
     cond: dict[str, dict[str, Any]],
     as_of: date,
     attribution: str,
+    wheat_p: dict[str, float] | None = None,
 ) -> dict[str, Any]:
+    """``wheat_p``: field_id -> probability of winter wheat from the crop map (ADR 0018)."""
+    wheat_p = wheat_p or {}
     f = fields.to_crs(4326).sort_values("field_id")
     features = [
         {
@@ -109,6 +112,7 @@ def live_payload(
                 "area_ha": round(float(r.area_ha), 2),
                 "declared_crop": r.declared_crop,
                 "level": None,
+                "wheat_p": _clean(wheat_p.get(r.field_id)),
             },
         }
         for r in f.itertuples(index=False)
