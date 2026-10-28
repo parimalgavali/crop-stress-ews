@@ -35,7 +35,9 @@ def emergence_scores(
     s2: pd.DataFrame, train_years: Iterable[int], min_peers: int = 8
 ) -> pd.DataFrame:
     """One row per (field, season): median peer z of NDVI over the winter and the flag."""
-    res = peer_residuals(winter_observations(s2), min_peers)
+    # Winter clear dates are sparse, so the scale is pooled over the whole winter per district
+    # instead of per 10-day bin (otherwise many test dates have no fitted scale).
+    res = peer_residuals(winter_observations(s2), min_peers).assign(doy_bin=0)
     scored = score_peer(res, fit_peer_scale(res, train_years))
     out = (
         scored.groupby(["field_id", "year", "district"])

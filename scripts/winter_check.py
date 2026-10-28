@@ -10,8 +10,10 @@ import argparse
 from pathlib import Path
 
 import pandas as pd
+from sklearn.metrics import roc_auc_score
 
 from cropews.config import CORE_DISTRICTS, SPLITS
+from cropews.evaluation import bootstrap_ci
 from cropews.winter import emergence_scores, spring_outcome, summarise
 
 
@@ -34,7 +36,9 @@ def main() -> None:
     for split, years in SPLITS.items():
         part = scores[scores["year"].isin(years)]
         if len(part):
-            rows.append({"split": split, **summarise(part)})
+            part = part.reset_index(drop=True)
+            lo, hi = bootstrap_ci(part, lambda f: float(roc_auc_score(f["y"], -f["z_ndvi"])))
+            rows.append({"split": split, **summarise(part), "auroc_lo": lo, "auroc_hi": hi})
     table = pd.DataFrame(rows)
     print(table.round(2).to_string(index=False))
     print("\nper season (all splits):")
