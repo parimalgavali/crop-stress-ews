@@ -16,7 +16,7 @@ import geopandas as gpd
 import pandas as pd
 import requests
 
-from cropews.config import CORE_DISTRICTS
+from cropews.config import CORE_DISTRICTS, PREDICTION_WINDOW
 from cropews.cropmap import predict, season_start
 from cropews.data.fields import assign_districts, sample_fields
 from cropews.data.forecast import live_forecast
@@ -24,7 +24,8 @@ from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
 from cropews.data.sentinel1 import extract_backscatter_series
 from cropews.data.sentinel2 import extract_field_series
 from cropews.data.weather import extract_weather
-from cropews.live import conditions, forecast_summary, live_payload
+from cropews.live import WHEAT_THRESHOLD, conditions, forecast_summary, live_payload
+from cropews.live_risk import load_bundle, score_live, spring_active
 
 ATTRIBUTION = (
     f"Parcels: {LWK_ATTRIBUTION}. Weather: DWD Climate Data Center, CC BY 4.0. "
@@ -43,6 +44,8 @@ def _district(job: tuple[gpd.GeoDataFrame, date, int, bool]) -> tuple[pd.DataFra
     s1 = extract_backscatter_series(fields, start, as_of.isoformat())
     end = as_of - timedelta(WEATHER_LAG_DAYS)
     first = as_of - timedelta(days)
+    if spring_active(as_of):
+        first = min(first, date.fromisoformat(f"{as_of.year}-{PREDICTION_WINDOW[0]}"))
     frames = []
     for year in range(first.year, end.year + 1):
         lo = max(first, date(year, 1, 1)).strftime("%m-%d")
@@ -73,6 +76,9 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=len(CORE_DISTRICTS))
     parser.add_argument("--out", type=Path, default=Path("web/public/live/latest.json"))
     parser.add_argument(
+        "--risk-model", type=Path, help="risk_live.joblib, spring risk from 5 April (ADR 0021)"
+    )
+    parser.add_argument(
         "--cropmap", type=Path, help="directory with cropmap_y_wheat_<cutoff>.joblib (ADR 0018)"
     )
     args = parser.parse_args()
@@ -89,14 +95,29 @@ def main() -> None:
     fields = gpd.GeoDataFrame(pd.concat(sets, ignore_index=True), crs=parcels.crs)
     wheat_p = predict(args.cropmap, args.as_of, s1, s2) if use_map else None
     cond = conditions(s2, s1, daily, args.as_of)
+    bundle = load_bundle(args.risk_model) if spring_active(args.as_of) else None
+    risk, rows = {}, []
+    if bundle is not None:
+        scored = fields
+        if wheat_p is not None:
+            scored = fields[fields["field_id"].map(wheat_p).fillna(0) >= WHEAT_THRESHOLD]
+        ids = scored.set_index("field_id")["district"]
+        risk, rows = score_live(bundle, ids, s2, s1, daily, args.as_of)
     payload = live_payload(
-        fields, cond, args.as_of, ATTRIBUTION, wheat_p, _forecasts(fields, args.as_of)
+        fields,
+        cond,
+        args.as_of,
+        ATTRIBUTION,
+        wheat_p,
+        _forecasts(fields, args.as_of),
+        risk,
+        rows,
     )
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, separators=(",", ":"), ensure_ascii=False))
     n = len(payload["conditions"])
-    print(f"wrote {args.out}: {len(fields)} parcels, {n} with data, as of {args.as_of}")
+    print(f"wrote {args.out}: {len(fields)} parcels, {n} with data, {len(risk)} scored")
 
 
 if __name__ == "__main__":

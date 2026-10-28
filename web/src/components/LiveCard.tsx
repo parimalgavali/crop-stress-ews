@@ -11,6 +11,7 @@ interface Props {
   wheatP?: number | null;
   forecast?: Forecast;
   board?: Scoreboard | null;
+  spring?: boolean;
 }
 
 export function LiveCard({
@@ -21,6 +22,7 @@ export function LiveCard({
   wheatP,
   forecast,
   board,
+  spring = false,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -40,7 +42,7 @@ export function LiveCard({
     window.speechSynthesis.cancel();
     if (speaking) return setSpeaking(false);
     const u = new SpeechSynthesisUtterance(
-      `${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${l.springNote} ${scoreLine(board, lang)}`,
+      `${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${spring ? "" : l.springNote} ${scoreLine(board, lang)}`,
     );
     u.lang = lang === "de" ? "de-DE" : "en-GB";
     u.rate = 0.9;
@@ -63,7 +65,7 @@ export function LiveCard({
           </li>
         ))}
       </ul>
-      <p className="hint">{l.springNote}</p>
+      {!spring && <p className="hint">{l.springNote}</p>}
       <p className="hint" data-testid="scoreboard">
         {scoreLine(board, lang)}
       </p>

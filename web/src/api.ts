@@ -151,6 +151,7 @@ export interface LiveSeason {
   fields: { type: 'FeatureCollection'; features: { type: 'Feature'; id: string; geometry: GeoJSON.Geometry; properties: LiveFieldProps }[] }
   conditions: Record<string, Conditions>
   forecast?: Record<string, Forecast>
+  risk?: Record<string, FieldRisk>
 }
 
 export interface Forecast {
