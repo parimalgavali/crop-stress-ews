@@ -37,3 +37,12 @@ def test_scoreboard_scores_only_after_the_window(tmp_path) -> None:
     late = scoreboard(log, outcomes, date(2027, 4, 12))["horizons"]["7"]
     assert late["scored"] == 2 and late["auroc"] == 1.0
     assert (late["red_hits"], late["red_false"], late["missed"]) == (1, 0, 0)
+
+
+def test_scoreboard_counts_due_forecasts_without_outcome(tmp_path) -> None:
+    log = append_log(tmp_path / "l.csv", _entries("2027-04-05", 0.9, "red", "t"))
+    targets = pd.DataFrame(
+        {"field_id": ["a"], "date": pd.to_datetime(["2027-04-05"]), "onset_7d": [1]}
+    )
+    h = scoreboard(log, outcomes_long(targets, (7,)), date(2027, 4, 12))["horizons"]["7"]
+    assert (h["issued"], h["pending"], h["scored"], h["no_outcome"]) == (2, 0, 1, 1)

@@ -78,7 +78,8 @@ def _bundle(s2, s1, w) -> dict:
 
 def test_spring_active_window() -> None:
     assert not spring_active(date(2027, 4, 4))
-    assert spring_active(date(2027, 4, 5)) and spring_active(date(2027, 7, 31))
+    assert spring_active(date(2027, 4, 5)) and spring_active(date(2027, 6, 23))
+    assert not spring_active(date(2027, 6, 24))
     assert not spring_active(date(2026, 11, 1))
 
 
@@ -96,3 +97,15 @@ def test_score_live_uses_only_data_up_to_as_of() -> None:
     cut = [d[d["date"] <= pd.Timestamp(as_of)] for d in (s2, s1, w)]
     again, _ = score_live(bundle, districts, *cut, as_of)
     assert again["a"]["horizons"][0]["risk"] == cards["a"]["horizons"][0]["risk"]
+
+
+def test_score_live_drops_horizons_past_senescence() -> None:
+    s2, s1, w = _sources()
+    cards, rows = score_live(
+        _bundle(s2, s1, w), pd.Series("X", index=IDS), s2, s1, w, date(2027, 6, 20)
+    )
+    last = max(pd.Timestamp(c["date"]) for c in cards.values())
+    expect = [h for h in (7, 14, 21) if last + pd.Timedelta(days=h) <= pd.Timestamp("2027-06-30")]
+    assert expect and expect != [7, 14, 21]
+    assert all([h["days"] for h in c["horizons"]] == expect for c in cards.values())
+    assert {r["horizon_days"] for r in rows} == set(expect)

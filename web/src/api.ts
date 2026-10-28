@@ -165,6 +165,7 @@ export interface ScoreHorizon {
   issued: number
   pending: number
   scored: number
+  no_outcome?: number
   onsets: number
   auroc: number | null
   red_hits: number
