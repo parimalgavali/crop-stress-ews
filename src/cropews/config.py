@@ -16,6 +16,8 @@ SPLITS: dict[str, tuple[int, ...]] = {
 }
 
 PREDICTION_WINDOW = ("04-01", "07-31")
+# Sowing to spring restart, from 1 October of the year before harvest (ADR 0016).
+WINTER_WINDOW = ("10-01", "03-31")
 HORIZONS_DAYS: tuple[int, ...] = (7, 14, 21)
 
 CORE_DISTRICTS: tuple[str, ...] = (
