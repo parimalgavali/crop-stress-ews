@@ -111,6 +111,11 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await expect(lines).toContainText('Green crop cover, getting greener')
   await expect(lines).toContainText('Rain in the last 30 days: 55 mm')
   await expect(page.getByRole('img', { name: /greener than the neighbours/ })).toBeVisible()
+  await page.route('https://planetarycomputer.microsoft.com/api/stac/v1/search', (r) =>
+    r.fulfill({ json: { type: 'FeatureCollection', features: [] } }),
+  )
+  await page.getByRole('button', { name: /Show satellite photo/ }).click()
+  await expect(page.getByRole('alert')).toHaveText('No satellite photo found for this date.')
   await page.getByRole('button', { name: /Listen/ }).click()
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
   expect(spoken.at(-1)).toMatch(/^en-GB\|Field, Soest\. Last clear satellite image/)

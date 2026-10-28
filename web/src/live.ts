@@ -90,6 +90,12 @@ const T = {
       same: "about as green as the neighbours",
       below: "less green than the neighbours",
     } as Record<Compare, string>,
+    photoShow: "Show satellite photo of this field",
+    photoLoading: "Loading satellite photo…",
+    photoAlt: (d: string) => `Satellite photo of this field on ${d}, true colours, cut to the field border`,
+    photoCaption: (d: string) => `Satellite photo of ${d} (Copernicus Sentinel-2). Green is crop, brown is bare soil.`,
+    photoNone: "No satellite photo found for this date.",
+    photoError: "The satellite photo could not be loaded. Check the internet connection and try again.",
     alert:
       "Get a message when this field turns red (free ntfy app, no sign-up)",
   },
@@ -108,6 +114,12 @@ const T = {
       same: "etwa so grün wie die Nachbarn",
       below: "weniger grün als die Nachbarn",
     } as Record<Compare, string>,
+    photoShow: "Satellitenfoto dieses Feldes zeigen",
+    photoLoading: "Satellitenfoto wird geladen…",
+    photoAlt: (d: string) => `Satellitenfoto dieses Feldes vom ${d}, echte Farben, auf die Feldgrenze zugeschnitten`,
+    photoCaption: (d: string) => `Satellitenfoto vom ${d} (Copernicus Sentinel-2). Grün ist Bestand, Braun ist offener Boden.`,
+    photoNone: "Für dieses Datum wurde kein Satellitenfoto gefunden.",
+    photoError: "Das Satellitenfoto konnte nicht geladen werden. Bitte Internetverbindung prüfen und erneut versuchen.",
     alert:
       "Nachricht erhalten, wenn dieses Feld rot wird (kostenlose ntfy-App, ohne Anmeldung)",
     springNote:

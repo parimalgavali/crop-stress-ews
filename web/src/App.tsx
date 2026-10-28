@@ -16,6 +16,7 @@ import { LiveCard } from "./components/LiveCard";
 import { CheckPanel } from "./components/CheckPanel";
 import { RiskCard } from "./components/RiskCard";
 import { formatDate, STRINGS, type Lang } from "./i18n";
+import { outerRing } from "./fieldPhoto";
 import { LIVE_STRINGS, staleNotice } from "./live";
 
 const YEARS = [2024, 2025];
@@ -248,6 +249,7 @@ export default function App() {
                   series={live.season?.fields[liveField.properties.field_id]}
                   peers={live.season?.peers[liveField.properties.district]}
                   peerKind={live.season?.peer_kind}
+                  ring={outerRing(liveField.geometry)}
                 />
               </>
             ) : (
