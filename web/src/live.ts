@@ -1,4 +1,4 @@
-import type { Conditions, Forecast, Scoreboard } from "./api";
+import type { Conditions, Forecast, Scoreboard, WinterCheck } from "./api";
 import { formatDate, type Lang } from "./i18n";
 
 export type Greenness = "bare" | "some" | "green";
@@ -59,6 +59,12 @@ const T = {
     wheat: (yes: boolean, sure: number) =>
       `${yes ? "Probably winter wheat" : "Probably not winter wheat"} (${sure}% sure, satellite guess)`,
     noLive: "Live data is not available right now.",
+    behind:
+      "Winter check: crop is behind neighbouring winter cereal fields. Worth a look (poor emergence?)",
+    emerged: "Winter check: crop has come up like neighbouring fields",
+    wet: (date: string) =>
+      `Winter check: signs of standing water on ${date}, after heavy rain`,
+    dry: "Winter check: no signs of standing water in the last 30 days",
     stale: (d: number) =>
       `This data is ${d} days old. The last update may have failed; it is retried every 5 days.`,
     alert:
@@ -105,6 +111,12 @@ const T = {
     wheat: (yes: boolean, sure: number) =>
       `${yes ? "Wahrscheinlich Winterweizen" : "Wahrscheinlich kein Winterweizen"} (zu ${sure} % sicher, Schätzung aus Satellitendaten)`,
     noLive: "Aktuelle Daten sind gerade nicht verfügbar.",
+    behind:
+      "Winter-Check: Bestand liegt hinter benachbarten Wintergetreide-Feldern. Bitte ansehen (schlecht aufgelaufen?)",
+    emerged: "Winter-Check: Bestand ist wie auf den Nachbarfeldern aufgelaufen",
+    wet: (date: string) =>
+      `Winter-Check: Anzeichen von stehendem Wasser am ${date}, nach starkem Regen`,
+    dry: "Winter-Check: keine Anzeichen von stehendem Wasser in den letzten 30 Tagen",
     stale: (d: number) =>
       `Diese Daten sind ${d} Tage alt. Die letzte Aktualisierung ist vielleicht fehlgeschlagen; sie wird alle 5 Tage wiederholt.`,
   },
@@ -139,6 +151,7 @@ export function conditionLines(
   lang: Lang,
   wheatP?: number | null,
   fc?: Forecast,
+  winter?: WinterCheck,
 ): Line[] {
   const s = T[lang];
   const lines: Line[] = [];
@@ -184,6 +197,16 @@ export function conditionLines(
     const sure = Math.round(100 * (yes ? wheatP : 1 - wheatP));
     lines.push({ icon: yes ? "🌾" : "❔", text: s.wheat(yes, sure) });
   }
+  if (winter?.emergence)
+    lines.push(
+      winter.emergence === "behind"
+        ? { icon: "⚠", text: s.behind }
+        : { icon: "✓", text: s.emerged },
+    );
+  if (winter?.wet_date)
+    lines.push({ icon: "💧", text: s.wet(formatDate(winter.wet_date, lang)) });
+  else if (winter && winter.radar_dates > 0)
+    lines.push({ icon: "✓", text: s.dry });
   if (crop) lines.push({ icon: "🌾", text: s.prevCrop(crop) });
   return lines;
 }

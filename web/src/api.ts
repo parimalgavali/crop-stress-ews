@@ -152,7 +152,16 @@ export interface LiveSeason {
   conditions: Record<string, Conditions>
   forecast?: Record<string, Forecast>
   risk?: Record<string, FieldRisk>
+  winter?: Record<string, WinterCheck>
   health?: { parcels: number; with_data: number; s1_scenes_skipped: string[]; s2_scenes_skipped: string[]; minutes: number }
+}
+
+export interface WinterCheck {
+  emergence: 'behind' | 'ok' | null
+  z_ndvi: number | null
+  n_clear: number
+  radar_dates: number
+  wet_date: string | null
 }
 
 export interface Forecast {

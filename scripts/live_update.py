@@ -33,6 +33,7 @@ from cropews.live import (
     run_health,
 )
 from cropews.live_risk import load_bundle, score_live, spring_active
+from cropews.winter import live_winter
 
 ATTRIBUTION = (
     f"Parcels: {LWK_ATTRIBUTION}. Weather: DWD Climate Data Center, CC BY 4.0. "
@@ -115,6 +116,10 @@ def main() -> None:
             scored = fields[fields["field_id"].map(wheat_p).fillna(0) >= WHEAT_THRESHOLD]
         ids = scored.set_index("field_id")["district"]
         risk, rows = score_live(bundle, ids, s2, s1, daily, args.as_of)
+    winter = {}
+    if wheat_p is not None:
+        cereals = fields[fields["field_id"].map(wheat_p).fillna(0) >= WHEAT_THRESHOLD]
+        winter = live_winter(s2, s1, daily, cereals.set_index("field_id")["district"], args.as_of)
     payload = live_payload(
         fields,
         cond,
@@ -124,6 +129,7 @@ def main() -> None:
         _forecasts(fields, args.as_of),
         risk,
         rows,
+        winter,
     )
 
     payload["health"] = run_health(

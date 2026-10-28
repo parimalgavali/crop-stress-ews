@@ -1,6 +1,6 @@
 # 0016 — Winter checks: emergence vs peers and radar waterlogging
 
-Status: Proposed (2026-10-28). Builds on [0010](0010-peer-reference-label.md). Results:
+Status: Accepted (2026-10-28; Live cards added 2026-10-29). Builds on [0010](0010-peer-reference-label.md). Results:
 [winter_checks.md](../winter_checks.md).
 
 ## Context
@@ -22,12 +22,19 @@ heavy autumn rain (autumn 2023 before the wet 2024 harvest).
   the previous 7 days (DWD HYRAS). These thresholds are descriptive, not tuned.
 - **Validation:** IACS has no emergence or flooding records, so both checks are related to the
   ADR 0010 spring stress label of the same field: event rate with vs without the flag and AUROC.
-- **Live use** needs to know which current parcels are winter cereals; that comes with US-18.
-  Until then the Live mode keeps descriptive observations only (ADR 0015).
+- **Live use** (`cropews.winter.live_winter`, November–March): only parcels the crop map
+  (ADR 0018, from 1 December) rates ≥ 0.5 are checked, and only against each other. Peers are the
+  same-district crop-map parcels on the same clear date, with at least `LIVE_MIN_PEERS` = 5
+  (the live sample has ~30 arable parcels per district, so 8 peers would rarely be reached). The
+  scale is the pooled per-district SD from the training winters, stored as
+  `WINTER_NDVI_PEER_STD`. Waterlogging shows the latest wet radar date in the last 30 days.
+  Cards say "winter check" and "worth a look", never a diagnosis.
 
 ## Consequences
 
 - A flag is a "look at this field" hint, not a diagnosis; there is no ground truth for emergence
   or waterlogging in open data.
+- Live peers include crop-map errors (triticale, barley, a few other crops; ADR 0018), and
+  fewer peers make the z noisier than in validation.
 - Part of the emergence signal is a persistent field effect (weak fields stay weak), which is still
   useful because it is observed before 5 April.

@@ -16,7 +16,7 @@
 | [0012](0012-api-and-demo-model.md) | API over precomputed predictions; demo uses calibrated logistic model with contribution-based reasons | Accepted |
 | [0013](0013-one-screen-ui.md) | One-screen accessible UI: React/Vite/MapLibre, symbol+word lights, Web Speech read-aloud | Accepted |
 | [0014](0014-static-pages-demo.md) | Live demo on GitHub Pages from a small precomputed JSON file (exception to the derived-data rule) | Accepted |
-| [0016](0016-winter-checks.md) | Winter checks: emergence vs same-date peers, radar waterlogging after rain | Proposed |
+| [0016](0016-winter-checks.md) | Winter checks: emergence vs same-date peers, radar waterlogging after rain | Accepted |
 
 Add a new numbered record for each decision that changes scope, data, labels, modeling or
 evaluation. Amend the status of superseded records instead of deleting them.

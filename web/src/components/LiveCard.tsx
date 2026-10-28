@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Conditions, Forecast, Scoreboard } from "../api";
+import type { Conditions, Forecast, Scoreboard, WinterCheck } from "../api";
 import { STRINGS, type Lang } from "../i18n";
 import { conditionLines, LIVE_STRINGS, scoreLine } from "../live";
 
@@ -14,6 +14,7 @@ interface Props {
   spring?: boolean;
   alertTopic?: string;
   notice?: string | null;
+  winter?: WinterCheck;
 }
 
 export function LiveCard({
@@ -27,10 +28,11 @@ export function LiveCard({
   spring = false,
   alertTopic,
   notice,
+  winter,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
-  const lines = conditionLines(cond, crop, lang, wheatP, forecast);
+  const lines = conditionLines(cond, crop, lang, wheatP, forecast, winter);
   const [speaking, setSpeaking] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 

@@ -55,3 +55,43 @@ def test_wet_date_needs_drop_and_rain():
     assert w["wet"].sum() == 1 and bool(w.loc[10, "wet"])
     s = wet_summary(w)
     assert s.loc[0, "n_wet"] == 1 and s.loc[0, "n_radar"] == 20
+
+
+def test_live_winter_flags_a_field_behind_its_peers_and_standing_water():
+    from datetime import date
+
+    from cropews.winter import live_winter
+
+    ids = [f"f{i}" for i in range(6)]
+    dates = pd.to_datetime(["2026-12-01", "2026-12-11"])
+    s2 = pd.DataFrame(
+        [
+            {
+                "field_id": f,
+                "year": 2027,
+                "date": d,
+                "clear_fraction": 1.0,
+                "ndvi": 0.2 if f == "f0" else 0.6 + 0.01 * i,
+                "ndmi": 0.1,
+            }
+            for i, f in enumerate(ids)
+            for d in dates
+        ]
+    )
+    s1 = pd.DataFrame(
+        [
+            {"field_id": "f1", "year": 2027, "date": d, "orbit_state": "ascending", "vv_db": v}
+            for d, v in zip(
+                pd.date_range("2026-11-20", periods=4, freq="6D"), [-10, -10, -14, -10], strict=True
+            )
+        ]
+    )
+    daily = pd.DataFrame(
+        {"field_id": "f1", "date": pd.date_range("2026-11-20", "2026-12-15"), "pr_mm": 5.0}
+    )
+    cards = live_winter(s2, s1, daily, pd.Series("Soest", index=ids), date(2026, 12, 15))
+    assert cards["f0"]["emergence"] == "behind"
+    assert cards["f2"]["emergence"] == "ok"
+    assert cards["f1"]["wet_date"] == "2026-12-02"
+    assert cards["f2"]["wet_date"] is None
+    assert live_winter(s2, s1, daily, pd.Series("Soest", index=ids), date(2027, 4, 10)) == {}

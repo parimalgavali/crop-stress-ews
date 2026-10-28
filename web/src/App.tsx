@@ -228,6 +228,7 @@ export default function App() {
                       : undefined
                   }
                   notice={stale}
+                  winter={live.winter?.[liveField.properties.field_id]}
                 />
               </>
             ) : (
