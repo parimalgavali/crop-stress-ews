@@ -139,3 +139,7 @@ How it works:
 ## US-32 nearby growth stage (ADR 0029, Issue #71)
 - `cropews.data.phenology` reads DWD immediate-reporter winter-wheat phases (10 sown, 12 emerged, 15 stem, 18 heading, 21 yellow, 22 ripe, 24 harvest) and the observer list; stage = most advanced reached by ≥ half of observers within 40 km since 1 Sep of the sowing year. `latest.json.phenology[district]`; not a model input.
 - 28 Oct 2026: 24 NRW observers reported this autumn; 2–4 per core district within 40 km, all "emerged".
+
+## US-33 soil (ADR 0030, Issue #73)
+- `cropews.data.soil` reads GD NRW BK50 per field via WMS GetFeatureInfo (`www.wms.nrw.de/gd/bk050`, layer `Bodentyp`, geo+json): soil type, texture, nFK mm, GW_STUFE, SW_STUFE. Live caches it in `data/live_cache/soil.parquet`; `latest.json.soil[field_id]`.
+- Model-input test `scripts/soil_eval.py`: no gain on 2022 validation for the logistic model (±0.004), +0.02–0.03 on 2025 within CIs, so not adopted. Candidate for the yearly challenger (ADR 0026).

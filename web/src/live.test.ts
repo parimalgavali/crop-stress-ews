@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conditionLines, greenness, radarChanged, LIVE_STRINGS, scoreLine, staleNotice, trend } from './live'
+import { conditionLines, greenness, radarChanged, LIVE_STRINGS, scoreLine, soilLine, staleNotice, trend } from './live'
 
 describe('live conditions', () => {
   it('maps numbers to plain words', () => {
@@ -88,5 +88,14 @@ describe('alert text', () => {
     expect(en).toContainEqual({ icon: '🌿', text: 'Winter wheat around here: came up (2 of 3 DWD observers within 40 km, first on 11 October)' })
     const de = conditionLines({}, '', 'de', undefined, undefined, undefined, p)
     expect(de.at(-1)?.text).toMatch(/^Winterweizen in der Umgebung: aufgelaufen \(2 von 3 DWD-Beobachtern/)
+  })
+
+  it('describes the soil in plain words', () => {
+    const soil = { soil_type: 'Pseudogley', texture: 'sandiger Lehm', nfk_mm: 109, gw_level: 0, sw_level: 3 }
+    expect(soilLine(soil, 'en')).toBe('Soil (NRW soil map): Pseudogley, sandiger Lehm · holds a medium amount of water · tends to stay wet after rain')
+    expect(soilLine({ soil_type: 'Gley', nfk_mm: 216, gw_level: 3, sw_level: 0 }, 'de')).toBe('Boden (Bodenkarte NRW): Gley · speichert viel Wasser · Grundwasser nah an der Oberfläche')
+    expect(soilLine({}, 'en')).toBeNull()
+    const lines = conditionLines({}, '', 'en', undefined, undefined, undefined, undefined, soil)
+    expect(lines.some((l) => l.icon === '🟫')).toBe(true)
   })
 })

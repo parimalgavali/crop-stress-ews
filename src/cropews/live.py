@@ -169,6 +169,7 @@ def live_payload(
     winter: dict[str, dict[str, Any]] | None = None,
     season: dict[str, Any] | None = None,
     phenology: dict[str, dict[str, Any]] | None = None,
+    soil: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """``wheat_p``: field_id -> P(winter wheat) (ADR 0018); ``forecast``: district -> summary
     from :func:`forecast_summary` (ADR 0019)."""
@@ -202,6 +203,7 @@ def live_payload(
         "winter": winter or {},
         "season": season or {},
         "phenology": phenology or {},
+        "soil": {k: v for k, v in (soil or {}).items() if k in set(f["field_id"])},
         "spring_monitoring": sorted(k for k, p in wheat_p.items() if p >= WHEAT_THRESHOLD),
     }
 

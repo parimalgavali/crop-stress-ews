@@ -5,6 +5,7 @@ import type {
   SeriesPoint,
   WinterCheck,
   Phenology,
+  Soil,
 } from "./api";
 import { formatDate, type Lang } from "./i18n";
 
@@ -47,6 +48,14 @@ const T = {
       ripe: "ripe",
       harvest: "harvested",
     } as Record<Phenology["stage"], string>,
+    soil: (kind: string) => `Soil (NRW soil map): ${kind}`,
+    holds: {
+      little: "holds little water, dries out fast",
+      medium: "holds a medium amount of water",
+      lots: "holds a lot of water",
+    } as Record<WaterHold, string>,
+    groundwater: "groundwater close to the surface",
+    stauwet: "tends to stay wet after rain",
     pheno: (stage: string, k: number, n: number, d: string, km: number) =>
       `Winter wheat around here: ${stage} (${k} of ${n} DWD observers within ${km} km, first on ${d})`,
     image: (d: number, date: string) =>
@@ -146,6 +155,14 @@ const T = {
       ripe: "reif",
       harvest: "geerntet",
     } as Record<Phenology["stage"], string>,
+    soil: (kind: string) => `Boden (Bodenkarte NRW): ${kind}`,
+    holds: {
+      little: "speichert wenig Wasser, trocknet schnell aus",
+      medium: "speichert mittel viel Wasser",
+      lots: "speichert viel Wasser",
+    } as Record<WaterHold, string>,
+    groundwater: "Grundwasser nah an der Oberfläche",
+    stauwet: "bleibt nach Regen lange nass (Staunässe)",
     pheno: (stage: string, k: number, n: number, d: string, km: number) =>
       `Winterweizen in der Umgebung: ${stage} (${k} von ${n} DWD-Beobachtern im Umkreis von ${km} km, zuerst am ${d})`,
     image: (d: number, date: string) =>
@@ -216,6 +233,27 @@ export interface Line {
 }
 
 /** Plain-language lines for one field; the same lines are read aloud. */
+export type WaterHold = "little" | "medium" | "lots";
+
+/** Available water capacity in the root zone (nFK, mm), in three plain classes (ADR 0030). */
+export function waterHold(nfk: number): WaterHold {
+  return nfk < 90 ? "little" : nfk < 200 ? "medium" : "lots";
+}
+
+export function soilLine(soil: Soil, lang: Lang): string | null {
+  const s = T[lang];
+  const kind = [soil.soil_type, soil.texture].filter(Boolean).join(", ");
+  if (!kind) return null;
+  const notes = [
+    soil.nfk_mm != null ? s.holds[waterHold(soil.nfk_mm)] : null,
+    soil.gw_level != null && soil.gw_level >= 1 && soil.gw_level <= 3
+      ? s.groundwater
+      : null,
+    soil.sw_level != null && soil.sw_level >= 3 ? s.stauwet : null,
+  ].filter((n): n is string => n != null);
+  return [s.soil(kind), ...notes].join(" · ");
+}
+
 export function conditionLines(
   c: Conditions,
   crop: string,
@@ -224,6 +262,7 @@ export function conditionLines(
   fc?: Forecast,
   winter?: WinterCheck,
   pheno?: Phenology,
+  soil?: Soil,
 ): Line[] {
   const s = T[lang];
   const lines: Line[] = [];
@@ -290,6 +329,8 @@ export function conditionLines(
         pheno.radius_km,
       ),
     });
+  const soilText = soil ? soilLine(soil, lang) : null;
+  if (soilText) lines.push({ icon: "🟫", text: soilText });
   if (crop) lines.push({ icon: "🌾", text: s.prevCrop(crop) });
   return lines;
 }

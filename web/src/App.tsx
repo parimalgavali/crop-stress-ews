@@ -251,6 +251,7 @@ export default function App() {
                   peerKind={live.season?.peer_kind}
                   ring={outerRing(liveField.geometry)}
                   pheno={live.phenology?.[liveField.properties.district]}
+                  soil={live.soil?.[liveField.properties.field_id]}
                 />
               </>
             ) : (
