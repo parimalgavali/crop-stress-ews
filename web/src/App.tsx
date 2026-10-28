@@ -186,7 +186,7 @@ export default function App() {
                 district={liveField.properties.district}
                 lang={lang}
                 wheatP={liveField.properties.wheat_p}
-                forecast={live.forecast?.[liveField.properties.district]}
+          forecast={live.forecast?.[liveField.properties.district]}
               />
             ) : (
               <p className="hint">{selected ? s.noData : s.pickHint}</p>

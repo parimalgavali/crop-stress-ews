@@ -12,14 +12,7 @@ interface Props {
   forecast?: Forecast;
 }
 
-export function LiveCard({
-  cond,
-  crop,
-  district,
-  lang,
-  wheatP,
-  forecast,
-}: Props) {
+export function LiveCard({ cond, crop, district, lang, wheatP, forecast }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
   const lines = conditionLines(cond, crop, lang, wheatP, forecast);
