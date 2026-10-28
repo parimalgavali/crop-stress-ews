@@ -31,7 +31,24 @@ seasons only, pooled per district over the winter. AUROC uses the continuous sco
 Wet radar date: VV ≥ 3 dB below the field's winter median (same orbit direction) after ≥ 20 mm of
 rain in the previous 7 days (DWD HYRAS). Thresholds are descriptive, not tuned.
 
-WATERLOG_TABLE
+Fields with at least one wet radar date, 40 fields per district:
+
+| District | Winter 2021/22 (harvest 2022) | Winter 2023/24 (harvest 2024) |
+|---|---|---|
+| Coesfeld | 13 | 34 |
+| Düren | 5 | 24 |
+| Soest | 5 | 25 |
+| Rhein-Erft-Kreis | 3 | 18 |
+| Warendorf | 0 | 13 |
+| Höxter | 2 | 10 |
+| **All** | **28 / 240** | **124 / 240** |
+
+- The check picks up the very wet autumn and winter 2023/24: about 4× more fields with signs of
+  standing water than in 2021/22, in every district.
+- It does **not** predict which field gets a spring stress event: event rate 0.14 with vs 0.10
+  without a wet date in 2024, 0.18 vs 0.15 in 2022 (small, within noise). The spring label compares
+  fields with their neighbours, and when a whole district is wet the peers are wet too.
+- Only two winters were extracted, so no thresholds were tuned and there is no held-out test.
 
 ## Limits
 

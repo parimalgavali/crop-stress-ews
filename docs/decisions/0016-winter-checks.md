@@ -1,7 +1,7 @@
 # 0016 — Winter checks: emergence vs peers and radar waterlogging
 
-Status: Proposed (2026-10-28). Builds on [0010](0010-peer-reference-label.md). Validation numbers are
-filled in from the full six-district run.
+Status: Proposed (2026-10-28). Builds on [0010](0010-peer-reference-label.md). Results:
+[winter_checks.md](../winter_checks.md).
 
 ## Context
 
