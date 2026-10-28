@@ -19,7 +19,7 @@ import requests
 
 from cropews.config import CORE_DISTRICTS, PREDICTION_WINDOW
 from cropews.cropmap import predict, season_start
-from cropews.data import phenology
+from cropews.data import phenology, soil
 from cropews.data.fields import assign_districts, stable_sample
 from cropews.data.forecast import live_forecast
 from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
@@ -42,7 +42,7 @@ from cropews.winter import live_winter
 ATTRIBUTION = (
     f"Parcels: {LWK_ATTRIBUTION}. Weather: DWD Climate Data Center, CC BY 4.0. "
     "Forecast: DWD ICON via Open-Meteo, CC BY 4.0. "
-    f"{phenology.ATTRIBUTION}. Contains modified Copernicus Sentinel data."
+    f"{phenology.ATTRIBUTION}. {soil.ATTRIBUTION}. Contains modified Copernicus Sentinel data."
 )
 WEATHER_LAG_DAYS = 2
 Cache = tuple[dict | None, pd.DataFrame | None, pd.DataFrame | None]
@@ -119,6 +119,26 @@ def _phenology(fields: gpd.GeoDataFrame, as_of: date) -> dict[str, dict[str, obj
     return out
 
 
+def _soils(fields: gpd.GeoDataFrame, cache: Path | None) -> dict[str, dict[str, object]]:
+    """BK50 soil per field (ADR 0030). Soil doesn't change, so only new fields are queried."""
+    known = pd.DataFrame(columns=["field_id"])
+    path = cache / "soil.parquet" if cache is not None else None
+    if path is not None and path.exists():
+        known = pd.read_parquet(path)
+    new = fields[~fields["field_id"].isin(known["field_id"])]
+    if len(new):
+        found = soil.field_soils(new)
+        known = pd.concat([known, found[found["soil_type"].notna()]], ignore_index=True)
+        if path is not None:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            known.to_parquet(path, index=False)
+    rows = known[known["field_id"].isin(fields["field_id"])].set_index("field_id")
+    return {
+        str(k): {c: v for c, v in r.items() if pd.notna(v)}
+        for k, r in rows.to_dict("index").items()
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--lwk", type=Path, required=True, help="V_OD_LWK_TSCHLAG.shp")
@@ -190,6 +210,7 @@ def main() -> None:
         winter,
         season_chart,
         _phenology(fields, args.as_of),
+        _soils(fields, args.cache),
     )
 
     payload["health"] = run_health(

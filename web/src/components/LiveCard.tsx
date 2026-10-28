@@ -3,6 +3,7 @@ import type {
   Conditions,
   Forecast,
   Phenology,
+  Soil,
   Scoreboard,
   SeriesPoint,
   WinterCheck,
@@ -30,6 +31,7 @@ interface Props {
   peerKind?: "cereal" | "all";
   ring?: Ring | null;
   pheno?: Phenology;
+  soil?: Soil;
 }
 
 export function LiveCard({
@@ -49,6 +51,7 @@ export function LiveCard({
   peerKind,
   ring,
   pheno,
+  soil,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -60,6 +63,7 @@ export function LiveCard({
     forecast,
     winter,
     pheno,
+    soil,
   );
   const chart = chartSummary(series, peers, lang);
   const [speaking, setSpeaking] = useState(false);

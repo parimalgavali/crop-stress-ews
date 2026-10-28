@@ -154,6 +154,7 @@ export interface LiveSeason {
   risk?: Record<string, FieldRisk>
   winter?: Record<string, WinterCheck>
   phenology?: Record<string, Phenology>
+  soil?: Record<string, Soil>
   season?: SeasonChart
   health?: { parcels: number; with_data: number; s1_scenes_skipped: string[]; s2_scenes_skipped: string[]; minutes: number }
 }
@@ -173,6 +174,15 @@ export interface WinterCheck {
   n_clear: number
   radar_dates: number
   wet_date: string | null
+}
+
+/** BK50 soil at the field (ADR 0030); levels 0 = none. */
+export interface Soil {
+  soil_type?: string
+  texture?: string
+  nfk_mm?: number
+  gw_level?: number
+  sw_level?: number
 }
 
 /** Winter-wheat stage reported by DWD phenology observers near a district (ADR 0029). */
