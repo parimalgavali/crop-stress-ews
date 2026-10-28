@@ -18,8 +18,8 @@ from sklearn.metrics import roc_auc_score
 from cropews.baselines import logistic_model
 from cropews.config import HORIZONS_DAYS
 from cropews.dataset import load_feature_table
-from cropews.evaluation import threshold_at_specificity
 from cropews.features import feature_columns
+from cropews.retrain import fit_bundle
 
 AMBAV_FEATURES = ("water_balance_30d", "soil_moist_pct")
 
@@ -42,7 +42,6 @@ def main() -> None:
     full = [c for c in feature_columns(data) if not c.startswith("onset_")]
     full = [c for c in full if c not in ("in_event", "split")]
     live = [c for c in full if c not in AMBAV_FEATURES]
-    bundle: dict[str, object] = {"columns": live, "horizons": {}}
     report: dict[str, object] = {}
     for h in HORIZONS_DAYS:
         target = f"onset_{h}d"
@@ -56,16 +55,9 @@ def main() -> None:
                 row[f"{name}/{split}"] = round(
                     float(roc_auc_score(s[target].astype(int), model.decision_function(s[cols]))), 3
                 )
-        risk = platt.predict_proba(model.decision_function(val[cols]).reshape(-1, 1))[:, 1]
-        y = val[target].astype(int).to_numpy()
-        bundle["horizons"][h] = {  # type: ignore[index]
-            "model": model,
-            "platt": platt,
-            "red": threshold_at_specificity(y, risk, 0.90),
-            "amber": threshold_at_specificity(y, risk, 0.75),
-        }
         report[f"{h}d"] = row
         print(f"{h:>2}d", row)
+    bundle = fit_bundle(data[data["split"] == "train"], data[data["split"] == "validation"], live)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(bundle, args.out)
     args.report.parent.mkdir(parents=True, exist_ok=True)

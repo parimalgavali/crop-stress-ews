@@ -30,3 +30,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0023](0023-pipeline-health.md) | Live pipeline health: health block, pipeline-health issue, stale-data notice | Accepted |
 | [0024](0024-installable-offline.md) | Installable web app: manifest and service worker with last-data fallback | Accepted |
 | [0025](0025-incremental-live.md) | Incremental live extraction (observation cache) and 60 fields per district | Accepted |
+| [0026](0026-yearly-retraining.md) | Yearly champion/challenger retraining of the Live risk model | Accepted |
