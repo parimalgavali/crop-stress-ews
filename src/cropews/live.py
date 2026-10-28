@@ -87,6 +87,24 @@ def weather(daily: pd.DataFrame) -> dict[str, dict[str, Any]]:
     return out
 
 
+FORECAST_DAYS = 5
+FROST_C = 0.0
+
+
+def forecast_summary(daily_fc: pd.DataFrame, as_of: date) -> dict[str, Any]:
+    """Rain and lowest temperature over the next ``FORECAST_DAYS`` days after ``as_of`` (ICON)."""
+    d = daily_fc.assign(date=pd.to_datetime(daily_fc["date"]).dt.date)
+    d = d[(d["date"] > as_of) & (d["date"] <= as_of + timedelta(FORECAST_DAYS))]
+    if len(d) < FORECAST_DAYS:
+        return {}
+    return {
+        "fc_to": d["date"].max(),
+        "fc_rain_5d_mm": round(float(d["pr_mm"].sum()), 1),
+        "fc_tmin_5d_c": round(float(d["tasmin_c"].min()), 1),
+        "fc_frost_days": int((d["tasmin_c"] < FROST_C).sum()),
+    }
+
+
 def conditions(
     s2: pd.DataFrame, s1: pd.DataFrame, daily: pd.DataFrame, as_of: date
 ) -> dict[str, dict[str, Any]]:
@@ -101,8 +119,10 @@ def live_payload(
     as_of: date,
     attribution: str,
     wheat_p: dict[str, float] | None = None,
+    forecast: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """``wheat_p``: field_id -> probability of winter wheat from the crop map (ADR 0018)."""
+    """``wheat_p``: field_id -> P(winter wheat) (ADR 0018); ``forecast``: district -> summary
+    from :func:`forecast_summary` (ADR 0019)."""
     wheat_p = wheat_p or {}
     f = fields.to_crs(4326).sort_values("field_id")
     features = [
@@ -127,5 +147,6 @@ def live_payload(
         "attribution": attribution,
         "fields": {"type": "FeatureCollection", "features": features},
         "conditions": {k: v for k, v in cond.items() if k in set(f["field_id"])},
+        "forecast": {k: {n: _clean(v) for n, v in d.items()} for k, d in (forecast or {}).items()},
         "spring_monitoring": sorted(k for k, p in wheat_p.items() if p >= WHEAT_THRESHOLD),
     }

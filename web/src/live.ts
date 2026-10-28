@@ -1,4 +1,4 @@
-import type { Conditions } from "./api";
+import type { Conditions, Forecast } from "./api";
 import { formatDate, type Lang } from "./i18n";
 
 export type Greenness = "bare" | "some" | "green";
@@ -16,6 +16,8 @@ export const trend = (change: number | null | undefined): Trend | null =>
         : "steady";
 export const radarChanged = (db: number | null | undefined) =>
   db != null && Math.abs(db) >= 2;
+
+export const WET_5D_MM = 20;
 
 const T = {
   en: {
@@ -42,6 +44,11 @@ const T = {
     radarChange: "Radar shows a change on the field",
     radarSame: "Radar shows no big change",
     rain: (mm: number) => `Rain in the last 30 days: ${Math.round(mm)} mm`,
+    forecast: (mm: number, tmin: number) =>
+      `Next 5 days (weather forecast): ${Math.round(mm)} mm rain, lowest ${Math.round(tmin)} °C`,
+    forecastWet: "heavy rain expected",
+    forecastFrost: (n: number) =>
+      `frost on ${n} ${n === 1 ? "night" : "nights"}`,
     temp: (m: number, lo: number) =>
       `Last 7 days: ${m.toFixed(0)} °C on average, lowest ${lo.toFixed(0)} °C`,
     frost: "Frost",
@@ -73,6 +80,11 @@ const T = {
     radarChange: "Radar zeigt eine Veränderung auf dem Feld",
     radarSame: "Radar zeigt kaum Veränderung",
     rain: (mm: number) => `Regen in den letzten 30 Tagen: ${Math.round(mm)} mm`,
+    forecast: (mm: number, tmin: number) =>
+      `Nächste 5 Tage (Wettervorhersage): ${Math.round(mm)} mm Regen, tiefstens ${Math.round(tmin)} °C`,
+    forecastWet: "viel Regen erwartet",
+    forecastFrost: (n: number) =>
+      `Frost in ${n} ${n === 1 ? "Nacht" : "Nächten"}`,
     temp: (m: number, lo: number) =>
       `Letzte 7 Tage: im Mittel ${m.toFixed(0)} °C, tiefster Wert ${lo.toFixed(0)} °C`,
     frost: "Frost",
@@ -94,6 +106,7 @@ export function conditionLines(
   crop: string,
   lang: Lang,
   wheatP?: number | null,
+  fc?: Forecast,
 ): Line[] {
   const s = T[lang];
   const lines: Line[] = [];
@@ -120,6 +133,18 @@ export function conditionLines(
     lines.push({
       icon: c.tmin_7d_c < 0 ? "❄" : "🌡",
       text: `${s.temp(c.tmean_7d_c, c.tmin_7d_c)}${c.tmin_7d_c < 0 ? ` · ${s.frost}` : ""}`,
+    });
+  }
+  if (fc) {
+    const notes = [
+      fc.fc_rain_5d_mm >= WET_5D_MM ? s.forecastWet : null,
+      fc.fc_frost_days > 0 ? s.forecastFrost(fc.fc_frost_days) : null,
+    ].filter((n): n is string => n != null);
+    lines.push({
+      icon: fc.fc_frost_days > 0 ? "❄" : "☔",
+      text: [s.forecast(fc.fc_rain_5d_mm, fc.fc_tmin_5d_c), ...notes].join(
+        " · ",
+      ),
     });
   }
   if (wheatP != null) {

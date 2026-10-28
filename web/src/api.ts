@@ -150,6 +150,14 @@ export interface LiveSeason {
   attribution: string
   fields: { type: 'FeatureCollection'; features: { type: 'Feature'; id: string; geometry: GeoJSON.Geometry; properties: LiveFieldProps }[] }
   conditions: Record<string, Conditions>
+  forecast?: Record<string, Forecast>
+}
+
+export interface Forecast {
+  fc_to: string
+  fc_rain_5d_mm: number
+  fc_tmin_5d_c: number
+  fc_frost_days: number
 }
 
 let live: Promise<LiveSeason> | null = null

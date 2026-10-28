@@ -14,19 +14,21 @@ from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
+import requests
 
 from cropews.config import CORE_DISTRICTS
 from cropews.cropmap import predict, season_start
 from cropews.data.fields import assign_districts, sample_fields
+from cropews.data.forecast import live_forecast
 from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
 from cropews.data.sentinel1 import extract_backscatter_series
 from cropews.data.sentinel2 import extract_field_series
 from cropews.data.weather import extract_weather
-from cropews.live import conditions, live_payload
+from cropews.live import conditions, forecast_summary, live_payload
 
 ATTRIBUTION = (
     f"Parcels: {LWK_ATTRIBUTION}. Weather: DWD Climate Data Center, CC BY 4.0. "
-    "Contains modified Copernicus Sentinel data."
+    "Forecast: DWD ICON via Open-Meteo, CC BY 4.0. Contains modified Copernicus Sentinel data."
 )
 WEATHER_LAG_DAYS = 2
 
@@ -47,6 +49,18 @@ def _district(job: tuple[gpd.GeoDataFrame, date, int, bool]) -> tuple[pd.DataFra
         hi = min(end, date(year, 12, 31)).strftime("%m-%d")
         frames.append(extract_weather(fields, year, lo, hi, ambav=False))
     return s2, s1, pd.concat(frames, ignore_index=True)
+
+
+def _forecasts(fields: gpd.GeoDataFrame, as_of: date) -> dict[str, dict[str, object]]:
+    """ICON 5-day summary at each district's field centroid; empty if the service fails."""
+    out: dict[str, dict[str, object]] = {}
+    for district, g in fields.groupby("district"):
+        c = g.to_crs(4326).geometry.union_all().centroid
+        try:
+            out[str(district)] = forecast_summary(live_forecast(c.y, c.x), as_of)
+        except (requests.RequestException, RuntimeError, KeyError) as err:
+            print(f"forecast {district}: {err}")
+    return out
 
 
 def main() -> None:
@@ -75,7 +89,9 @@ def main() -> None:
     fields = gpd.GeoDataFrame(pd.concat(sets, ignore_index=True), crs=parcels.crs)
     wheat_p = predict(args.cropmap, args.as_of, s1, s2) if use_map else None
     cond = conditions(s2, s1, daily, args.as_of)
-    payload = live_payload(fields, cond, args.as_of, ATTRIBUTION, wheat_p)
+    payload = live_payload(
+        fields, cond, args.as_of, ATTRIBUTION, wheat_p, _forecasts(fields, args.as_of)
+    )
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, separators=(",", ":"), ensure_ascii=False))
