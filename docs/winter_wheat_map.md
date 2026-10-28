@@ -51,3 +51,11 @@ silage maize. The cereal model flags 46 of 48 barley, 18 of 22 triticale and 77 
 - For spring monitoring the wheat map is used as specified (p ≥ 0.5). Because recall can drop
   to about 0.5 in wet autumns, the forecast log (US-20) should also record the cereal map, and
   the set should be checked against the declarations when they are published in May.
+
+## Live dry run (as of 5 December 2025, 1 Dec model)
+
+`live_update.py --n 5 --as-of 2025-12-05 --cropmap models` on 30 current LWK parcels, whose
+declarations (harvest 2026) are already published, so the guess can be checked: 12 parcels
+entered `spring_monitoring`. 7 of them were declared winter wheat, 3 winter triticale and
+2 potatoes. 7 of the 9 declared wheat parcels were included. All maize, beet and grass parcels
+scored ≤ 0.07.
