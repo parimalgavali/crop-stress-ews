@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Conditions } from "../api";
+import type { Conditions, Forecast } from "../api";
 import { STRINGS, type Lang } from "../i18n";
 import { conditionLines, LIVE_STRINGS } from "../live";
 
@@ -9,12 +9,20 @@ interface Props {
   district: string;
   lang: Lang;
   wheatP?: number | null;
+  forecast?: Forecast;
 }
 
-export function LiveCard({ cond, crop, district, lang, wheatP }: Props) {
+export function LiveCard({
+  cond,
+  crop,
+  district,
+  lang,
+  wheatP,
+  forecast,
+}: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
-  const lines = conditionLines(cond, crop, lang, wheatP);
+  const lines = conditionLines(cond, crop, lang, wheatP, forecast);
   const [speaking, setSpeaking] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 
