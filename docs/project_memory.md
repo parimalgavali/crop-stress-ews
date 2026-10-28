@@ -81,3 +81,14 @@ How it works:
 - User stories are GitHub Issues (label `user-story`, milestones W1–W8), each linked to its branch and PR.
 - District yields: Landesdatenbank NRW table 41241-03i (open CSV, dl-de/by-2-0), no account needed.
 - YieldSAT access, licence and whether its German wheat fields are in NRW.
+
+## US-17 check my field (ADR 0017)
+
+- Browser-only: Planetary Computer STAC search, SAS token and S2/S1 COG blobs allow CORS `*`
+  (checked 2026-10-28); DWD opendata does not, so weather comes from the nearest monitored field
+  within 15 km of `live/latest.json`.
+- `web/src/checkField.ts` mirrors `cropews.live`: S2 SCL 4/5 ≥ 0.8 clear, NDVI on a 20 m grid with
+  the baseline-04.00 offset, change against a clear view ≥ 20 days earlier; S1 VV dB change vs
+  earlier same-orbit views. `geotiff` 2.1.3 (MIT) for range reads; own UTM projection tested
+  against pyproj.
+- Drawn fields: NRW extent of the LWK parcels, 0.5–500 ha; a real check took about 10 s.
