@@ -117,6 +117,6 @@ export function conditionLines(
       text: `${s.temp(c.tmean_7d_c, c.tmin_7d_c)}${c.tmin_7d_c < 0 ? ` · ${s.frost}` : ""}`,
     });
   }
-  lines.push({ icon: "🌾", text: s.prevCrop(crop) });
+  if (crop) lines.push({ icon: "🌾", text: s.prevCrop(crop) });
   return lines;
 }
