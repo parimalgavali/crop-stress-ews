@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type {
   Conditions,
   Forecast,
+  Phenology,
   Scoreboard,
   SeriesPoint,
   WinterCheck,
@@ -28,6 +29,7 @@ interface Props {
   peers?: SeriesPoint[];
   peerKind?: "cereal" | "all";
   ring?: Ring | null;
+  pheno?: Phenology;
 }
 
 export function LiveCard({
@@ -46,10 +48,19 @@ export function LiveCard({
   peers,
   peerKind,
   ring,
+  pheno,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
-  const lines = conditionLines(cond, crop, lang, wheatP, forecast, winter);
+  const lines = conditionLines(
+    cond,
+    crop,
+    lang,
+    wheatP,
+    forecast,
+    winter,
+    pheno,
+  );
   const chart = chartSummary(series, peers, lang);
   const [speaking, setSpeaking] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;

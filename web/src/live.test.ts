@@ -81,4 +81,12 @@ describe('alert text', () => {
     const ok = conditionLines({}, '', 'de', 0.8, undefined, { ...w, emergence: 'ok', wet_date: null })
     expect(ok.map((l) => l.text)).toEqual(expect.arrayContaining([LIVE_STRINGS.de.emerged, LIVE_STRINGS.de.dry]))
   })
+
+  it('shows the nearby DWD growth stage as observer evidence', () => {
+    const p = { stage: 'emerged' as const, observers: 3, at_stage: 2, first_date: '2026-10-11', radius_km: 40 }
+    const en = conditionLines({}, '', 'en', undefined, undefined, undefined, p)
+    expect(en).toContainEqual({ icon: '🌿', text: 'Winter wheat around here: came up (2 of 3 DWD observers within 40 km, first on 11 October)' })
+    const de = conditionLines({}, '', 'de', undefined, undefined, undefined, p)
+    expect(de.at(-1)?.text).toMatch(/^Winterweizen in der Umgebung: aufgelaufen \(2 von 3 DWD-Beobachtern/)
+  })
 })
