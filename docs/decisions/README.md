@@ -35,3 +35,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0028](0028-field-photo.md) | Satellite photo of the selected Live field, read in the browser on request | Accepted |
 | [0029](0029-dwd-phenology.md) | Nearby winter-wheat growth stage from DWD phenology observers on Live cards | Accepted |
 | [0030](0030-bk50-soil.md) | BK50 soil on Live cards; tested as model input, not adopted | Accepted |
+| [0032](0032-checked-it.md) | "I checked it" button, saved only on the phone | Accepted |
