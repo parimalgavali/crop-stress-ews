@@ -1,7 +1,7 @@
 # 0018 — In-season winter-wheat map before crop declarations
 
 Status: Proposed (2026-10-28). Builds on [0015](0015-live-season.md) and
-[0016](0016-winter-checks.md). Issue #37.
+[0016](0016-winter-checks.md). Issue #37. Results: [winter_wheat_map.md](../winter_wheat_map.md).
 
 ## Context
 
@@ -22,6 +22,9 @@ sample (ADR 0015) is a random sample of arable LWK parcels, so most of it is not
   rye, triticale) is reported because the winter checks apply to all winter cereals.
 - **Split:** train 2020, 2021, 2023; model choice on 2022 only; held-out test 2024; extra
   check 2025. Logistic regression vs LightGBM, chosen by validation AUROC.
+- **Cutoffs:** one model per cutoff (1 Dec, 1 Feb, 1 Apr), each trained only on the months
+  observed by then. A single full-winter model scored almost all parcels below 0.5 before April.
+  Before 1 December no guess is shown.
 - **Reporting:** AUROC per split; precision, recall and F1 at p ≥ 0.5 per district.
 - **Live use:** `live_update.py --cropmap` extracts images from 1 October and adds `wheat_p` to
   each parcel. Cards say "Probably (not) winter wheat (N% sure, satellite guess)" in EN/DE and
@@ -33,6 +36,8 @@ sample (ADR 0015) is a random sample of arable LWK parcels, so most of it is not
 
 ## Consequences
 
-- Before March, later months are missing, so early-season guesses are less certain than the
-  test numbers, which use the full winter.
+- Early cutoffs are less accurate (wheat AUROC on 2024: 0.75 on 1 Dec, 0.83 on 1 Feb, 0.86 on
+  1 Apr).
+- Wheat vs barley/triticale is the hard part. In 2024 (late sowing after the wet autumn 2023)
+  wheat recall at p ≥ 0.5 was 0.54; in 2025 it was 0.91. Any-winter-cereal reached AUROC 0.92.
 - Parcels declared as wheat but sown late or failed may be missed; this is reported, not hidden.
