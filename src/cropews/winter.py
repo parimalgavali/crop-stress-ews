@@ -7,6 +7,7 @@ Uses the same peer residual as the stress label (ADR 0010), on clear Sentinel-2 
 from __future__ import annotations
 
 from collections.abc import Iterable
+from datetime import date
 
 import numpy as np
 import pandas as pd
@@ -108,3 +109,68 @@ def wet_summary(wet: pd.DataFrame) -> pd.DataFrame:
         .reset_index()
     )
     return out.assign(wet_share=out["n_wet"] / out["n_radar"])
+
+
+# Pooled winter SD of the NDVI peer departure per district, fitted on the training winters
+# (2019–21, 2023) with emergence_scores' pooling; used by the live check (ADR 0016).
+WINTER_NDVI_PEER_STD = {
+    "Coesfeld": 0.1172,
+    "Düren": 0.1356,
+    "Höxter": 0.1183,
+    "Rhein-Erft-Kreis": 0.1492,
+    "Soest": 0.1429,
+    "Warendorf": 0.1094,
+}
+# The live sample has ~30 arable parcels per district, of which only the crop-map winter
+# cereals are peers, so fewer same-date peers are required than in the 40-field validation.
+LIVE_MIN_PEERS = 5
+LIVE_WET_DAYS = 30
+
+
+def in_winter(as_of: date) -> bool:
+    return as_of.month >= WINTER_START_MONTH or as_of.month <= 3
+
+
+def live_winter(
+    s2: pd.DataFrame,
+    s1: pd.DataFrame,
+    daily: pd.DataFrame,
+    district: pd.Series,
+    as_of: date,
+    min_peers: int = LIVE_MIN_PEERS,
+) -> dict[str, dict[str, object]]:
+    """Winter cards for the crop-map winter-cereal parcels (``district``: field_id -> district).
+
+    ``emergence``: "behind" / "ok" vs same-date peers, None with fewer than 2 clear dates;
+    ``wet_date``: latest radar date in the last 30 days with signs of standing water.
+    """
+    if not in_winter(as_of) or district.empty:
+        return {}
+    ids = set(district.index)
+    end = pd.Timestamp(as_of)
+    opt = s2[s2["field_id"].isin(ids)].assign(district=lambda d: d["field_id"].map(district))
+    obs = winter_observations(opt)
+    res = peer_residuals(obs[obs["date"] <= end], min_peers)
+    res = res.assign(z_ndvi=res["r_ndvi"] / res["district"].map(WINTER_NDVI_PEER_STD))
+    emergence = res.dropna(subset=["z_ndvi"]).groupby("field_id")["z_ndvi"].agg(["size", "median"])
+    rad = s1[s1["field_id"].isin(ids)]
+    wet = wet_dates(rad, daily[daily["field_id"].isin(ids)]) if len(rad) else pd.DataFrame()
+    recent = (
+        wet[(wet["date"] > end - pd.Timedelta(days=LIVE_WET_DAYS)) & (wet["date"] <= end)]
+        if len(wet)
+        else wet
+    )
+    out: dict[str, dict[str, object]] = {}
+    for fid in sorted(ids):
+        card: dict[str, object] = {"emergence": None, "z_ndvi": None, "n_clear": 0}
+        if fid in emergence.index:
+            n, z = int(emergence.at[fid, "size"]), float(emergence.at[fid, "median"])
+            card.update(n_clear=n, z_ndvi=round(z, 2))
+            if n >= MIN_CLEAR_DATES:
+                card["emergence"] = "behind" if z < Z_THRESHOLD else "ok"
+        mine = recent[recent["field_id"] == fid] if len(recent) else recent
+        card["radar_dates"] = int(len(mine))
+        hits = mine[mine["wet"]] if len(mine) else mine
+        card["wet_date"] = hits["date"].max().date().isoformat() if len(hits) else None
+        out[fid] = card
+    return out

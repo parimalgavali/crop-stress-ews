@@ -104,3 +104,8 @@ How it works:
 - `latest.json` has a `health` block (parcels, with_data, skipped S1/S2 scenes, minutes).
 - Scheduled/manual runs: `scripts/check_live_health.py` + live step outcome decide `healthy`. Unhealthy runs open or comment on a `pipeline-health` issue, redeploy the previous `latest.json` and skip the forecast log and alerts; the next healthy run closes the issue.
 - The UI shows a stale-data notice (EN/DE, read aloud) when `as_of` is more than `STALE_DAYS` = 7 days old.
+
+## US-16 winter cards on Live (ADR 0016, Issue #35)
+- `live_winter` runs Nov–Mar on crop-map parcels with wheat_p ≥ 0.5 (so from 1 December), writes `latest.json` → `winter[field_id] = {emergence: behind|ok|null, z_ndvi, n_clear, radar_dates, wet_date}`.
+- Live peers: same-district crop-map parcels, `LIVE_MIN_PEERS` = 5; scale `WINTER_NDVI_PEER_STD` = pooled training-winter SD per district (recompute with `emergence_scores`' pooling if training winters change).
+- UI lines: ⚠ behind / ✓ emerged, 💧 standing water on <date> / ✓ none in 30 days (EN/DE, read aloud).

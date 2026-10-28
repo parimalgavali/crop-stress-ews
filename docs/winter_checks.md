@@ -54,7 +54,8 @@ Fields with at least one wet radar date, 40 fields per district:
 
 - No ground truth for emergence, sowing date or standing water.
 - 40 fields per district-season; per-district numbers are noisy.
-- The Live mode cannot use these checks until current winter-cereal parcels are known (US-18).
+- On the Live map the checks run only on crop-map winter-cereal parcels (from 1 December), with at
+  least 5 same-date peers instead of 8; see ADR 0016.
 
 Reproduce: `python scripts/extract_s2.py --window winter ...`, `python scripts/extract_s1.py
 --window winter ...`, then `python scripts/winter_check.py` and `python scripts/waterlog_check.py

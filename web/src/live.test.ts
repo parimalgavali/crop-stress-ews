@@ -72,4 +72,13 @@ describe('alert text', () => {
     )
     expect(staleNotice('2026-11-01', 'de', today)).toMatch(/^Diese Daten sind 9 Tage alt/)
   })
+
+  it('shows winter checks with a symbol and plain words', () => {
+    const w = { emergence: 'behind' as const, z_ndvi: -2, n_clear: 3, radar_dates: 4, wet_date: '2026-12-02' }
+    const lines = conditionLines({}, '', 'en', 0.8, undefined, w)
+    expect(lines).toContainEqual({ icon: '⚠', text: LIVE_STRINGS.en.behind })
+    expect(lines.some((l) => l.icon === '💧' && l.text.includes('standing water'))).toBe(true)
+    const ok = conditionLines({}, '', 'de', 0.8, undefined, { ...w, emergence: 'ok', wet_date: null })
+    expect(ok.map((l) => l.text)).toEqual(expect.arrayContaining([LIVE_STRINGS.de.emerged, LIVE_STRINGS.de.dry]))
+  })
 })
