@@ -33,3 +33,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0026](0026-yearly-retraining.md) | Yearly champion/challenger retraining of the Live risk model | Accepted |
 | [0027](0027-season-chart.md) | Season greenness chart on Live cards: field vs district peer median since 1 October | Accepted |
 | [0028](0028-field-photo.md) | Satellite photo of the selected Live field, read in the browser on request | Accepted |
+| [0029](0029-dwd-phenology.md) | Nearby winter-wheat growth stage from DWD phenology observers on Live cards | Accepted |

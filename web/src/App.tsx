@@ -250,6 +250,7 @@ export default function App() {
                   peers={live.season?.peers[liveField.properties.district]}
                   peerKind={live.season?.peer_kind}
                   ring={outerRing(liveField.geometry)}
+                  pheno={live.phenology?.[liveField.properties.district]}
                 />
               </>
             ) : (

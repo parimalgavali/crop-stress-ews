@@ -135,3 +135,7 @@ How it works:
 
 ## US-31 field photo (ADR 0028, Issue #69)
 - Live card button loads the Sentinel-2 TCI (`visual`, 10 m) of the card's `s2_date` from Planetary Computer in the browser, clipped to the field (`web/src/fieldPhoto.ts`, `components/FieldPhoto.tsx`). On request only; not cached offline.
+
+## US-32 nearby growth stage (ADR 0029, Issue #71)
+- `cropews.data.phenology` reads DWD immediate-reporter winter-wheat phases (10 sown, 12 emerged, 15 stem, 18 heading, 21 yellow, 22 ripe, 24 harvest) and the observer list; stage = most advanced reached by ≥ half of observers within 40 km since 1 Sep of the sowing year. `latest.json.phenology[district]`; not a model input.
+- 28 Oct 2026: 24 NRW observers reported this autumn; 2–4 per core district within 40 km, all "emerged".

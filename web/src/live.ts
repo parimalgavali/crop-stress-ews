@@ -4,6 +4,7 @@ import type {
   Scoreboard,
   SeriesPoint,
   WinterCheck,
+  Phenology,
 } from "./api";
 import { formatDate, type Lang } from "./i18n";
 
@@ -37,6 +38,17 @@ const T = {
     springNote:
       "Stress forecasts start on 5 April, when winter wheat starts growing again.",
     prevCrop: (c: string) => `Crop declared this year: ${c}`,
+    stage: {
+      sown: "sown",
+      emerged: "came up",
+      stem: "stem growth started",
+      heading: "ears appearing",
+      yellow: "turning yellow",
+      ripe: "ripe",
+      harvest: "harvested",
+    } as Record<Phenology["stage"], string>,
+    pheno: (stage: string, k: number, n: number, d: string, km: number) =>
+      `Winter wheat around here: ${stage} (${k} of ${n} DWD observers within ${km} km, first on ${d})`,
     image: (d: number, date: string) =>
       `Last clear satellite image: ${d} days ago (${date})`,
     noImage: "No clear satellite image recently (clouds)",
@@ -125,6 +137,17 @@ const T = {
     springNote:
       "Stress-Vorhersagen beginnen am 5. April, wenn der Winterweizen wieder wächst.",
     prevCrop: (c: string) => `Angebaute Kultur dieses Jahr: ${c}`,
+    stage: {
+      sown: "gesät",
+      emerged: "aufgelaufen",
+      stem: "Schossen hat begonnen",
+      heading: "Ähren schieben",
+      yellow: "Gelbreife",
+      ripe: "reif",
+      harvest: "geerntet",
+    } as Record<Phenology["stage"], string>,
+    pheno: (stage: string, k: number, n: number, d: string, km: number) =>
+      `Winterweizen in der Umgebung: ${stage} (${k} von ${n} DWD-Beobachtern im Umkreis von ${km} km, zuerst am ${d})`,
     image: (d: number, date: string) =>
       `Letztes klares Satellitenbild: vor ${d} Tagen (${date})`,
     noImage: "Zuletzt kein klares Satellitenbild (Wolken)",
@@ -200,6 +223,7 @@ export function conditionLines(
   wheatP?: number | null,
   fc?: Forecast,
   winter?: WinterCheck,
+  pheno?: Phenology,
 ): Line[] {
   const s = T[lang];
   const lines: Line[] = [];
@@ -255,6 +279,17 @@ export function conditionLines(
     lines.push({ icon: "💧", text: s.wet(formatDate(winter.wet_date, lang)) });
   else if (winter && winter.radar_dates > 0)
     lines.push({ icon: "✓", text: s.dry });
+  if (pheno)
+    lines.push({
+      icon: "🌿",
+      text: s.pheno(
+        s.stage[pheno.stage],
+        pheno.at_stage,
+        pheno.observers,
+        formatDate(pheno.first_date, lang),
+        pheno.radius_km,
+      ),
+    });
   if (crop) lines.push({ icon: "🌾", text: s.prevCrop(crop) });
   return lines;
 }

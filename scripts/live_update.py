@@ -19,6 +19,7 @@ import requests
 
 from cropews.config import CORE_DISTRICTS, PREDICTION_WINDOW
 from cropews.cropmap import predict, season_start
+from cropews.data import phenology
 from cropews.data.fields import assign_districts, stable_sample
 from cropews.data.forecast import live_forecast
 from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
@@ -40,7 +41,8 @@ from cropews.winter import live_winter
 
 ATTRIBUTION = (
     f"Parcels: {LWK_ATTRIBUTION}. Weather: DWD Climate Data Center, CC BY 4.0. "
-    "Forecast: DWD ICON via Open-Meteo, CC BY 4.0. Contains modified Copernicus Sentinel data."
+    "Forecast: DWD ICON via Open-Meteo, CC BY 4.0. "
+    f"{phenology.ATTRIBUTION}. Contains modified Copernicus Sentinel data."
 )
 WEATHER_LAG_DAYS = 2
 Cache = tuple[dict | None, pd.DataFrame | None, pd.DataFrame | None]
@@ -98,6 +100,22 @@ def _forecasts(fields: gpd.GeoDataFrame, as_of: date) -> dict[str, dict[str, obj
             out[str(district)] = forecast_summary(live_forecast(c.y, c.x), as_of)
         except (requests.RequestException, RuntimeError, KeyError) as err:
             print(f"forecast {district}: {err}")
+    return out
+
+
+def _phenology(fields: gpd.GeoDataFrame, as_of: date) -> dict[str, dict[str, object]]:
+    """Winter-wheat stage reported by DWD observers near each district's fields (ADR 0029)."""
+    try:
+        obs, stations = phenology.fetch()
+    except (requests.RequestException, ValueError, KeyError) as err:
+        print(f"phenology: {err}")
+        return {}
+    out: dict[str, dict[str, object]] = {}
+    for district, g in fields.groupby("district"):
+        c = g.to_crs(4326).geometry.union_all().centroid
+        stage = phenology.nearby_stage(obs, stations, c.y, c.x, as_of)
+        if stage:
+            out[str(district)] = stage
     return out
 
 
@@ -171,6 +189,7 @@ def main() -> None:
         rows,
         winter,
         season_chart,
+        _phenology(fields, args.as_of),
     )
 
     payload["health"] = run_health(
