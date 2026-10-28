@@ -127,6 +127,6 @@ export function conditionLines(
     const sure = Math.round(100 * (yes ? wheatP : 1 - wheatP));
     lines.push({ icon: yes ? "🌾" : "❔", text: s.wheat(yes, sure) });
   }
-  lines.push({ icon: "🌾", text: s.prevCrop(crop) });
+  if (crop) lines.push({ icon: "🌾", text: s.prevCrop(crop) });
   return lines;
 }
