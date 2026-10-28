@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
 
 import geopandas as gpd
@@ -24,6 +25,18 @@ def load_winter_wheat_fields(
         year=year, crop_code=lambda d: d["crop_code"].astype(str)
     )
     return validate_fields(fields.reset_index(drop=True))
+
+
+def load_parcels(
+    path: str | Path, year: int, crop_codes: Iterable[str], min_size_ha: float = 0.0
+) -> gpd.GeoDataFrame:
+    """Parcels of any of ``crop_codes`` (NRW crop codes, as in Europe-LAND ``crop_code``)."""
+    fields = gpd.read_parquet(path, columns=_COLUMNS)
+    fields = fields.assign(crop_code=fields["crop_code"].astype(str))
+    fields = fields[
+        fields["crop_code"].isin(set(crop_codes)) & (fields["field_size"] >= min_size_ha)
+    ]
+    return validate_fields(fields.to_crs(WORKING_CRS).assign(year=year).reset_index(drop=True))
 
 
 def assign_districts(
