@@ -113,3 +113,7 @@ How it works:
 ## US-24 installable/offline (ADR 0024, Issue #55)
 - `web/public/manifest.webmanifest` + `web/public/sw.js` (registered in `main.tsx`, PROD only). Same-origin only: navigations/JSON network-first with cache fallback, `/assets/` cache-first; OSM tiles never cached.
 - Bump `CACHE` in `sw.js` when changing caching rules. Playwright config sets `serviceWorkers: 'block'`; `e2e/offline.spec.ts` allows them.
+
+## US-28 yearly retraining (ADR 0026, Issue #63)
+- `scripts/retrain.py --holdout Y --add ...`; `cropews.retrain.fit_bundle` is shared with `export_live_model.py` (reproduces risk-v1 exactly). Gate: `decide()` = mean AUROC gain and no horizon < −0.01.
+- Backtest holdout 2025 + add 2024: −0.011 mean, not promoted. Harvest-2026 labels already in the LWK file (`VALIDFROM` 2026), see docs/retraining.md.

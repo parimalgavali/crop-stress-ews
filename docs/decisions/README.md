@@ -29,3 +29,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0022](0022-alerts-ntfy.md) | Alerts through public ntfy.sh topics per field | Accepted |
 | [0023](0023-pipeline-health.md) | Live pipeline health: health block, pipeline-health issue, stale-data notice | Accepted |
 | [0024](0024-installable-offline.md) | Installable web app: manifest and service worker with last-data fallback | Accepted |
+| [0026](0026-yearly-retraining.md) | Yearly champion/challenger retraining of the Live risk model | Accepted |
