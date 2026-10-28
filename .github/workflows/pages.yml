@@ -16,7 +16,9 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  # A merge must not cancel a 1.5 h live run (scheduled/manual runs alone update risk and alerts);
+  # runs queue instead, and a newer pending run replaces an older pending one.
+  cancel-in-progress: false
 
 jobs:
   deploy:
