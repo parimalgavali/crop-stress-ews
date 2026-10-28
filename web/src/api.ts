@@ -160,6 +160,31 @@ export interface Forecast {
   fc_frost_days: number
 }
 
+export interface ScoreHorizon {
+  issued: number
+  pending: number
+  scored: number
+  onsets: number
+  auroc: number | null
+  red_hits: number
+  red_false: number
+  missed: number
+}
+
+export interface Scoreboard {
+  as_of: string
+  horizons: Record<string, ScoreHorizon | null>
+}
+
+export async function loadScoreboard(): Promise<Scoreboard | null> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}live/scoreboard.json`)
+    return res.ok ? ((await res.json()) as Scoreboard) : null
+  } catch {
+    return null
+  }
+}
+
 let live: Promise<LiveSeason> | null = null
 
 export function loadLive(): Promise<LiveSeason> {

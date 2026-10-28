@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conditionLines, greenness, radarChanged, trend } from './live'
+import { conditionLines, greenness, radarChanged, scoreLine, trend } from './live'
 
 describe('live conditions', () => {
   it('maps numbers to plain words', () => {
@@ -42,5 +42,18 @@ describe('forecast line', () => {
     const calm = { ...fc, fc_rain_5d_mm: 3, fc_tmin_5d_c: 4, fc_frost_days: 0 }
     const text = conditionLines({}, 'Winterweichweizen', 'de', null, calm).map((l) => l.text)
     expect(text).toContain('Nächste 5 Tage (Wettervorhersage): 3 mm Regen, tiefstens 4 °C')
+  })
+})
+
+describe('scoreLine', () => {
+  const h = { issued: 300, pending: 50, scored: 250, onsets: 8, auroc: 0.8, red_hits: 5, red_false: 30, missed: 3 }
+  it('says nothing is checked before the first scored forecast', () => {
+    expect(scoreLine(null, 'en')).toMatch(/none checked yet/)
+    expect(scoreLine({ as_of: '2027-04-06', horizons: { '14': null } }, 'de')).toMatch(/noch keine/)
+  })
+  it('reports hits out of onsets', () => {
+    expect(scoreLine({ as_of: '2027-05-01', horizons: { '14': h } }, 'en')).toBe(
+      'Forecast check: 250 forecasts checked so far. A red alarm came before 5 of 8 stress events (14 days ahead).',
+    )
   })
 })

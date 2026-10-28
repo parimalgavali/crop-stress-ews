@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import type { Conditions, Forecast } from "../api";
+import type { Conditions, Forecast, Scoreboard } from "../api";
 import { STRINGS, type Lang } from "../i18n";
-import { conditionLines, LIVE_STRINGS } from "../live";
+import { conditionLines, LIVE_STRINGS, scoreLine } from "../live";
 
 interface Props {
   cond: Conditions;
@@ -10,9 +10,18 @@ interface Props {
   lang: Lang;
   wheatP?: number | null;
   forecast?: Forecast;
+  board?: Scoreboard | null;
 }
 
-export function LiveCard({ cond, crop, district, lang, wheatP, forecast }: Props) {
+export function LiveCard({
+  cond,
+  crop,
+  district,
+  lang,
+  wheatP,
+  forecast,
+  board,
+}: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
   const lines = conditionLines(cond, crop, lang, wheatP, forecast);
@@ -31,7 +40,7 @@ export function LiveCard({ cond, crop, district, lang, wheatP, forecast }: Props
     window.speechSynthesis.cancel();
     if (speaking) return setSpeaking(false);
     const u = new SpeechSynthesisUtterance(
-      `${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${l.springNote}`,
+      `${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${l.springNote} ${scoreLine(board, lang)}`,
     );
     u.lang = lang === "de" ? "de-DE" : "en-GB";
     u.rate = 0.9;
@@ -55,6 +64,9 @@ export function LiveCard({ cond, crop, district, lang, wheatP, forecast }: Props
         ))}
       </ul>
       <p className="hint">{l.springNote}</p>
+      <p className="hint" data-testid="scoreboard">
+        {scoreLine(board, lang)}
+      </p>
       {canSpeak && (
         <button
           type="button"

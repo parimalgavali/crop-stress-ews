@@ -4,6 +4,8 @@ import {
   fetchFields,
   fetchRisk,
   loadLive,
+  loadScoreboard,
+  type Scoreboard,
   type FieldCollection,
   type FieldRisk,
   type Level,
@@ -32,6 +34,7 @@ export default function App() {
   const [risk, setRisk] = useState<FieldRisk | null>(null);
   const [error, setError] = useState(false);
   const [isLive, setIsLive] = useState(false);
+  const [board, setBoard] = useState<Scoreboard | null | undefined>();
   const [live, setLive] = useState<LiveSeason | null>(null);
   const [liveError, setLiveError] = useState(false);
   const [draft, setDraft] = useState<[number, number][] | null>(null);
@@ -71,6 +74,10 @@ export default function App() {
       .then(setRisk)
       .catch(() => setRisk(null));
   }, [selected, year, date]);
+
+  useEffect(() => {
+    if (isLive && board === undefined) loadScoreboard().then(setBoard);
+  }, [isLive, board]);
 
   useEffect(() => {
     if (isLive && !live)
@@ -204,7 +211,8 @@ export default function App() {
                 district={liveField.properties.district}
                 lang={lang}
                 wheatP={liveField.properties.wheat_p}
-          forecast={live.forecast?.[liveField.properties.district]}
+                forecast={live.forecast?.[liveField.properties.district]}
+                board={board}
               />
             ) : (
               <p className="hint">{selected ? s.noData : s.pickHint}</p>
