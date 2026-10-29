@@ -109,3 +109,49 @@ def observed_features(daily: pd.DataFrame, leads: int = LEAD_DAYS) -> pd.DataFra
         span=g["date"].transform(lambda x: (x.shift(-leads) - x).dt.days),
     )
     return out[out["span"] == leads].drop(columns="span").reset_index(drop=True)
+
+
+ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
+SOIL_VARS = {"soil_moisture_0_to_7cm_mean": "sm_top", "soil_moisture_7_to_28cm_mean": "sm_root"}
+
+
+def _soil_frame(body: dict[str, Any]) -> pd.DataFrame:
+    d = body["daily"]
+    out = pd.DataFrame({"date": pd.to_datetime(d["time"])})
+    for k, v in SOIL_VARS.items():
+        out[v] = d[k]
+    return out.dropna()
+
+
+def live_soil_moisture(lat: float, lon: float, days: int = 7) -> pd.DataFrame:
+    """Daily volumetric soil moisture (m³/m³) at 0–7 and 7–28 cm, today's forecast (ADR 0031)."""
+    params = {"latitude": lat, "longitude": lon, "daily": ",".join(SOIL_VARS)}
+    return _soil_frame(
+        _get(FORECAST_URL, params | {"forecast_days": days + 1, "timezone": TIMEZONE})
+    )
+
+
+def archived_soil_moisture(lat: float, lon: float, start: date, end: date) -> pd.DataFrame:
+    """ERA5 reanalysis soil moisture, same columns as ``live_soil_moisture`` (ADR 0031)."""
+    params = {"latitude": lat, "longitude": lon, "daily": ",".join(SOIL_VARS)}
+    return _soil_frame(
+        _get(
+            ARCHIVE_URL,
+            params
+            | {"start_date": start.isoformat(), "end_date": end.isoformat(), "timezone": TIMEZONE},
+        )
+    )
+
+
+def soil_moisture_features(daily: pd.DataFrame, leads: int = LEAD_DAYS) -> pd.DataFrame:
+    """Per date: soil moisture now and the change expected over the next ``leads`` days."""
+    d = daily.sort_values("date").reset_index(drop=True)
+    ahead = d["sm_root"][::-1].rolling(leads, min_periods=leads).mean()[::-1].shift(-1)
+    return pd.DataFrame(
+        {
+            "date": d["date"],
+            "sm_top": d["sm_top"],
+            "sm_root": d["sm_root"],
+            "sm_root_change_5d": ahead - d["sm_root"],
+        }
+    )
