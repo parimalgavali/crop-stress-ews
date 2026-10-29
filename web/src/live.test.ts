@@ -99,3 +99,13 @@ describe('alert text', () => {
     expect(lines.some((l) => l.icon === '🟫')).toBe(true)
   })
 })
+
+it('adds the soil-moisture trend to the forecast line', () => {
+  const fc = { fc_to: '2026-05-10', fc_rain_5d_mm: 1, fc_tmin_5d_c: 6, fc_frost_days: 0 }
+  const text = (f: typeof fc & { fc_sm_change_5d?: number }, lang: 'en' | 'de' = 'en') =>
+    conditionLines({}, '', lang, undefined, f).find((l) => l.icon === '☔')?.text
+  expect(text({ ...fc, fc_sm_change_5d: -0.03 })).toContain('soil drying out')
+  expect(text({ ...fc, fc_sm_change_5d: 0.03 }, 'de')).toContain('Boden wird feuchter')
+  expect(text({ ...fc, fc_sm_change_5d: 0.01 })).not.toContain('soil')
+  expect(text(fc)).not.toContain('soil')
+})
