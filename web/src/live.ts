@@ -26,6 +26,8 @@ export const radarChanged = (db: number | null | undefined) =>
   db != null && Math.abs(db) >= 2;
 
 export const WET_5D_MM = 20;
+/** Soil-moisture change worth mentioning, m³/m³ (about the 10 %/90 % of spring days, ADR 0031). */
+export const SM_CHANGE = 0.02;
 
 export type Compare = "above" | "same" | "below";
 /** NDVI gap to the peer median that counts as a difference (same scale as ``trend``). */
@@ -78,6 +80,8 @@ const T = {
     forecast: (mm: number, tmin: number) =>
       `Next 5 days (weather forecast): ${Math.round(mm)} mm rain, lowest ${Math.round(tmin)} °C`,
     forecastWet: "heavy rain expected",
+    soilDrying: "soil drying out",
+    soilWetting: "soil getting wetter",
     scoreNone:
       "Forecast check: none checked yet. Every forecast is saved before the outcome is known and checked later.",
     scoreSome: (n: number, hits: number, onsets: number) =>
@@ -185,6 +189,8 @@ const T = {
     forecast: (mm: number, tmin: number) =>
       `Nächste 5 Tage (Wettervorhersage): ${Math.round(mm)} mm Regen, tiefstens ${Math.round(tmin)} °C`,
     forecastWet: "viel Regen erwartet",
+    soilDrying: "Boden trocknet ab",
+    soilWetting: "Boden wird feuchter",
     scoreNone:
       "Vorhersage-Kontrolle: noch keine geprüft. Jede Vorhersage wird gespeichert, bevor das Ergebnis bekannt ist, und später geprüft.",
     scoreSome: (n: number, hits: number, onsets: number) =>
@@ -295,6 +301,13 @@ export function conditionLines(
     const notes = [
       fc.fc_rain_5d_mm >= WET_5D_MM ? s.forecastWet : null,
       fc.fc_frost_days > 0 ? s.forecastFrost(fc.fc_frost_days) : null,
+      fc.fc_sm_change_5d == null
+        ? null
+        : fc.fc_sm_change_5d <= -SM_CHANGE
+          ? s.soilDrying
+          : fc.fc_sm_change_5d >= SM_CHANGE
+            ? s.soilWetting
+            : null,
     ].filter((n): n is string => n != null);
     lines.push({
       icon: fc.fc_frost_days > 0 ? "❄" : "☔",

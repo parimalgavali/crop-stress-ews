@@ -144,6 +144,10 @@ How it works:
 - `cropews.data.soil` reads GD NRW BK50 per field via WMS GetFeatureInfo (`www.wms.nrw.de/gd/bk050`, layer `Bodentyp`, geo+json): soil type, texture, nFK mm, GW_STUFE, SW_STUFE. Live caches it in `data/live_cache/soil.parquet`; `latest.json.soil[field_id]`.
 - Model-input test `scripts/soil_eval.py`: no gain on 2022 validation for the logistic model (±0.004), +0.02–0.03 on 2025 within CIs, so not adopted. Candidate for the yearly challenger (ADR 0026).
 
+## US-34 soil-moisture forecast (ADR 0031, Issue #75)
+- `cropews.data.forecast.live_soil_moisture` / `archived_soil_moisture` (Open-Meteo forecast / ERA5 archive, daily 0–7 and 7–28 cm, m³/m³); `soil_moisture_features` gives `sm_root_change_5d` = mean of the next 5 days minus today. Live adds `fc_sm_change_5d` to `latest.json.forecast[district]`; the card notes "soil drying out/getting wetter" at ±0.02.
+- Model test `scripts/soil_moisture_eval.py`: no gain on 2022 (±0.001), worse on 2024 (−0.01 to −0.04), so not adopted. ERA5 in training ≠ forecast model live, so the Live model stays as in ADR 0021.
+
 ## US-35 "I checked it" (ADR 0032, Issue #77)
 - Live cards: 👍/👎 saved in `localStorage["cropews.checks.v1"]` (date, ok, worst light at the time); undo; agreement count over checks made while a light was shown. Nothing is sent; no central collection (needs privacy design + backend).
 - Code: `web/src/fieldChecks.ts`, `web/src/components/CheckedIt.tsx`.
