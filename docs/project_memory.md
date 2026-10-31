@@ -169,3 +169,6 @@ How it works:
 
 ## YieldSAT outcome check (ADR 0039, blocked)
 - YieldSAT (CVPR 2026): 299 German fields (~188 wheat, 2018–2022) with combine-harvester yield maps. Access only via a gated request form on yieldsat.github.io; no public mirror; field locations anonymized so NRW coverage is unverifiable. Needs a human to request access.
+
+## Frost low-spot map (ADR 0040, blocked)
+- Terrain spread exists (Höxter fields 108–326 m, Soest 71–390 m) but no open dataset resolves 10–100 m cold-air pools (ICON ~6.5 km, DWD ~20 stations/NRW). Not validatable → not built.
