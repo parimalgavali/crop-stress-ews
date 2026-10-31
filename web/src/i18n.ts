@@ -21,6 +21,12 @@ export const STRINGS = {
     level: { green: 'Low risk', amber: 'Watch', red: 'High risk' } as Record<Level, string>,
     season: 'Season',
     language: 'Language',
+    introTitle: 'How it works',
+    introLights: '🟢 looks fine · 🟡 keep watching · 🔴 needs a look',
+    introPick: 'Tap a field on the map, or choose it from the list.',
+    introListen: '🔊 The card can read everything aloud.',
+    introDone: 'Got it',
+    introOpen: 'How it works',
   },
   de: {
     title: 'Warnung vor Pflanzenstress',
@@ -43,6 +49,12 @@ export const STRINGS = {
     >,
     season: 'Saison',
     language: 'Sprache',
+    introTitle: 'So funktioniert es',
+    introLights: '🟢 sieht gut aus · 🟡 beobachten · 🔴 braucht einen Blick',
+    introPick: 'Ein Feld auf der Karte antippen oder aus der Liste wählen.',
+    introListen: '🔊 Die Karte liest alles vor.',
+    introDone: 'Verstanden',
+    introOpen: 'So funktioniert es',
   },
 }
 

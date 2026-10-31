@@ -1,6 +1,11 @@
 import { expect, test } from '@playwright/test'
 
 const DATES = ['2024-05-05', '2024-05-10']
+
+test.beforeEach(async ({ page }, testInfo) => {
+  if (!testInfo.title.includes('intro'))
+    await page.addInitScript(() => localStorage.setItem('cropews-intro-seen', '1'))
+})
 const square = (x: number) => ({
   type: 'Polygon',
   coordinates: [[[x, 51.5], [x + 0.01, 51.5], [x + 0.01, 51.51], [x, 51.51], [x, 51.5]]],
@@ -250,4 +255,15 @@ test('live mode: print stylesheet shows a one-page field report', async ({ page 
   await expect(page.getByTestId('print-report')).toContainText('?field=LWK-1')
   await expect(page.getByRole('button', { name: /Print this card/ })).toBeHidden()
   await page.emulateMedia({ media: 'screen' })
+})
+
+test('intro: shown once, reopened with ?', async ({ page }) => {
+  await page.goto('/')
+  await expect(page.getByRole('dialog', { name: 'How it works' })).toBeVisible()
+  await page.getByRole('button', { name: 'Got it' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await page.reload()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await page.getByRole('button', { name: 'How it works' }).click()
+  await expect(page.getByRole('dialog', { name: 'How it works' })).toBeVisible()
 })
