@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conditionLines, greenness, radarChanged, LIVE_STRINGS, scoreLine, soilLine, staleNotice, trend } from './live'
+import { conditionLines, greenness, healthLine, radarChanged, LIVE_STRINGS, scoreLine, soilLine, staleNotice, trend } from './live'
 
 describe('live conditions', () => {
   it('maps numbers to plain words', () => {
@@ -127,4 +127,19 @@ it('adds the soil-moisture trend to the forecast line', () => {
   expect(text({ ...fc, fc_sm_change_5d: 0.03 }, 'de')).toContain('Boden wird feuchter')
   expect(text({ ...fc, fc_sm_change_5d: 0.01 })).not.toContain('soil')
   expect(text(fc)).not.toContain('soil')
+})
+
+describe('healthLine', () => {
+  const h = { parcels: 360, with_data: 360, s1_scenes_skipped: [], s2_scenes_skipped: [], minutes: 20 }
+  it('shows a check mark when all fields have data', () => {
+    const line = healthLine(h, 'en')
+    expect(line?.icon).toBe('✓')
+    expect(line?.text).toBe('Data check: 360 of 360 watched fields have data')
+  })
+  it('warns on skipped scenes and on too few fields', () => {
+    expect(healthLine({ ...h, s1_scenes_skipped: ['a', 'b'] }, 'en')?.icon).toBe('⚠')
+    expect(healthLine({ ...h, s2_scenes_skipped: ['a'] }, 'en')?.text).toContain('1 satellite image could not be read')
+    expect(healthLine({ ...h, with_data: 100 }, 'en')?.icon).toBe('⚠')
+    expect(healthLine({ ...h, parcels: 0 }, 'en')).toBeNull()
+  })
 })
