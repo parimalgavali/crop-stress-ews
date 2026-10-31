@@ -50,3 +50,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0043](0043-field-navigation.md) | Prev/next buttons walk Live fields in list order | Accepted |
 | [0044](0044-print-report.md) | Print stylesheet turns the Live card into a one-page report | Accepted |
 | [0045](0045-intro-overlay.md) | First-visit legend overlay explains the three lights | Accepted |
+| [0046](0046-field-notes.md) | Field notes saved on the phone next to checks | Accepted |

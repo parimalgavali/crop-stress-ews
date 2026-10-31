@@ -187,3 +187,6 @@ How it works:
 
 ## US-48 intro overlay (ADR 0045, Issue #103)
 - One-shot dialog (localStorage `cropews-intro-seen`): lights legend + pick-a-field + read-aloud hint, EN/DE; "?" chip reopens.
+
+## US-49 field notes (ADR 0046, Issue #105)
+- `FieldCheck.note` (≤280 chars) via `setNote` in `web/src/fieldChecks.ts`; textarea on the card; read aloud; device-local only.
