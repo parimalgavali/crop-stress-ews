@@ -221,3 +221,33 @@ test('live mode: next/previous buttons walk the monitored fields', async ({ page
   await prev.click()
   await expect(select).toHaveValue('LWK-1')
 })
+
+test('live mode: print stylesheet shows a one-page field report', async ({ page }) => {
+  await page.route('**/live/latest.json', (r) =>
+    r.fulfill({
+      json: {
+        as_of: '2026-11-01',
+        attribution: 'test',
+        fields: {
+          type: 'FeatureCollection',
+          features: [
+            { type: 'Feature', id: 'LWK-1', geometry: square(8.0), properties: { field_id: 'LWK-1', district: 'Soest', area_ha: 4, declared_crop: 'Mais', level: null } },
+          ],
+        },
+        conditions: {
+          'LWK-1': { s2_date: '2026-10-28', s2_days_ago: 4, ndvi: 0.7, ndvi_change: 0.2, s1_days_ago: 1, vv_change_db: 0.1, rain_30d_mm: 55, tmean_7d_c: 6, tmin_7d_c: 1 },
+        },
+      },
+    }),
+  )
+  await page.goto('/')
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('button', { name: 'Live' }).click()
+  await page.getByLabel('Field', { exact: true }).selectOption('LWK-1')
+  await expect(page.getByRole('button', { name: /Print this card/ })).toBeVisible()
+  await page.emulateMedia({ media: 'print' })
+  await expect(page.getByTestId('print-report')).toBeVisible()
+  await expect(page.getByTestId('print-report')).toContainText('?field=LWK-1')
+  await expect(page.getByRole('button', { name: /Print this card/ })).toBeHidden()
+  await page.emulateMedia({ media: 'screen' })
+})
