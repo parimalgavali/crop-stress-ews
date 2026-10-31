@@ -41,3 +41,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0034](0034-field-link.md) | `?field=` link opens the app on a chosen field | Accepted |
 | [0035](0035-frost-card.md) | Frost note distinguishes protective snow from bare-ground hard frost | Accepted |
 | [0036](0036-health-line.md) | Live footer shows the data-health check | Accepted |
+| [0037](0037-district-calibration.md) | Per-district calibration tested and rejected | Rejected |
