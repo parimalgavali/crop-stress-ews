@@ -43,3 +43,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0036](0036-health-line.md) | Live footer shows the data-health check | Accepted |
 | [0037](0037-district-calibration.md) | Per-district calibration tested and rejected | Rejected |
 | [0038](0038-kndvi-label.md) | kNDVI stress labels tested and rejected | Rejected |
+| [0039](0039-yieldsat.md) | YieldSAT outcome check blocked on gated access | Blocked |
