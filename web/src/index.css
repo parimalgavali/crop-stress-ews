@@ -23,6 +23,8 @@ h1 { font-size: 1.3rem; margin: 0; }
 
 .main { display: grid; grid-template-columns: 1fr minmax(300px, 420px); min-height: 0; }
 .map { min-height: 300px; }
+/* Underlined so the map credit links stand out from the text without colour (WCAG 1.4.1). */
+.map .maplibregl-ctrl-attrib a { text-decoration: underline; }
 .panel { padding: 1rem; overflow-y: auto; background: #fff; border-left: 1px solid #ddd; display: flex; flex-direction: column; gap: 0.8rem; }
 .field-label { font-weight: 600; }
 .big-select { min-height: 52px; padding: 0 0.6rem; border: 2px solid #888; border-radius: 8px; background: #fff; }

@@ -151,3 +151,6 @@ How it works:
 ## US-35 "I checked it" (ADR 0032, Issue #77)
 - Live cards: 👍/👎 saved in `localStorage["cropews.checks.v1"]` (date, ok, worst light at the time); undo; agreement count over checks made while a light was shown. Nothing is sent; no central collection (needs privacy design + backend).
 - Code: `web/src/fieldChecks.ts`, `web/src/components/CheckedIt.tsx`.
+
+## US-36 accessibility CI (ADR 0033, Issue #79)
+- `web/e2e/a11y.spec.ts`: axe WCAG 2.1 A/AA on replay + Live cards, EN/DE, in the CI Playwright step; map canvas excluded. New dev dependency `@axe-core/playwright` (installed by `npm ci`). Fixed: map container `role="region"`, underlined map credit links. Manual user testing is still needed.
