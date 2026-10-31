@@ -26,6 +26,7 @@ interface Props {
   lang: Lang;
   wheatP?: number | null;
   forecast?: Forecast;
+  asOf?: string;
   board?: Scoreboard | null;
   spring?: boolean;
   alertTopic?: string;
@@ -59,6 +60,7 @@ export function LiveCard({
   ring,
   pheno,
   soil,
+  asOf,
   fieldId,
   light = null,
 }: Props) {
@@ -162,7 +164,21 @@ export function LiveCard({
             {l.fieldLink}
           </button>
           {copied && <p role="status">{l.linkCopied}</p>}
+          <button
+            type="button"
+            className="big-button"
+            onClick={() => window.print()}
+          >
+            {l.printReport}
+          </button>
           <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} />
+          <div className="print-only" data-testid="print-report">
+            <p className="print-meta">
+              Crop Stress EWS · {district} · {fieldId}
+              {asOf ? ` · ${l.asOf} ${formatDate(asOf, lang)}` : ""}
+            </p>
+            <p className="print-meta">{fieldLink(fieldId)}</p>
+          </div>
         </>
       )}
       <p className="hint" data-testid="scoreboard">

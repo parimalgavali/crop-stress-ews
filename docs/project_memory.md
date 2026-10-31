@@ -181,3 +181,6 @@ How it works:
 
 ## US-46 field navigation (ADR 0043, Issue #99)
 - ◀/▶ under the field `<select>` step through `options` order (worst light first); Live only, no wrap-around.
+
+## US-47 printable report (ADR 0044, Issue #101)
+- `window.print()` button + `@media print` hides chrome; `.print-only` block carries site/district/field id/as-of/deep link. No QR (dependency/service avoided).

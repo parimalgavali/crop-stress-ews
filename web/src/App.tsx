@@ -302,6 +302,7 @@ export default function App() {
                   lang={lang}
                   wheatP={liveField.properties.wheat_p}
                   forecast={live.forecast?.[liveField.properties.district]}
+                  asOf={live.as_of}
                   board={board}
                   spring={Boolean(live.risk?.[liveField.properties.field_id])}
                   alertTopic={

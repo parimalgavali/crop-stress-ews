@@ -149,6 +149,7 @@ const T = {
     weatherLabel: "Rain and temperature for the next 5 days",
     prevField: "← Previous field",
     nextField: "Next field →",
+    printReport: "🖨 Print this card",
     unknownField:
       "This field is not monitored. Please pick one from the list.",
     linkCopied: "Link copied",
@@ -190,6 +191,7 @@ const T = {
     weatherLabel: "Regen und Temperatur der nächsten 5 Tage",
     prevField: "← Vorheriges Feld",
     nextField: "Nächstes Feld →",
+    printReport: "🖨 Diese Karte drucken",
     unknownField:
       "Dieses Feld wird nicht beobachtet. Bitte eines aus der Liste wählen.",
     linkCopied: "Link kopiert",
