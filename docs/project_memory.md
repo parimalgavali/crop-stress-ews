@@ -178,3 +178,6 @@ How it works:
 
 ## US-45 weather strip (ADR 0042, Issue #97)
 - `forecast_summary` writes `fc_days` (5 daily date/pr/tmin/tmax). `web/src/components/WeatherStrip.tsx` renders rain bars + lo/hi temps on the Live card; display only, never a model input.
+
+## US-46 field navigation (ADR 0043, Issue #99)
+- ◀/▶ under the field `<select>` step through `options` order (worst light first); Live only, no wrap-around.

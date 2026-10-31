@@ -245,6 +245,38 @@ export default function App() {
               </option>
             ))}
           </select>
+          {isLive &&
+            options.length > 1 &&
+            (() => {
+              const idx = options.findIndex(
+                (f) => f.properties.field_id === selected,
+              );
+              return (
+                <div className="field-nav">
+                  <button
+                    type="button"
+                    disabled={idx <= 0}
+                    onClick={() =>
+                      setSelected(options[idx - 1].properties.field_id)
+                    }
+                  >
+                    {l.prevField}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={idx === options.length - 1}
+                    onClick={() =>
+                      setSelected(
+                        options[Math.min(idx + 1, options.length - 1)]
+                          .properties.field_id,
+                      )
+                    }
+                  >
+                    {l.nextField}
+                  </button>
+                </div>
+              );
+            })()}
           {isLive && liveError && <p role="alert">{l.noLive}</p>}
           {isLive && (
             <CheckPanel
