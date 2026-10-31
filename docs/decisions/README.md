@@ -47,3 +47,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0040](0040-frost-map.md) | Frost low-spot map not validatable with open data | Blocked |
 | [0041](0041-overview-strip.md) | Live overview strip counts fields by worst light | Accepted |
 | [0042](0042-weather-strip.md) | Live cards show a 5-day weather strip from daily ICON forecast | Accepted |
+| [0043](0043-field-navigation.md) | Prev/next buttons walk Live fields in list order | Accepted |
