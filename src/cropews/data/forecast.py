@@ -144,6 +144,59 @@ def archived_soil_moisture(lat: float, lon: float, start: date, end: date) -> pd
     )
 
 
+SEASON_START_YEAR = 2019
+MIN_SEASONS = 4
+
+
+def season_rain(lat: float, lon: float, as_of: date) -> dict[str, Any]:
+    """Rain since 1 October at one point vs past seasons on the same day-of-season (US-50).
+
+    ERA5 daily precipitation from the archive API. "Usual" is the 25th–75th percentile of
+    previous seasons' cumulative rain at ``as_of``'s day-of-season; needs >= MIN_SEASONS.
+    """
+    oct1 = date(as_of.year if as_of.month >= 10 else as_of.year - 1, 10, 1)
+    body = _get(
+        ARCHIVE_URL,
+        {
+            "latitude": lat,
+            "longitude": lon,
+            "daily": "precipitation_sum",
+            "start_date": f"{SEASON_START_YEAR}-10-01",
+            "end_date": as_of.isoformat(),
+            "timezone": TIMEZONE,
+        },
+    )
+    daily = pd.DataFrame(
+        {
+            "date": pd.to_datetime(body["daily"]["time"]),
+            "pr": body["daily"]["precipitation_sum"],
+        }
+    ).dropna()
+    if daily.empty:
+        return {}
+    daily = daily.assign(season=daily["date"].dt.year - (daily["date"].dt.month < 10).astype(int))
+    cur = daily[(daily["season"] == oct1.year) & (daily["date"].dt.date <= as_of)]
+    if cur.empty:
+        return {}
+    day_idx = (as_of - oct1).days
+    past = []
+    for yr, g in daily.groupby("season"):
+        if yr >= oct1.year:
+            continue
+        g = g[g["date"].dt.date >= date(yr, 10, 1)].head(day_idx + 1)
+        if len(g) > day_idx:
+            past.append(float(g["pr"].sum()))
+    if len(past) < MIN_SEASONS:
+        return {}
+    p = pd.Series(past)
+    return {
+        "rain_mm": round(float(cur["pr"].sum()), 1),
+        "usual_lo": round(float(p.quantile(0.25)), 1),
+        "usual_hi": round(float(p.quantile(0.75)), 1),
+        "seasons": len(past),
+    }
+
+
 def soil_moisture_features(daily: pd.DataFrame, leads: int = LEAD_DAYS) -> pd.DataFrame:
     """Per date: soil moisture now and the change expected over the next ``leads`` days."""
     d = daily.sort_values("date").reset_index(drop=True)

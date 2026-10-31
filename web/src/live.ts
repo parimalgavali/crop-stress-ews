@@ -7,6 +7,7 @@ import type {
   SeriesPoint,
   WinterCheck,
   Phenology,
+  SeasonRain,
   Soil,
 } from "./api";
 import { formatDate, type Lang } from "./i18n";
@@ -147,6 +148,13 @@ const T = {
     overviewWorst: "Show the field that needs it most",
     overviewNone: "Fields without a traffic light are not counted",
     weatherLabel: "Rain and temperature for the next 5 days",
+    seasonRain: (mm: number, lo: number, hi: number) =>
+      `Since 1 October: ${Math.round(mm)} mm rain — usually ${Math.round(lo)}–${Math.round(hi)} mm by now`,
+    seasonRainVerdict: {
+      drier: "drier than usual",
+      usual: "about the usual amount",
+      wetter: "wetter than usual",
+    },
     prevField: "← Previous field",
     nextField: "Next field →",
     printReport: "🖨 Print this card",
@@ -189,6 +197,13 @@ const T = {
     overviewWorst: "Zeig das Feld, das es am nötigsten hat",
     overviewNone: "Felder ohne Ampel zählen nicht mit",
     weatherLabel: "Regen und Temperatur der nächsten 5 Tage",
+    seasonRain: (mm: number, lo: number, hi: number) =>
+      `Seit 1. Oktober: ${Math.round(mm)} mm Regen — üblich sind ${Math.round(lo)}–${Math.round(hi)} mm`,
+    seasonRainVerdict: {
+      drier: "trockener als üblich",
+      usual: "etwa wie üblich",
+      wetter: "nasser als üblich",
+    },
     prevField: "← Vorheriges Feld",
     nextField: "Nächstes Feld →",
     printReport: "🖨 Diese Karte drucken",
@@ -394,6 +409,18 @@ export function soilLine(soil: Soil, lang: Lang): string | null {
   return [s.soil(kind), ...notes].join(" · ");
 }
 
+export function seasonRainLine(sw: SeasonRain | undefined, lang: Lang): Line | null {
+  if (!sw) return null;
+  const s = T[lang];
+  const v =
+    sw.rain_mm < sw.usual_lo
+      ? s.seasonRainVerdict.drier
+      : sw.rain_mm > sw.usual_hi
+        ? s.seasonRainVerdict.wetter
+        : s.seasonRainVerdict.usual;
+  return { icon: "🌧", text: `${s.seasonRain(sw.rain_mm, sw.usual_lo, sw.usual_hi)} · ${v}` };
+}
+
 export function conditionLines(
   c: Conditions,
   crop: string,
@@ -403,6 +430,7 @@ export function conditionLines(
   winter?: WinterCheck,
   pheno?: Phenology,
   soil?: Soil,
+  seasonRain?: SeasonRain,
 ): Line[] {
   const s = T[lang];
   const lines: Line[] = [];
@@ -425,6 +453,8 @@ export function conditionLines(
   }
   if (c.rain_30d_mm != null)
     lines.push({ icon: "🌧", text: s.rain(c.rain_30d_mm) });
+  const sr = seasonRainLine(seasonRain, lang);
+  if (sr) lines.push(sr);
   if (c.tmean_7d_c != null && c.tmin_7d_c != null) {
     lines.push({
       icon: c.tmin_7d_c < 0 ? "❄" : "🌡",

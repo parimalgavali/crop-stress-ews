@@ -21,7 +21,12 @@ from cropews.config import CORE_DISTRICTS, PREDICTION_WINDOW
 from cropews.cropmap import predict, season_start
 from cropews.data import phenology, soil
 from cropews.data.fields import assign_districts, stable_sample
-from cropews.data.forecast import live_forecast, live_soil_moisture, soil_moisture_features
+from cropews.data.forecast import (
+    live_forecast,
+    live_soil_moisture,
+    season_rain,
+    soil_moisture_features,
+)
 from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
 from cropews.data.sentinel1 import extract_backscatter_series
 from cropews.data.sentinel2 import extract_field_series
@@ -89,6 +94,18 @@ def _district(job: tuple[gpd.GeoDataFrame, date, int, bool, Cache]) -> tuple[pd.
         hi = min(end, date(year, 12, 31)).strftime("%m-%d")
         frames.append(extract_weather(fields, year, lo, hi, ambav=False))
     return s2, s1, pd.concat(frames, ignore_index=True)
+
+
+def _season_rains(fields: gpd.GeoDataFrame, as_of: date) -> dict[str, dict[str, object]]:
+    """Seasonal rain vs usual at each district's centroid (US-50); empty on failure."""
+    out: dict[str, dict[str, object]] = {}
+    for district, g in fields.groupby("district"):
+        c = g.to_crs(4326).geometry.union_all().centroid
+        try:
+            out[str(district)] = season_rain(c.y, c.x, as_of)
+        except (requests.RequestException, RuntimeError, KeyError) as err:
+            print(f"season rain {district}: {err}")
+    return out
 
 
 def _forecasts(fields: gpd.GeoDataFrame, as_of: date) -> dict[str, dict[str, object]]:
@@ -224,6 +241,7 @@ def main() -> None:
         _soils(fields, args.cache),
     )
 
+    payload["season_rain"] = _season_rains(fields, args.as_of)
     payload["health"] = run_health(
         len(fields),
         len(payload["conditions"]),
