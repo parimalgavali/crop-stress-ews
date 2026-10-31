@@ -163,3 +163,6 @@ How it works:
 
 ## US-39 health line (ADR 0036, Issue #85)
 - `healthLine(live.health, lang)` in `web/src/live.ts` → footer of Live view: "Data check: W of N watched fields have data", ⚠ when < 50 % (`MIN_DATA_SHARE`) or scenes skipped. `health` block already existed in `latest.json` (ADR 0023).
+
+## kNDVI label test (ADR 0038, rejected)
+- `scripts/kndvi_label_eval.py` rebuilds labels with `kndvi = tanh(ndvi**2)` + ndmi; loses ~0.005 AUROC on 2022 at all horizons → NDVI labels kept. Peer-departure labels don't suffer NDVI saturation the same way absolute indices do.
