@@ -52,3 +52,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0045](0045-intro-overlay.md) | First-visit legend overlay explains the three lights | Accepted |
 | [0046](0046-field-notes.md) | Field notes saved on the phone next to checks | Accepted |
 | [0047](0047-season-rain.md) | Card shows season rain vs the usual range (ERA5) | Accepted |
+| [0048](0048-basemap-toggle.md) | Basemap toggle: streets / light / dark raster styles | Accepted |

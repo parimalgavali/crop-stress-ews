@@ -27,6 +27,8 @@ export const STRINGS = {
     introListen: '🔊 The card can read everything aloud.',
     introDone: 'Got it',
     introOpen: 'How it works',
+    basemap: 'Map style',
+    basemaps: { streets: 'Map', light: 'Light', dark: 'Dark' },
   },
   de: {
     title: 'Warnung vor Pflanzenstress',
@@ -55,6 +57,8 @@ export const STRINGS = {
     introListen: '🔊 Die Karte liest alles vor.',
     introDone: 'Verstanden',
     introOpen: 'So funktioniert es',
+    basemap: 'Kartenstil',
+    basemaps: { streets: 'Karte', light: 'Hell', dark: 'Dunkel' },
   },
 }
 
