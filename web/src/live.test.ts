@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conditionLines, greenness, healthLine, radarChanged, LIVE_STRINGS, scoreLine, soilLine, staleNotice, trend } from './live'
+import { conditionLines, greenness, healthLine, overviewCounts, radarChanged, LIVE_STRINGS, scoreLine, soilLine, staleNotice, trend, worstFieldId } from './live'
 
 describe('live conditions', () => {
   it('maps numbers to plain words', () => {
@@ -141,5 +141,30 @@ describe('healthLine', () => {
     expect(healthLine({ ...h, s2_scenes_skipped: ['a'] }, 'en')?.text).toContain('1 satellite image could not be read')
     expect(healthLine({ ...h, with_data: 100 }, 'en')?.icon).toBe('⚠')
     expect(healthLine({ ...h, parcels: 0 }, 'en')).toBeNull()
+  })
+})
+
+const hr = (risk: number, level: 'green' | 'amber' | 'red') => ({ days: 7, risk, level, reasons: [] })
+const fr = (id: string, horizons: ReturnType<typeof hr>[]) =>
+  [id, { field_id: id, year: 2026, date: '2026-05-01', district: 'Soest', horizons }] as const
+
+describe('overviewCounts / worstFieldId', () => {
+  it('counts each field by its worst light and hides nothing-to-say cases', () => {
+    const risk = Object.fromEntries([
+      fr('a', [hr(0.9, 'red'), hr(0.4, 'amber')]),
+      fr('b', [hr(0.6, 'amber'), hr(0.1, 'green')]),
+      fr('c', [hr(0.1, 'green')]),
+    ])
+    expect(overviewCounts(risk)).toEqual({ red: 1, amber: 1, green: 1, total: 3 })
+    expect(worstFieldId(risk)).toBe('a')
+    expect(overviewCounts({})).toBeNull()
+    expect(worstFieldId({})).toBeNull()
+  })
+  it('breaks ties by the highest risk value', () => {
+    const risk = Object.fromEntries([
+      fr('a', [hr(0.8, 'red')]),
+      fr('b', [hr(0.95, 'red')]),
+    ])
+    expect(worstFieldId(risk)).toBe('b')
   })
 })
