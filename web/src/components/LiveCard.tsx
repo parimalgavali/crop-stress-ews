@@ -17,6 +17,7 @@ import { lastCheckText } from "../fieldChecks";
 import { fieldLink } from "../fieldLink";
 import { FieldPhoto } from "./FieldPhoto";
 import { SeasonChart } from "./SeasonChart";
+import WeatherStrip from "./WeatherStrip";
 
 interface Props {
   cond: Conditions;
@@ -114,6 +115,9 @@ export function LiveCard({
           </li>
         ))}
       </ul>
+      {forecast?.fc_days?.length ? (
+        <WeatherStrip days={forecast.fc_days} lang={lang} />
+      ) : null}
       <SeasonChart
         series={series}
         peers={peers}

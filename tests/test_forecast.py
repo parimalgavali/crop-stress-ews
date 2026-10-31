@@ -50,6 +50,27 @@ def test_forecast_summary_counts_frost_days() -> None:
     assert forecast_summary(fc, date(2026, 11, 5)) == {}
 
 
+def test_forecast_summary_lists_days() -> None:
+    fc = pd.DataFrame(
+        {
+            "date": pd.date_range("2026-11-01", periods=6),
+            "pr_mm": [9.0, 1, 2, 0.04, 3, 50],
+            "tasmin_c": [9.0, 2, -1, -3, 1, 4],
+            "tasmax_c": [12.0, 6, 4, 2, 5, 8],
+        }
+    )
+    out = forecast_summary(fc, date(2026, 11, 1))
+    assert [x["date"] for x in out["fc_days"]] == [
+        "2026-11-02",
+        "2026-11-03",
+        "2026-11-04",
+        "2026-11-05",
+        "2026-11-06",
+    ]
+    assert out["fc_days"][0] == {"date": "2026-11-02", "pr": 1.0, "tmin": 2.0, "tmax": 6.0}
+    assert out["fc_days"][2]["pr"] == 0.0
+
+
 def test_forecast_summary_sums_snow() -> None:
     fc = pd.DataFrame(
         {

@@ -104,6 +104,15 @@ def forecast_summary(daily_fc: pd.DataFrame, as_of: date) -> dict[str, Any]:
         "fc_tmin_5d_c": round(float(d["tasmin_c"].min()), 1),
         "fc_frost_days": int((d["tasmin_c"] < FROST_C).sum()),
         "fc_snow_5d_cm": (round(float(d["snow_cm"].sum()), 1) if "snow_cm" in d else 0.0),
+        "fc_days": [
+            {
+                "date": r.date.isoformat(),
+                "pr": round(float(r.pr_mm), 1),
+                "tmin": round(float(r.tasmin_c), 1),
+                "tmax": round(float(getattr(r, "tasmax_c", r.tasmin_c)), 1),
+            }
+            for r in d.itertuples(index=False)
+        ],
     }
 
 

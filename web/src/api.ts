@@ -202,6 +202,8 @@ export interface Forecast {
   fc_snow_5d_cm?: number
   /** Open-Meteo 7–28 cm soil moisture, mean of next 5 days minus today, m³/m³ (ADR 0031). */
   fc_sm_change_5d?: number
+  /** Daily ICON forecast behind the summary, for the weather strip (US-45). */
+  fc_days?: { date: string; pr: number; tmin: number; tmax: number }[]
 }
 
 export interface ScoreHorizon {
