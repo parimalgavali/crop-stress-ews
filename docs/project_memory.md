@@ -172,3 +172,6 @@ How it works:
 
 ## Frost low-spot map (ADR 0040, blocked)
 - Terrain spread exists (Höxter fields 108–326 m, Soest 71–390 m) but no open dataset resolves 10–100 m cold-air pools (ICON ~6.5 km, DWD ~20 stations/NRW). Not validatable → not built.
+
+## US-44 overview strip (ADR 0041, Issue #95)
+- `overviewCounts(live.risk)` / `worstFieldId` / `worstLevel` in `web/src/live.ts`; strip renders only when `live.risk` non-empty, counts fields by worst horizon light; button selects worst field.

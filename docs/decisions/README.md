@@ -45,3 +45,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0038](0038-kndvi-label.md) | kNDVI stress labels tested and rejected | Rejected |
 | [0039](0039-yieldsat.md) | YieldSAT outcome check blocked on gated access | Blocked |
 | [0040](0040-frost-map.md) | Frost low-spot map not validatable with open data | Blocked |
+| [0041](0041-overview-strip.md) | Live overview strip counts fields by worst light | Accepted |

@@ -29,6 +29,8 @@ h1 { font-size: 1.3rem; margin: 0; }
 .field-label { font-weight: 600; }
 .big-select { min-height: 52px; padding: 0 0.6rem; border: 2px solid #888; border-radius: 8px; background: #fff; }
 .hint { color: #555; }
+.overview { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 1rem; background: #fff; border-bottom: 1px solid #ddd; flex-wrap: wrap; font-size: 0.95rem; }
+.overview-counts { font-weight: 600; }
 
 .lights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
 .light { display: flex; gap: 0.8rem; align-items: center; padding: 0.7rem; border-radius: 12px; border: 3px solid; }

@@ -17,7 +17,14 @@ import { CheckPanel } from "./components/CheckPanel";
 import { RiskCard } from "./components/RiskCard";
 import { formatDate, STRINGS, type Lang } from "./i18n";
 import { outerRing } from "./fieldPhoto";
-import { LIVE_STRINGS, healthLine, staleNotice } from "./live";
+import {
+  LIVE_STRINGS,
+  healthLine,
+  overviewCounts,
+  staleNotice,
+  worstLevel,
+  worstFieldId,
+} from "./live";
 import { setUrlField, urlField } from "./fieldLink";
 
 const YEARS = [2024, 2025];
@@ -65,6 +72,7 @@ export default function App() {
   const online = useOnline();
   const offline = online ? null : l.offline;
   const stale = isLive && live ? staleNotice(live.as_of, lang) : null;
+  const overview = isLive && live ? overviewCounts(live.risk) : null;
   const liveField = isLive
     ? live?.fields.features.find((f) => f.properties.field_id === selected)
     : undefined;
@@ -189,6 +197,24 @@ export default function App() {
         </div>
       </header>
 
+      {isLive && overview && (
+        <div className="overview" aria-label={l.overviewLabel}>
+          <span className="overview-counts" role="status">
+            {l.overview(overview.red, overview.amber, overview.green)}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              const w = worstFieldId(live?.risk);
+              if (w) setSelected(w);
+            }}
+          >
+            {l.overviewWorst}
+          </button>
+          <span className="hint">{l.overviewNone}</span>
+        </div>
+      )}
+
       <main className="main">
         <MapView
           fields={shown}
@@ -260,15 +286,9 @@ export default function App() {
                   pheno={live.phenology?.[liveField.properties.district]}
                   soil={live.soil?.[liveField.properties.field_id]}
                   fieldId={liveField.properties.field_id}
-                  light={
-                    live.risk?.[
-                      liveField.properties.field_id
-                    ]?.horizons.reduce<Level | null>(
-                      (w, h) =>
-                        w == null || RANK[h.level] > RANK[w] ? h.level : w,
-                      null,
-                    ) ?? null
-                  }
+                  light={worstLevel(
+                    live.risk?.[liveField.properties.field_id],
+                  )}
                 />
               </>
             ) : (

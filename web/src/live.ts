@@ -1,6 +1,8 @@
 import type {
   Conditions,
+  FieldRisk,
   Forecast,
+  Level,
   Scoreboard,
   SeriesPoint,
   WinterCheck,
@@ -139,6 +141,11 @@ const T = {
       `Data check: ${w} of ${n} watched fields have data`,
     scenesSkipped: (n: number) =>
       `${n} satellite ${n === 1 ? "image" : "images"} could not be read`,
+    overviewLabel: "Status of the watched fields",
+    overview: (r: number, a: number, g: number) =>
+      `${r} need a look · ${a} keep watching · ${g} look fine`,
+    overviewWorst: "Show the field that needs it most",
+    overviewNone: "Fields without a traffic light are not counted",
     unknownField:
       "This field is not monitored. Please pick one from the list.",
     linkCopied: "Link copied",
@@ -172,6 +179,11 @@ const T = {
       `Daten-Check: ${w} von ${n} beobachteten Feldern haben Daten`,
     scenesSkipped: (n: number) =>
       `${n} ${n === 1 ? "Satellitenbild" : "Satellitenbilder"} konnten nicht gelesen werden`,
+    overviewLabel: "Stand der beobachteten Felder",
+    overview: (r: number, a: number, g: number) =>
+      `${r} brauchen einen Blick · ${a} beobachten · ${g} sehen gut aus`,
+    overviewWorst: "Zeig das Feld, das es am nötigsten hat",
+    overviewNone: "Felder ohne Ampel zählen nicht mit",
     unknownField:
       "Dieses Feld wird nicht beobachtet. Bitte eines aus der Liste wählen.",
     linkCopied: "Link kopiert",
@@ -263,6 +275,63 @@ export function staleNotice(
       86_400_000,
   );
   return days > STALE_DAYS ? T[lang].stale(days) : null;
+}
+
+const LEVEL_RANK: Record<Level, number> = { green: 0, amber: 1, red: 2 };
+
+/** Worst traffic light across a field's horizons; null when the field has no lights. */
+export function worstLevel(risk: FieldRisk | undefined): Level | null {
+  return (
+    risk?.horizons.reduce<Level | null>(
+      (w, h) => (w == null || LEVEL_RANK[h.level] > LEVEL_RANK[w] ? h.level : w),
+      null,
+    ) ?? null
+  );
+}
+
+export interface Overview {
+  red: number;
+  amber: number;
+  green: number;
+  total: number;
+}
+
+/** Counts of monitored fields by their worst light; null until risk data exists (US-44). */
+export function overviewCounts(
+  risk: Record<string, FieldRisk> | undefined,
+): Overview | null {
+  const out = { red: 0, amber: 0, green: 0, total: 0 };
+  for (const r of Object.values(risk ?? {})) {
+    const w = worstLevel(r);
+    if (w) {
+      out[w] += 1;
+      out.total += 1;
+    }
+  }
+  return out.total ? out : null;
+}
+
+/** Field whose card the overview button should open: worst light, then highest risk. */
+export function worstFieldId(
+  risk: Record<string, FieldRisk> | undefined,
+): string | null {
+  let best: string | null = null;
+  let bestRank = -1;
+  let bestRisk = -1;
+  for (const [id, r] of Object.entries(risk ?? {})) {
+    const w = worstLevel(r);
+    if (!w || r.horizons.length === 0) continue;
+    const top = Math.max(...r.horizons.map((h) => h.risk));
+    if (
+      LEVEL_RANK[w] > bestRank ||
+      (LEVEL_RANK[w] === bestRank && top > bestRisk)
+    ) {
+      best = id;
+      bestRank = LEVEL_RANK[w];
+      bestRisk = top;
+    }
+  }
+  return best;
 }
 
 export interface Line {
