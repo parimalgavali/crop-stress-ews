@@ -148,5 +148,9 @@ How it works:
 - `cropews.data.forecast.live_soil_moisture` / `archived_soil_moisture` (Open-Meteo forecast / ERA5 archive, daily 0–7 and 7–28 cm, m³/m³); `soil_moisture_features` gives `sm_root_change_5d` = mean of the next 5 days minus today. Live adds `fc_sm_change_5d` to `latest.json.forecast[district]`; the card notes "soil drying out/getting wetter" at ±0.02.
 - Model test `scripts/soil_moisture_eval.py`: no gain on 2022 (±0.001), worse on 2024 (−0.01 to −0.04), so not adopted. ERA5 in training ≠ forecast model live, so the Live model stays as in ADR 0021.
 
+## US-35 "I checked it" (ADR 0032, Issue #77)
+- Live cards: 👍/👎 saved in `localStorage["cropews.checks.v1"]` (date, ok, worst light at the time); undo; agreement count over checks made while a light was shown. Nothing is sent; no central collection (needs privacy design + backend).
+- Code: `web/src/fieldChecks.ts`, `web/src/components/CheckedIt.tsx`.
+
 ## US-36 accessibility CI (ADR 0033, Issue #79)
 - `web/e2e/a11y.spec.ts`: axe WCAG 2.1 A/AA on replay + Live cards, EN/DE, in the CI Playwright step; map canvas excluded. New dev dependency `@axe-core/playwright` (installed by `npm ci`). Fixed: map container `role="region"`, underlined map credit links. Manual user testing is still needed.
