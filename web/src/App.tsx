@@ -11,7 +11,7 @@ import {
   type Level,
   type LiveSeason,
 } from "./api";
-import { MapView } from "./components/MapView";
+import { MapView, type Basemap } from "./components/MapView";
 import { LiveCard } from "./components/LiveCard";
 import { CheckPanel } from "./components/CheckPanel";
 import { RiskCard } from "./components/RiskCard";
@@ -62,6 +62,12 @@ export default function App() {
   const [board, setBoard] = useState<Scoreboard | null | undefined>();
   const [live, setLive] = useState<LiveSeason | null>(null);
   const [liveError, setLiveError] = useState(false);
+  const [basemap, setBasemap] = useState<Basemap>(
+    () =>
+      (["streets", "light", "dark"].find(
+        (b) => b === localStorage.getItem("cropews-basemap"),
+      ) as Basemap) ?? "streets",
+  );
   const [intro, setIntro] = useState(
     () => localStorage.getItem("cropews-intro-seen") == null,
   );
@@ -254,15 +260,34 @@ export default function App() {
       )}
 
       <main className="main">
-        <MapView
-          fields={shown}
-          selected={selected}
-          onSelect={setSelected}
-          draft={isLive ? draft : null}
-          onMapClick={
-            isLive && draft ? (p) => setDraft([...draft, p]) : undefined
-          }
-        />
+        <div className="mapwrap">
+          <MapView
+            fields={shown}
+            selected={selected}
+            onSelect={setSelected}
+            draft={isLive ? draft : null}
+            onMapClick={
+              isLive && draft ? (p) => setDraft([...draft, p]) : undefined
+            }
+            basemap={basemap}
+          />
+          <div className="basemap-toggle" role="group" aria-label={s.basemap}>
+            {(["streets", "light", "dark"] as const).map((b) => (
+              <button
+                key={b}
+                type="button"
+                className="chip"
+                aria-pressed={basemap === b}
+                onClick={() => {
+                  setBasemap(b);
+                  localStorage.setItem("cropews-basemap", b);
+                }}
+              >
+                {s.basemaps[b]}
+              </button>
+            ))}
+          </div>
+        </div>
         <aside className="panel">
           {error && <p role="alert">Data not reachable.</p>}
           <label className="field-label" htmlFor="field-select">

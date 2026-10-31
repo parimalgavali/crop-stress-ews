@@ -117,3 +117,9 @@ h1 { font-size: 1.3rem; margin: 0; }
 .intro-lights { font-weight: 600; }
 .field-note label { display: block; font-weight: 600; margin-bottom: 2px; }
 .field-note textarea { width: 100%; font: inherit; padding: 0.4rem; border: 2px solid #888; border-radius: 8px; }
+
+.mapwrap { position: relative; min-height: 300px; display: grid; }
+.mapwrap .map { height: 100%; }
+.basemap-toggle { position: absolute; top: 0.5rem; right: 0.5rem; z-index: 5; display: flex; gap: 0; background: rgba(255,255,255,0.92); border-radius: 22px; border: 1px solid #ddd; }
+.basemap-toggle .chip { min-width: 40px; min-height: 36px; border: none; background: transparent; margin-left: 0; }
+.basemap-toggle .chip[aria-pressed='true'] { border-radius: 20px; }

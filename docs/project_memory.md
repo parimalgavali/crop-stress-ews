@@ -193,3 +193,6 @@ How it works:
 
 ## US-50 season rain (ADR 0047, Issue #107)
 - `season_rain()` in `src/cropews/data/forecast.py` → `payload["season_rain"]` per district; `seasonRainLine` in `web/src/live.ts`; display only.
+
+## US-51 basemap toggle (ADR 0048, Issue #109)
+- `BASEMAPS` in `MapView.tsx` (OSM streets, CARTO light/dark); chips over the map; `localStorage cropews-basemap`.
