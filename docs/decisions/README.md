@@ -39,3 +39,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0032](0032-checked-it.md) | "I checked it" button, saved only on the phone | Accepted |
 | [0033](0033-a11y-ci.md) | Automated accessibility checks (axe, WCAG 2.1 A/AA) in CI | Accepted |
 | [0034](0034-field-link.md) | `?field=` link opens the app on a chosen field | Accepted |
+| [0035](0035-frost-card.md) | Frost note distinguishes protective snow from bare-ground hard frost | Accepted |

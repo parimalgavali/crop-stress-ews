@@ -199,6 +199,7 @@ export interface Forecast {
   fc_rain_5d_mm: number
   fc_tmin_5d_c: number
   fc_frost_days: number
+  fc_snow_5d_cm?: number
   /** Open-Meteo 7–28 cm soil moisture, mean of next 5 days minus today, m³/m³ (ADR 0031). */
   fc_sm_change_5d?: number
 }

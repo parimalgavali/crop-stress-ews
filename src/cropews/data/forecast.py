@@ -34,7 +34,7 @@ def live_forecast(lat: float, lon: float, days: int = 7) -> pd.DataFrame:
         {
             "latitude": lat,
             "longitude": lon,
-            "daily": "precipitation_sum,temperature_2m_min,temperature_2m_max",
+            "daily": "precipitation_sum,snowfall_sum,temperature_2m_min,temperature_2m_max",
             "models": MODEL,
             "forecast_days": days + 1,
             "timezone": TIMEZONE,
@@ -47,6 +47,7 @@ def live_forecast(lat: float, lon: float, days: int = 7) -> pd.DataFrame:
             "pr_mm": d["precipitation_sum"],
             "tasmin_c": d["temperature_2m_min"],
             "tasmax_c": d["temperature_2m_max"],
+            "snow_cm": d["snowfall_sum"],
         }
     ).dropna()
 

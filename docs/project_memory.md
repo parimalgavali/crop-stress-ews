@@ -157,3 +157,6 @@ How it works:
 
 ## US-37 field deep link (ADR 0034, Issue #81)
 - `?field=<id>` → Live mode + selected; `web/src/fieldLink.ts`; copy button on each Live card (clipboard, prompt fallback); unknown id shows a pick-hint. Playwright lang buttons must be scoped to the `Language|Sprache` group — button names ending in "EN" collide.
+
+## US-38 winter frost card (ADR 0035, Issue #83)
+- `live_forecast` fetches `snowfall_sum` too; `forecast_summary` adds `fc_snow_5d_cm` (0 when the column is absent, e.g. archived data). Card: frost under snow / on bare ground / "hard frost on bare ground" at `fc_tmin_5d_c <= -8` (`HARD_FROST_C`, `SNOW_CM = 1` in `web/src/live.ts`). Display context only.

@@ -29,6 +29,11 @@ export const WET_5D_MM = 20;
 /** Soil-moisture change worth mentioning, m³/m³ (about the 10 %/90 % of spring days, ADR 0031). */
 export const SM_CHANGE = 0.02;
 
+/** Frost below this on bare ground can damage even hardened winter wheat (ADR 0035). */
+export const HARD_FROST_C = -8;
+/** Snowfall in the forecast window that counts as a protective cover (ADR 0035). */
+export const SNOW_CM = 1;
+
 export type Compare = "above" | "same" | "below";
 /** NDVI gap to the peer median that counts as a difference (same scale as ``trend``). */
 export const COMPARE_NDVI = 0.05;
@@ -88,6 +93,9 @@ const T = {
       `Forecast check: ${n} forecasts checked so far. A red alarm came before ${hits} of ${onsets} stress events (14 days ahead).`,
     forecastFrost: (n: number) =>
       `frost on ${n} ${n === 1 ? "night" : "nights"}`,
+    frostSnow: "snow expected — that protects the crop",
+    frostBare: "on bare ground",
+    frostHardBare: "hard frost on bare ground — worth watching",
     temp: (m: number, lo: number) =>
       `Last 7 days: ${m.toFixed(0)} °C on average, lowest ${lo.toFixed(0)} °C`,
     frost: "Frost",
@@ -207,6 +215,9 @@ const T = {
       `Vorhersage-Kontrolle: bisher ${n} Vorhersagen geprüft. Vor ${hits} von ${onsets} Stressereignissen gab es einen roten Alarm (14 Tage vorher).`,
     forecastFrost: (n: number) =>
       `Frost in ${n} ${n === 1 ? "Nacht" : "Nächten"}`,
+    frostSnow: "Schnee erwartet — der schützt den Bestand",
+    frostBare: "auf offenem Boden",
+    frostHardBare: "starker Frost auf offenem Boden — lieber nachsehen",
     temp: (m: number, lo: number) =>
       `Letzte 7 Tage: im Mittel ${m.toFixed(0)} °C, tiefster Wert ${lo.toFixed(0)} °C`,
     frost: "Frost",
@@ -310,7 +321,16 @@ export function conditionLines(
   if (fc) {
     const notes = [
       fc.fc_rain_5d_mm >= WET_5D_MM ? s.forecastWet : null,
-      fc.fc_frost_days > 0 ? s.forecastFrost(fc.fc_frost_days) : null,
+      fc.fc_frost_days > 0
+        ? [
+            s.forecastFrost(fc.fc_frost_days),
+            (fc.fc_snow_5d_cm ?? 0) >= SNOW_CM
+              ? s.frostSnow
+              : fc.fc_tmin_5d_c <= HARD_FROST_C
+                ? s.frostHardBare
+                : s.frostBare,
+          ].join(", ")
+        : null,
       fc.fc_sm_change_5d == null
         ? null
         : fc.fc_sm_change_5d <= -SM_CHANGE
