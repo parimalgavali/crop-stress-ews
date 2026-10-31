@@ -154,3 +154,6 @@ How it works:
 
 ## US-36 accessibility CI (ADR 0033, Issue #79)
 - `web/e2e/a11y.spec.ts`: axe WCAG 2.1 A/AA on replay + Live cards, EN/DE, in the CI Playwright step; map canvas excluded. New dev dependency `@axe-core/playwright` (installed by `npm ci`). Fixed: map container `role="region"`, underlined map credit links. Manual user testing is still needed.
+
+## US-37 field deep link (ADR 0034, Issue #81)
+- `?field=<id>` → Live mode + selected; `web/src/fieldLink.ts`; copy button on each Live card (clipboard, prompt fallback); unknown id shows a pick-hint. Playwright lang buttons must be scoped to the `Language|Sprache` group — button names ending in "EN" collide.

@@ -14,6 +14,7 @@ import { formatDate, STRINGS, type Lang } from "../i18n";
 import { chartSummary, conditionLines, LIVE_STRINGS, scoreLine } from "../live";
 import { CheckedIt } from "./CheckedIt";
 import { lastCheckText } from "../fieldChecks";
+import { fieldLink } from "../fieldLink";
 import { FieldPhoto } from "./FieldPhoto";
 import { SeasonChart } from "./SeasonChart";
 
@@ -74,6 +75,7 @@ export function LiveCard({
   );
   const chart = chartSummary(series, peers, lang);
   const [speaking, setSpeaking] = useState(false);
+  const [copied, setCopied] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 
   useEffect(
@@ -139,7 +141,25 @@ export function LiveCard({
         </p>
       )}
       {fieldId && (
-        <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} />
+        <>
+          <button
+            type="button"
+            className="big-button"
+            onClick={async () => {
+              const url = fieldLink(fieldId);
+              try {
+                await navigator.clipboard.writeText(url);
+                setCopied(true);
+              } catch {
+                window.prompt(l.linkManual, url);
+              }
+            }}
+          >
+            {l.fieldLink}
+          </button>
+          {copied && <p role="status">{l.linkCopied}</p>}
+          <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} />
+        </>
       )}
       <p className="hint" data-testid="scoreboard">
         {scoreLine(board, lang)}
