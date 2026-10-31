@@ -43,7 +43,7 @@ test.beforeEach(async ({ page }) => {
 
 test('choose a field, see three traffic lights, hear it, step the season', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await expect(page.locator('.map canvas')).toBeVisible()
 
   const select = page.getByLabel('Field', { exact: true })
@@ -63,13 +63,13 @@ test('choose a field, see three traffic lights, hear it, step the season', async
   await expect(page.getByTestId('current-date')).toHaveText('10 May')
   await expect(page.getByTestId('horizon-21')).toContainText('High risk')
 
-  await page.getByRole('button', { name: 'DE' }).click()
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'DE' }).click()
   await expect(page.getByTestId('horizon-21')).toContainText('Hohes Risiko')
 })
 
 test('keyboard only: tab to the field list and the read-aloud button', async ({ page }) => {
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await page.getByLabel('Field', { exact: true }).focus()
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('ArrowDown')
@@ -102,7 +102,7 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
     }),
   )
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await page.getByRole('button', { name: 'Live' }).click()
   await expect(page.getByTestId('live-date')).toHaveText('1 November')
   await page.getByLabel('Field', { exact: true }).selectOption('LWK-1')
@@ -119,7 +119,7 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await page.getByRole('button', { name: /Looks fine/ }).click()
   await expect(page.getByRole('status')).toContainText('You checked it on')
   await page.reload()
-  await page.getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await page.getByRole('button', { name: 'Live' }).click()
   await page.getByLabel('Field', { exact: true }).selectOption('LWK-1')
   await expect(page.getByRole('status')).toContainText('looks fine')
@@ -140,7 +140,7 @@ test('check my field: draw corners, then read satellite data for that polygon', 
     return r.fulfill({ json: { type: 'FeatureCollection', features: [] } })
   })
   await page.goto('/')
-  await page.getByRole('button', { name: 'EN' }).click()
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await page.getByRole('button', { name: 'Live' }).click()
   await page.getByRole('button', { name: /Check my field/ }).click()
   const map = page.locator('.map')
@@ -151,4 +151,39 @@ test('check my field: draw corners, then read satellite data for that polygon', 
   await page.getByRole('button', { name: /Done/ }).click()
   await expect(page.getByRole('alert')).toHaveText('No satellite images found for this field in the last 60 days.')
   expect((searched as { intersects: { type: string } }).intersects.type).toBe('Polygon')
+})
+
+test('a shared ?field= link opens the Live card and the address bar follows', async ({ page }) => {
+  await page.route('**/live/latest.json', (r) =>
+    r.fulfill({
+      json: {
+        as_of: '2026-11-01',
+        attribution: 'test',
+        fields: {
+          type: 'FeatureCollection',
+          features: [
+            { type: 'Feature', id: 'LWK-1', geometry: square(8.0), properties: { field_id: 'LWK-1', district: 'Soest', area_ha: 4, declared_crop: 'Mais', level: null } },
+          ],
+        },
+        conditions: {
+          'LWK-1': { s2_date: '2026-10-28', s2_days_ago: 4, ndvi: 0.7, ndvi_change: 0.2, s1_days_ago: 1, vv_change_db: 0.1, rain_30d_mm: 55, tmean_7d_c: 6, tmin_7d_c: 1 },
+        },
+      },
+    }),
+  )
+  await page.goto('/?field=LWK-1')
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
+  await expect(page.getByLabel('Field', { exact: true })).toHaveValue('LWK-1')
+  await expect(page.getByTestId('live-lines')).toContainText('Last clear satellite image')
+  await expect(page.getByRole('button', { name: '🔗 Link to this field' })).toBeVisible()
+
+  // Switching off Live clears the link target again
+  await page.getByRole('button', { name: '2024' }).click()
+  await expect(page).not.toHaveURL(/field=/)
+
+  // Unknown field id: no crash, shows the "no data" hint
+  await page.goto('/?field=DOES-NOT-EXIST')
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
+  await expect(page.getByLabel('Field', { exact: true })).toHaveValue('')
+  await expect(page.getByText('This field is not monitored.')).toBeVisible()
 })

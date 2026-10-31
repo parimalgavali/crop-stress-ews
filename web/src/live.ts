@@ -123,6 +123,11 @@ const T = {
     photoError: "The satellite photo could not be loaded. Check the internet connection and try again.",
     alert:
       "Get a message when this field turns red (free ntfy app, no sign-up)",
+    fieldLink: "🔗 Link to this field",
+    unknownField:
+      "This field is not monitored. Please pick one from the list.",
+    linkCopied: "Link copied",
+    linkManual: "Copy this link yourself:",
   },
   de: {
     live: "Aktuell",
@@ -147,6 +152,11 @@ const T = {
     photoError: "Das Satellitenfoto konnte nicht geladen werden. Bitte Internetverbindung prüfen und erneut versuchen.",
     alert:
       "Nachricht erhalten, wenn dieses Feld rot wird (kostenlose ntfy-App, ohne Anmeldung)",
+    fieldLink: "🔗 Link zu diesem Feld",
+    unknownField:
+      "Dieses Feld wird nicht beobachtet. Bitte eines aus der Liste wählen.",
+    linkCopied: "Link kopiert",
+    linkManual: "Diesen Link selbst kopieren:",
     springNote:
       "Stress-Vorhersagen beginnen am 5. April, wenn der Winterweizen wieder wächst.",
     prevCrop: (c: string) => `Angebaute Kultur dieses Jahr: ${c}`,

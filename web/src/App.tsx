@@ -18,6 +18,7 @@ import { RiskCard } from "./components/RiskCard";
 import { formatDate, STRINGS, type Lang } from "./i18n";
 import { outerRing } from "./fieldPhoto";
 import { LIVE_STRINGS, staleNotice } from "./live";
+import { setUrlField, urlField } from "./fieldLink";
 
 const YEARS = [2024, 2025];
 const RANK: Record<Level, number> = { green: 0, amber: 1, red: 2 };
@@ -45,10 +46,12 @@ export default function App() {
   const [dateIdx, setDateIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [fields, setFields] = useState<FieldCollection | null>(null);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(() =>
+    urlField(window.location.search),
+  );
   const [risk, setRisk] = useState<FieldRisk | null>(null);
   const [error, setError] = useState(false);
-  const [isLive, setIsLive] = useState(false);
+  const [isLive, setIsLive] = useState(() => urlField(window.location.search) != null);
   const [board, setBoard] = useState<Scoreboard | null | undefined>();
   const [live, setLive] = useState<LiveSeason | null>(null);
   const [liveError, setLiveError] = useState(false);
@@ -103,6 +106,10 @@ export default function App() {
         .then(setLive)
         .catch(() => setLiveError(true));
   }, [isLive, live]);
+
+  useEffect(() => {
+    setUrlField(isLive ? selected : null);
+  }, [selected, isLive]);
 
   useEffect(() => {
     if (!playing) return;
@@ -265,7 +272,13 @@ export default function App() {
                 />
               </>
             ) : (
-              <p className="hint">{selected ? s.noData : s.pickHint}</p>
+              <p className="hint">
+                {selected
+                  ? live && !liveField
+                    ? l.unknownField
+                    : s.noData
+                  : s.pickHint}
+              </p>
             )
           ) : risk ? (
             <RiskCard risk={risk} lang={lang} />
