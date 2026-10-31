@@ -175,3 +175,6 @@ How it works:
 
 ## US-44 overview strip (ADR 0041, Issue #95)
 - `overviewCounts(live.risk)` / `worstFieldId` / `worstLevel` in `web/src/live.ts`; strip renders only when `live.risk` non-empty, counts fields by worst horizon light; button selects worst field.
+
+## US-45 weather strip (ADR 0042, Issue #97)
+- `forecast_summary` writes `fc_days` (5 daily date/pr/tmin/tmax). `web/src/components/WeatherStrip.tsx` renders rain bars + lo/hi temps on the Live card; display only, never a model input.

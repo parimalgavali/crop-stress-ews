@@ -146,6 +146,7 @@ const T = {
       `${r} need a look · ${a} keep watching · ${g} look fine`,
     overviewWorst: "Show the field that needs it most",
     overviewNone: "Fields without a traffic light are not counted",
+    weatherLabel: "Rain and temperature for the next 5 days",
     unknownField:
       "This field is not monitored. Please pick one from the list.",
     linkCopied: "Link copied",
@@ -184,6 +185,7 @@ const T = {
       `${r} brauchen einen Blick · ${a} beobachten · ${g} sehen gut aus`,
     overviewWorst: "Zeig das Feld, das es am nötigsten hat",
     overviewNone: "Felder ohne Ampel zählen nicht mit",
+    weatherLabel: "Regen und Temperatur der nächsten 5 Tage",
     unknownField:
       "Dieses Feld wird nicht beobachtet. Bitte eines aus der Liste wählen.",
     linkCopied: "Link kopiert",

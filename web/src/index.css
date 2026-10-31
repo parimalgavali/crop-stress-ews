@@ -91,3 +91,9 @@ h1 { font-size: 1.3rem; margin: 0; }
   font: inherit;
   cursor: pointer;
 }
+
+.fcstrip { display: flex; gap: 0.6rem; margin: 0.4rem 0; }
+.fcday { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 2.4rem; font-size: 0.8rem; color: #555; }
+.fcbar { width: 1rem; height: 2.4rem; display: flex; align-items: flex-end; background: #eef3f8; border-radius: 2px; }
+.fcbar i { display: block; width: 100%; background: #1f6feb; border-radius: 2px; }
+.fct { font-variant-numeric: tabular-nums; }
