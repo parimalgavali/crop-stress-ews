@@ -166,3 +166,6 @@ How it works:
 
 ## kNDVI label test (ADR 0038, rejected)
 - `scripts/kndvi_label_eval.py` rebuilds labels with `kndvi = tanh(ndvi**2)` + ndmi; loses ~0.005 AUROC on 2022 at all horizons → NDVI labels kept. Peer-departure labels don't suffer NDVI saturation the same way absolute indices do.
+
+## YieldSAT outcome check (ADR 0039, blocked)
+- YieldSAT (CVPR 2026): 299 German fields (~188 wheat, 2018–2022) with combine-harvester yield maps. Access only via a gated request form on yieldsat.github.io; no public mirror; field locations anonymized so NRW coverage is unverifiable. Needs a human to request access.
