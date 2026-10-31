@@ -46,4 +46,18 @@ def test_forecast_summary_counts_frost_days() -> None:
     assert out["fc_rain_5d_mm"] == 6.0
     assert out["fc_tmin_5d_c"] == -3.0
     assert out["fc_frost_days"] == 2
+    assert out["fc_snow_5d_cm"] == 0.0  # column absent in archived data
     assert forecast_summary(fc, date(2026, 11, 5)) == {}
+
+
+def test_forecast_summary_sums_snow() -> None:
+    fc = pd.DataFrame(
+        {
+            "date": pd.date_range("2026-11-01", periods=7),
+            "pr_mm": [9.0, 1, 2, 0, 0, 3, 50],
+            "tasmin_c": [9.0, 2, -1, -9, 1, 4, 4],
+            "snow_cm": [0.0, 0, 0, 3, 1.5, 0, 10],
+        }
+    )
+    out = forecast_summary(fc, date(2026, 11, 1))
+    assert out["fc_snow_5d_cm"] == 4.5

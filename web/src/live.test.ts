@@ -35,7 +35,7 @@ describe('forecast line', () => {
   it('says rain, lowest temperature, heavy rain and frost in English', () => {
     const text = conditionLines({}, 'Winterweichweizen', 'en', null, fc).map((l) => l.text)
     expect(text).toContain(
-      'Next 5 days (weather forecast): 24 mm rain, lowest -2 °C · heavy rain expected · frost on 1 night',
+      'Next 5 days (weather forecast): 24 mm rain, lowest -2 °C · heavy rain expected · frost on 1 night, on bare ground',
     )
   })
   it('says it in German and omits notes when calm', () => {
@@ -47,6 +47,25 @@ describe('forecast line', () => {
 
 describe('scoreLine', () => {
   const h = { issued: 300, pending: 50, scored: 250, onsets: 8, auroc: 0.8, red_hits: 5, red_false: 30, missed: 3 }
+  it('distinguishes protective snow from hard frost on bare ground', () => {
+    const base = { fc_to: '2026-11-02', fc_rain_5d_mm: 0, fc_frost_days: 2 }
+    const snowy = conditionLines(
+      {},
+      'Winterweizen',
+      'en',
+      null,
+      { ...base, fc_tmin_5d_c: -10, fc_snow_5d_cm: 4 },
+    ).find((x) => x.icon === '❄')
+    expect(snowy?.text).toContain('snow expected — that protects the crop')
+    const bare = conditionLines(
+      {},
+      'Winterweizen',
+      'en',
+      null,
+      { ...base, fc_tmin_5d_c: -10, fc_snow_5d_cm: 0 },
+    ).find((x) => x.icon === '❄')
+    expect(bare?.text).toContain('hard frost on bare ground')
+  })
   it('says nothing is checked before the first scored forecast', () => {
     expect(scoreLine(null, 'en')).toMatch(/none checked yet/)
     expect(scoreLine({ as_of: '2027-04-06', horizons: { '14': null } }, 'de')).toMatch(/noch keine/)
