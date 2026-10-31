@@ -62,6 +62,9 @@ export default function App() {
   const [board, setBoard] = useState<Scoreboard | null | undefined>();
   const [live, setLive] = useState<LiveSeason | null>(null);
   const [liveError, setLiveError] = useState(false);
+  const [intro, setIntro] = useState(
+    () => localStorage.getItem("cropews-intro-seen") == null,
+  );
   const [draft, setDraft] = useState<[number, number][] | null>(null);
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -146,6 +149,32 @@ export default function App() {
 
   return (
     <div className="app">
+      {intro && (
+        <div className="intro-backdrop">
+          <div
+            className="intro-card"
+            role="dialog"
+            aria-modal="true"
+            aria-label={s.introTitle}
+          >
+            <h2>{s.introTitle}</h2>
+            <p className="intro-lights">{s.introLights}</p>
+            <p>{s.introPick}</p>
+            <p>{s.introListen}</p>
+            <button
+              type="button"
+              className="big-button"
+              onClick={() => {
+                localStorage.setItem("cropews-intro-seen", "1");
+                setIntro(false);
+              }}
+            >
+              {s.introDone}
+            </button>
+          </div>
+        </div>
+      )}
+
       <header className="bar">
         <div>
           <h1>{s.title}</h1>
@@ -181,6 +210,15 @@ export default function App() {
               </button>
             ))}
           </div>
+          <button
+            type="button"
+            className="chip"
+            aria-label={s.introOpen}
+            title={s.introOpen}
+            onClick={() => setIntro(true)}
+          >
+            ?
+          </button>
           <div role="group" aria-label={s.language}>
             {(["de", "en"] as const).map((l) => (
               <button

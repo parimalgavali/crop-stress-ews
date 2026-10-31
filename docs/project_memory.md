@@ -184,3 +184,6 @@ How it works:
 
 ## US-47 printable report (ADR 0044, Issue #101)
 - `window.print()` button + `@media print` hides chrome; `.print-only` block carries site/district/field id/as-of/deep link. No QR (dependency/service avoided).
+
+## US-48 intro overlay (ADR 0045, Issue #103)
+- One-shot dialog (localStorage `cropews-intro-seen`): lights legend + pick-a-field + read-aloud hint, EN/DE; "?" chip reopens.

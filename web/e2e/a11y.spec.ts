@@ -1,6 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('cropews-intro-seen', '1'))
+})
+
 // WCAG 2.1 A/AA automated checks on each screen (ADR 0033). The map canvas is excluded: it
 // is a picture of the fields, and every field is also in the "Field" list.
 const square = (x: number) => ({

@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test'
 
 // ADR 0024: after one online visit the app opens without internet, from the service worker cache.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('cropews-intro-seen', '1'))
+})
+
 test.use({ serviceWorkers: 'allow' })
 
 test('opens offline after one visit and says so', async ({ page, context }) => {

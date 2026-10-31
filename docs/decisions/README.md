@@ -49,3 +49,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0042](0042-weather-strip.md) | Live cards show a 5-day weather strip from daily ICON forecast | Accepted |
 | [0043](0043-field-navigation.md) | Prev/next buttons walk Live fields in list order | Accepted |
 | [0044](0044-print-report.md) | Print stylesheet turns the Live card into a one-page report | Accepted |
+| [0045](0045-intro-overlay.md) | First-visit legend overlay explains the three lights | Accepted |
