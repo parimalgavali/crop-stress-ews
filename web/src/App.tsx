@@ -252,6 +252,16 @@ export default function App() {
                   ring={outerRing(liveField.geometry)}
                   pheno={live.phenology?.[liveField.properties.district]}
                   soil={live.soil?.[liveField.properties.field_id]}
+                  fieldId={liveField.properties.field_id}
+                  light={
+                    live.risk?.[
+                      liveField.properties.field_id
+                    ]?.horizons.reduce<Level | null>(
+                      (w, h) =>
+                        w == null || RANK[h.level] > RANK[w] ? h.level : w,
+                      null,
+                    ) ?? null
+                  }
                 />
               </>
             ) : (

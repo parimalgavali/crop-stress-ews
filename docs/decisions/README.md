@@ -36,3 +36,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0029](0029-dwd-phenology.md) | Nearby winter-wheat growth stage from DWD phenology observers on Live cards | Accepted |
 | [0030](0030-bk50-soil.md) | BK50 soil on Live cards; tested as model input, not adopted | Accepted |
 | [0031](0031-soil-moisture-forecast.md) | Soil-moisture trend on the forecast line; tested as model input, not adopted | Accepted |
+| [0032](0032-checked-it.md) | "I checked it" button, saved only on the phone | Accepted |

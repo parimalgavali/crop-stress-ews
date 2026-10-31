@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type {
   Conditions,
+  Level,
   Forecast,
   Phenology,
   Soil,
@@ -11,6 +12,8 @@ import type {
 import type { Ring } from "../geo";
 import { formatDate, STRINGS, type Lang } from "../i18n";
 import { chartSummary, conditionLines, LIVE_STRINGS, scoreLine } from "../live";
+import { CheckedIt } from "./CheckedIt";
+import { lastCheckText } from "../fieldChecks";
 import { FieldPhoto } from "./FieldPhoto";
 import { SeasonChart } from "./SeasonChart";
 
@@ -32,6 +35,8 @@ interface Props {
   ring?: Ring | null;
   pheno?: Phenology;
   soil?: Soil;
+  fieldId?: string;
+  light?: Level | null;
 }
 
 export function LiveCard({
@@ -52,6 +57,8 @@ export function LiveCard({
   ring,
   pheno,
   soil,
+  fieldId,
+  light = null,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -80,8 +87,9 @@ export function LiveCard({
     if (!canSpeak) return;
     window.speechSynthesis.cancel();
     if (speaking) return setSpeaking(false);
+    const checked = fieldId ? lastCheckText(fieldId, lang) : null;
     const u = new SpeechSynthesisUtterance(
-      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${scoreLine(board, lang)}`,
+      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}`,
     );
     u.lang = lang === "de" ? "de-DE" : "en-GB";
     u.rate = 0.9;
@@ -129,6 +137,9 @@ export function LiveCard({
             🔔 {l.alert}
           </a>
         </p>
+      )}
+      {fieldId && (
+        <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} />
       )}
       <p className="hint" data-testid="scoreboard">
         {scoreLine(board, lang)}
