@@ -160,3 +160,6 @@ How it works:
 
 ## US-38 winter frost card (ADR 0035, Issue #83)
 - `live_forecast` fetches `snowfall_sum` too; `forecast_summary` adds `fc_snow_5d_cm` (0 when the column is absent, e.g. archived data). Card: frost under snow / on bare ground / "hard frost on bare ground" at `fc_tmin_5d_c <= -8` (`HARD_FROST_C`, `SNOW_CM = 1` in `web/src/live.ts`). Display context only.
+
+## US-39 health line (ADR 0036, Issue #85)
+- `healthLine(live.health, lang)` in `web/src/live.ts` → footer of Live view: "Data check: W of N watched fields have data", ⚠ when < 50 % (`MIN_DATA_SHARE`) or scenes skipped. `health` block already existed in `latest.json` (ADR 0023).
