@@ -115,3 +115,5 @@ h1 { font-size: 1.3rem; margin: 0; }
 .intro-card { background: #fff; border-radius: 12px; padding: 1.2rem; max-width: 22rem; display: flex; flex-direction: column; gap: 0.7rem; }
 .intro-card h2 { margin: 0; }
 .intro-lights { font-weight: 600; }
+.field-note label { display: block; font-weight: 600; margin-bottom: 2px; }
+.field-note textarea { width: 100%; font: inherit; padding: 0.4rem; border: 2px solid #888; border-radius: 8px; }

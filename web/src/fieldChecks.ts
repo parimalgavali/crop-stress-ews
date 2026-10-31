@@ -7,6 +7,8 @@ export interface FieldCheck {
   ok: boolean;
   /** Worst traffic light on the card when the check was saved; null outside the risk season. */
   light: Level | null;
+  /** Free-text field note (US-49); only ever on this device. */
+  note?: string;
 }
 
 export const STORAGE_KEY = "cropews.checks.v1";
@@ -60,6 +62,18 @@ export function agreement(all: Record<string, FieldCheck[]>): {
   };
 }
 
+/** Attach a note to the field's latest check; empty text clears it (US-49). */
+export function setNote(store: Store, fieldId: string, note: string) {
+  const all = loadChecks(store);
+  const last = all[fieldId]?.at(-1);
+  if (!last) return all;
+  const text = note.trim().slice(0, 280);
+  const checks = all[fieldId].slice(0, -1);
+  all[fieldId] = [...checks, { ...last, note: text || undefined }];
+  save(store, all);
+  return all;
+}
+
 export const CHECK_STRINGS = {
   en: {
     ask: "Been to this field? Tell your phone what you saw:",
@@ -71,6 +85,10 @@ export const CHECK_STRINGS = {
     agree: (a: number, n: number) =>
       `Your checks agreed with the traffic light ${a} of ${n} times.`,
     private: "Saved only on this phone. Nothing is sent.",
+    noteLabel: "Your note about this field",
+    noteHint: "e.g. waterlogged at the lower end",
+    noteSave: "Save note",
+    noteSaved: "Saved",
   },
   de: {
     ask: "Auf dem Feld gewesen? Sag dem Handy, was du gesehen hast:",
@@ -82,6 +100,10 @@ export const CHECK_STRINGS = {
     agree: (a: number, n: number) =>
       `Deine Prüfungen passten ${a} von ${n} Mal zur Ampel.`,
     private: "Nur auf diesem Handy gespeichert. Nichts wird gesendet.",
+    noteLabel: "Deine Notiz zum Feld",
+    noteHint: "z. B. am unteren Ende nass",
+    noteSave: "Notiz speichern",
+    noteSaved: "Gespeichert",
   },
 };
 
@@ -92,7 +114,7 @@ export function lastCheckText(
   store: Store = localStorage,
 ) {
   const last = loadChecks(store)[fieldId]?.at(-1);
-  return last
-    ? CHECK_STRINGS[lang].last(formatDate(last.date, lang), last.ok)
-    : null;
+  if (!last) return null;
+  const base = CHECK_STRINGS[lang].last(formatDate(last.date, lang), last.ok);
+  return last.note ? `${base}. ${last.note}` : base;
 }

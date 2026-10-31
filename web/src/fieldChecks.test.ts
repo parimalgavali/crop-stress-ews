@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addCheck, agreement, loadChecks, STORAGE_KEY, undoCheck } from './fieldChecks'
+import { addCheck, agreement, lastCheckText, loadChecks, setNote, STORAGE_KEY, undoCheck } from './fieldChecks'
 
 function memory() {
   const m = new Map<string, string>()
@@ -28,3 +28,15 @@ describe('fieldChecks', () => {
     ).toEqual({ n: 3, agree: 2 })
   })
 })
+
+  it('keeps a note on the latest check and speaks it', () => {
+    const s = memory()
+    addCheck(s, 'A', { date: '2026-05-01', ok: false, light: 'amber' })
+    setNote(s, 'A', '  wet at the corner  ')
+    expect(loadChecks(s).A[0].note).toBe('wet at the corner')
+    expect(lastCheckText('A', 'en', s)).toContain('wet at the corner')
+    setNote(s, 'A', '')
+    expect(loadChecks(s).A[0].note).toBeUndefined()
+    setNote(s, 'no-such-field', 'x')
+    expect(loadChecks(s)['no-such-field']).toBeUndefined()
+  })
