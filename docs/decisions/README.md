@@ -51,3 +51,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0044](0044-print-report.md) | Print stylesheet turns the Live card into a one-page report | Accepted |
 | [0045](0045-intro-overlay.md) | First-visit legend overlay explains the three lights | Accepted |
 | [0046](0046-field-notes.md) | Field notes saved on the phone next to checks | Accepted |
+| [0047](0047-season-rain.md) | Card shows season rain vs the usual range (ERA5) | Accepted |

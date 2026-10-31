@@ -190,3 +190,6 @@ How it works:
 
 ## US-49 field notes (ADR 0046, Issue #105)
 - `FieldCheck.note` (≤280 chars) via `setNote` in `web/src/fieldChecks.ts`; textarea on the card; read aloud; device-local only.
+
+## US-50 season rain (ADR 0047, Issue #107)
+- `season_rain()` in `src/cropews/data/forecast.py` → `payload["season_rain"]` per district; `seasonRainLine` in `web/src/live.ts`; display only.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conditionLines, greenness, healthLine, overviewCounts, radarChanged, LIVE_STRINGS, scoreLine, soilLine, staleNotice, trend, worstFieldId } from './live'
+import { conditionLines, greenness, healthLine, overviewCounts, radarChanged, LIVE_STRINGS, scoreLine, seasonRainLine, soilLine, staleNotice, trend, worstFieldId } from './live'
 
 describe('live conditions', () => {
   it('maps numbers to plain words', () => {
@@ -166,5 +166,17 @@ describe('overviewCounts / worstFieldId', () => {
       fr('b', [hr(0.95, 'red')]),
     ])
     expect(worstFieldId(risk)).toBe('b')
+  })
+})
+
+describe('seasonRainLine', () => {
+  const base = { rain_mm: 122, usual_lo: 59, usual_hi: 95, seasons: 7 }
+  it('calls a wet season wetter than usual and hides absent data', () => {
+    expect(seasonRainLine(base, 'en')!.text).toContain('wetter than usual')
+    expect(seasonRainLine(base, 'en')!.text).toContain('122 mm')
+    expect(seasonRainLine({ ...base, rain_mm: 70 }, 'en')!.text).toContain('usual amount')
+    expect(seasonRainLine({ ...base, rain_mm: 40 }, 'en')!.text).toContain('drier')
+    expect(seasonRainLine(undefined, 'en')).toBeNull()
+    expect(seasonRainLine(base, 'de')!.text).toContain('nasser als üblich')
   })
 })

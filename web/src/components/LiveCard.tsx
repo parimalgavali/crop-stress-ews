@@ -5,6 +5,7 @@ import type {
   Forecast,
   Phenology,
   Soil,
+  SeasonRain,
   Scoreboard,
   SeriesPoint,
   WinterCheck,
@@ -26,6 +27,7 @@ interface Props {
   lang: Lang;
   wheatP?: number | null;
   forecast?: Forecast;
+  seasonRain?: SeasonRain;
   asOf?: string;
   board?: Scoreboard | null;
   spring?: boolean;
@@ -60,6 +62,7 @@ export function LiveCard({
   ring,
   pheno,
   soil,
+  seasonRain,
   asOf,
   fieldId,
   light = null,
@@ -75,6 +78,7 @@ export function LiveCard({
     winter,
     pheno,
     soil,
+    seasonRain,
   );
   const chart = chartSummary(series, peers, lang);
   const [speaking, setSpeaking] = useState(false);

@@ -2,7 +2,8 @@ from datetime import date
 
 import pandas as pd
 
-from cropews.data.forecast import issued_features, observed_features
+from cropews.data import forecast
+from cropews.data.forecast import issued_features, observed_features, season_rain
 from cropews.live import forecast_summary
 
 
@@ -69,6 +70,35 @@ def test_forecast_summary_lists_days() -> None:
     ]
     assert out["fc_days"][0] == {"date": "2026-11-02", "pr": 1.0, "tmin": 2.0, "tmax": 6.0}
     assert out["fc_days"][2]["pr"] == 0.0
+
+
+def test_season_rain_compares_cumulative_at_day_of_season(monkeypatch) -> None:
+    dates = pd.date_range("2019-10-01", "2026-10-27")
+    body = {
+        "daily": {
+            "time": [d.strftime("%Y-%m-%d") for d in dates],
+            # 1 mm/day in past seasons, 3 mm/day in the current one (from Oct 2026)
+            "precipitation_sum": [3.0 if d >= pd.Timestamp("2026-10-01") else 1.0 for d in dates],
+        }
+    }
+    monkeypatch.setattr(forecast, "_get", lambda *a, **k: body)
+    out = season_rain(51.5, 8.0, date(2026, 10, 27))
+    assert out["rain_mm"] == 81.0  # 27 days * 3 mm
+    assert out["usual_lo"] == 27.0  # 27 days * 1 mm, same day-of-season
+    assert out["usual_hi"] == 27.0
+    assert out["seasons"] == 7
+
+
+def test_season_rain_hides_short_history(monkeypatch) -> None:
+    dates = pd.date_range("2023-10-01", "2026-10-27")
+    body = {
+        "daily": {
+            "time": [d.strftime("%Y-%m-%d") for d in dates],
+            "precipitation_sum": [1.0] * len(dates),
+        }
+    }
+    monkeypatch.setattr(forecast, "_get", lambda *a, **k: body)
+    assert season_rain(51.5, 8.0, date(2026, 10, 27)) == {}
 
 
 def test_forecast_summary_sums_snow() -> None:

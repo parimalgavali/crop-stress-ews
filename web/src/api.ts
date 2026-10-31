@@ -156,6 +156,7 @@ export interface LiveSeason {
   phenology?: Record<string, Phenology>
   soil?: Record<string, Soil>
   season?: SeasonChart
+  season_rain?: Record<string, SeasonRain>
   health?: { parcels: number; with_data: number; s1_scenes_skipped: string[]; s2_scenes_skipped: string[]; minutes: number }
 }
 
@@ -204,6 +205,14 @@ export interface Forecast {
   fc_sm_change_5d?: number
   /** Daily ICON forecast behind the summary, for the weather strip (US-45). */
   fc_days?: { date: string; pr: number; tmin: number; tmax: number }[]
+}
+
+/** Rain since 1 October vs past seasons at the district (US-50). */
+export interface SeasonRain {
+  rain_mm: number
+  usual_lo: number
+  usual_hi: number
+  seasons: number
 }
 
 export interface ScoreHorizon {
