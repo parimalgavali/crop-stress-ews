@@ -34,6 +34,9 @@ export const HARD_FROST_C = -8;
 /** Snowfall in the forecast window that counts as a protective cover (ADR 0035). */
 export const SNOW_CM = 1;
 
+/** A run is unhealthy below this share of fields with data (same rule as ADR 0023). */
+export const MIN_DATA_SHARE = 0.5;
+
 export type Compare = "above" | "same" | "below";
 /** NDVI gap to the peer median that counts as a difference (same scale as ``trend``). */
 export const COMPARE_NDVI = 0.05;
@@ -132,6 +135,10 @@ const T = {
     alert:
       "Get a message when this field turns red (free ntfy app, no sign-up)",
     fieldLink: "🔗 Link to this field",
+    dataHealth: (w: number, n: number) =>
+      `Data check: ${w} of ${n} watched fields have data`,
+    scenesSkipped: (n: number) =>
+      `${n} satellite ${n === 1 ? "image" : "images"} could not be read`,
     unknownField:
       "This field is not monitored. Please pick one from the list.",
     linkCopied: "Link copied",
@@ -161,6 +168,10 @@ const T = {
     alert:
       "Nachricht erhalten, wenn dieses Feld rot wird (kostenlose ntfy-App, ohne Anmeldung)",
     fieldLink: "🔗 Link zu diesem Feld",
+    dataHealth: (w: number, n: number) =>
+      `Daten-Check: ${w} von ${n} beobachteten Feldern haben Daten`,
+    scenesSkipped: (n: number) =>
+      `${n} ${n === 1 ? "Satellitenbild" : "Satellitenbilder"} konnten nicht gelesen werden`,
     unknownField:
       "Dieses Feld wird nicht beobachtet. Bitte eines aus der Liste wählen.",
     linkCopied: "Link kopiert",
@@ -257,6 +268,31 @@ export function staleNotice(
 export interface Line {
   icon: string;
   text: string;
+}
+
+export interface LiveHealth {
+  parcels: number;
+  with_data: number;
+  s1_scenes_skipped: string[];
+  s2_scenes_skipped: string[];
+  minutes: number;
+}
+
+/** Data-health line for the Live footer: warn below MIN_DATA_SHARE or when scenes were skipped (US-39). */
+export function healthLine(health: LiveHealth, lang: Lang): Line | null {
+  if (!health.parcels) return null;
+  const skipped =
+    health.s1_scenes_skipped.length + health.s2_scenes_skipped.length;
+  const ok = health.with_data >= MIN_DATA_SHARE * health.parcels && skipped === 0;
+  return {
+    icon: ok ? "✓" : "⚠",
+    text: [
+      T[lang].dataHealth(health.with_data, health.parcels),
+      skipped ? T[lang].scenesSkipped(skipped) : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+  };
 }
 
 /** Plain-language lines for one field; the same lines are read aloud. */

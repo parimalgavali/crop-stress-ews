@@ -17,7 +17,7 @@ import { CheckPanel } from "./components/CheckPanel";
 import { RiskCard } from "./components/RiskCard";
 import { formatDate, STRINGS, type Lang } from "./i18n";
 import { outerRing } from "./fieldPhoto";
-import { LIVE_STRINGS, staleNotice } from "./live";
+import { LIVE_STRINGS, healthLine, staleNotice } from "./live";
 import { setUrlField, urlField } from "./fieldLink";
 
 const YEARS = [2024, 2025];
@@ -307,6 +307,15 @@ export default function App() {
               <span aria-hidden="true">⚠</span> {stale}
             </p>
           )}
+          {live?.health &&
+            (() => {
+              const h = healthLine(live.health, lang);
+              return h ? (
+                <p className="hint" data-testid="live-health">
+                  <span aria-hidden="true">{h.icon}</span> {h.text}
+                </p>
+              ) : null;
+            })()}
         </footer>
       ) : (
         <footer className="bar timeline">
