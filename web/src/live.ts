@@ -97,6 +97,8 @@ const T = {
       "Forecast check: none checked yet. Every forecast is saved before the outcome is known and checked later.",
     scoreSome: (n: number, hits: number, onsets: number) =>
       `Forecast check: ${n} forecasts checked so far. A red alarm came before ${hits} of ${onsets} stress events (14 days ahead).`,
+    scoreDenoms: (e: number, p: number, u: number) =>
+      `${e} checked · ${p} still waiting for their outcome · ${u} can never be checked`,
     forecastFrost: (n: number) =>
       `frost on ${n} ${n === 1 ? "night" : "nights"}`,
     frostSnow: "snow expected — that protects the crop",
