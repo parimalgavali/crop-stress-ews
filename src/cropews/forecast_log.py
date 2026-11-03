@@ -31,12 +31,22 @@ def append_log(path: Path, entries: pd.DataFrame) -> pd.DataFrame:
     return new
 
 
-def outcomes_long(targets: pd.DataFrame, horizons: tuple[int, ...]) -> pd.DataFrame:
-    """``onset_<h>d`` columns -> rows of (field_id, date, horizon_days, y)."""
-    return pd.concat(
+SCOREBOARD_SCHEMA = 2
+
+
+def outcomes_long(
+    targets: pd.DataFrame, horizons: tuple[int, ...], keep_nan: bool = False
+) -> pd.DataFrame:
+    """``onset_<h>d`` columns -> rows of (field_id, date, horizon_days, y).
+
+    ``keep_nan`` retains rows whose outcome is unobservable (label policy returned NaN) so the
+    scoreboard can report them separately from still-pending outcomes (spec 8.4).
+    """
+    out = pd.concat(
         targets[["field_id", "date"]].assign(horizon_days=h, y=targets[f"onset_{h}d"])
         for h in horizons
-    ).dropna(subset=["y"])
+    )
+    return out if keep_nan else out.dropna(subset=["y"])
 
 
 def scoreboard(log: pd.DataFrame, outcomes: pd.DataFrame, today: date) -> dict[str, Any]:
@@ -52,20 +62,47 @@ def scoreboard(log: pd.DataFrame, outcomes: pd.DataFrame, today: date) -> dict[s
     # aligned; intraday issuance lag is a documented limit.
     issued_day = pd.to_datetime(log["issued_at"], utc=True, errors="coerce").dt.date
     stale = (issued_day > log["date"].dt.date).fillna(False)
-    scored = log[due & ~stale].merge(out, on=KEY, how="inner")
-    board: dict[str, Any] = {"as_of": today.isoformat(), "horizons": {}}
+    evaluable = log[due & ~stale]
+    # Outcome rows with a NaN y exist but are permanently unobservable (spec 8.4); an absent
+    # row means the outcome is still pending. Score only rows with a real label.
+    merged = evaluable.merge(out, on=KEY, how="left", indicator=True)
+    scored = merged[merged["y"].notna()]
+    unobs = merged[(merged["_merge"] == "both") & merged["y"].isna()]
+    pendo = merged[merged["_merge"] == "left_only"]
+    board: dict[str, Any] = {
+        "as_of": today.isoformat(),
+        "schema_version": SCOREBOARD_SCHEMA,
+        "horizons": {},
+    }
     for h, g in log.groupby("horizon_days"):
         s = scored[scored["horizon_days"] == h]
+        n_unobs = int((unobs["horizon_days"] == h).sum())
+        n_pendo = int((pendo["horizon_days"] == h).sum())
         y, red = s["y"].astype(int), s["level"] == "red"
         both = y.nunique() == 2
+        # Persistence baseline: each scored forecast's risk from the same field's previous
+        # logged forecast at this horizon (spec 8.4). Only rows with a prior forecast count.
+        prev_risk = g.sort_values("date").set_index(KEY)["risk"].groupby(level="field_id").shift(1)
+        s_prev = s.join(prev_risk.rename("prev_risk"), on=KEY).dropna(subset=["prev_risk"])
+        both_prev = len(s_prev) and s_prev["y"].astype(int).nunique() == 2
         board["horizons"][str(int(h))] = {
             "issued": int(len(g)),
+            "eligible": int((~stale[g.index]).sum()),
+            "withheld": int(stale[g.index].sum()),
             "pending": int((~due[g.index]).sum()),
+            "evaluated": int(len(s)),
+            "unobservable": n_unobs,
+            "pending_outcome": n_pendo,
             "scored": int(len(s)),
             "no_outcome": int(due[g.index].sum() - len(s)),
             "stale_origin": int(stale[g.index].sum()),
             "onsets": int(y.sum()),
             "auroc": round(float(roc_auc_score(y, s["risk"])), 3) if both else None,
+            "auroc_persistence": (
+                round(float(roc_auc_score(s_prev["y"].astype(int), s_prev["prev_risk"])), 3)
+                if both_prev
+                else None
+            ),
             "red_hits": int((red & (y == 1)).sum()),
             "red_false": int((red & (y == 0)).sum()),
             "missed": int((~red & (y == 1)).sum()),

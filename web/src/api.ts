@@ -258,6 +258,11 @@ export interface SeasonRain {
 export interface ScoreHorizon {
   issued: number
   pending: number
+  eligible?: number
+  withheld?: number
+  evaluated?: number
+  unobservable?: number
+  pending_outcome?: number
   scored: number
   no_outcome?: number
   onsets: number
