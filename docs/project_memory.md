@@ -1,5 +1,9 @@
 # Project memory
 
+### Check-my-field gap (ADR 0053)
+- `optical` skips scenes <20d before the latest clear one (was inverted); exported with injectable
+  deps for flow-level tests.
+
 ### Reason text (ADR 0052)
 - `top_reasons(contrib, x)`: physical phrasing only when raw data supports it, else attribution
   ("X contributed to the estimate"); `kind` field = fact|attribution.

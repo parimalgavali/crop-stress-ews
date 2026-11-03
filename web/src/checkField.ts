@@ -130,23 +130,39 @@ export function ndviMedian(
   return { clear, ndvi };
 }
 
-async function optical(ring: Ring, asOf: Date): Promise<Partial<Conditions>> {
+type OpticalDeps = {
+  search: typeof search;
+  token: typeof token;
+  readInside: typeof readInside;
+  toUtm: typeof toUtm;
+  epsgZone: typeof epsgZone;
+};
+
+// Exported for tests, which inject fakes to exercise the whole selection flow.
+export async function optical(
+  ring: Ring,
+  asOf: Date,
+  deps: OpticalDeps = { search, token, readInside, toUtm, epsgZone },
+): Promise<Partial<Conditions>> {
   const items = (
-    await search("sentinel-2-l2a", ring, asOf, {
+    await deps.search("sentinel-2-l2a", ring, asOf, {
       query: { "eo:cloud_cover": { lt: 90 } },
     })
   ).slice(0, MAX_S2_SCENES);
-  const sas = await token("sentinel-2-l2a");
+  const sas = await deps.token("sentinel-2-l2a");
   let latest: { date: string; ndvi: number } | null = null;
   for (const item of items) {
+    // Skip items too recent to compare with the latest accepted scene: the
+    // change readout needs an older scene at least CHANGE_MIN_GAP_DAYS away.
+    // (Review 4.5 — the old check dropped candidates *older* than the gap.)
     if (
       latest &&
-      daysAgo(latest.date, new Date(item.properties.datetime)) <
-        -CHANGE_MIN_GAP_DAYS
+      daysAgo(isoDay(item.properties.datetime), new Date(latest.date)) <
+        CHANGE_MIN_GAP_DAYS
     )
       continue;
-    const local = ring.map(([x, y]) => toUtm(x, y, epsgZone(item)));
-    const scl = await readInside(`${item.assets.SCL.href}?${sas}`, local, 20);
+    const local = ring.map(([x, y]) => deps.toUtm(x, y, deps.epsgZone(item)));
+    const scl = await deps.readInside(`${item.assets.SCL.href}?${sas}`, local, 20);
     if (
       scl.filter((c) => c === 4 || c === 5).length /
         Math.max(1, scl.filter((c) => c !== 0).length) <
@@ -155,7 +171,7 @@ async function optical(ring: Ring, asOf: Date): Promise<Partial<Conditions>> {
       continue;
     const [red, nir] = await Promise.all(
       ["B04", "B08"].map((b) =>
-        readInside(`${item.assets[b].href}?${sas}`, local, 20),
+        deps.readInside(`${item.assets[b].href}?${sas}`, local, 20),
       ),
     );
     const offset =
