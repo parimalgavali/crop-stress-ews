@@ -1,5 +1,9 @@
 # Project memory
 
+### Run manifest (ADR 0066)
+- `demo_evaluation` manifest: observations, parameters, runtime_seconds,
+  artifact_sha256; `--check fixtures/demo_expected.json` verifies stable keys.
+
 ### Run budget (ADR 0065)
 - `run_health` emits extraction_minutes/scenes_s2/s1/cache_hit/freshest_s2; health
   line shows "update took X min". Cost tracked as runtime + scenes, not money.
