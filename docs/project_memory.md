@@ -8,6 +8,10 @@
 - `web/src/live.ts` weeklyDigest: deterministic one-liner over live.scouting —
   queue size, dominant first reason, freshest s2_days_ago. No LLM.
 
+### Weekly digest (ADR 0064)
+- `web/src/live.ts` weeklyDigest: deterministic one-liner over live.scouting —
+  queue size, dominant first reason, freshest s2_days_ago. No LLM.
+
 ### Interchange contract (ADR 0062)
 - `src/cropews/interchange.py`: cropews-fields v1 GeoJSON (EPSG:4326, ha),
   cropews-scores v1 CSV (directive line, issued_at/feature_cutoff mandatory),
