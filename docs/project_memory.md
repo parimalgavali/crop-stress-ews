@@ -8,6 +8,10 @@
 - `requirements-lock.txt` (pip-compile, all extras, py3.10) pins the full tree; regenerate on dep
   changes.
 
+### Environment lock (ADR 0056)
+- `requirements-lock.txt` (pip-compile, all extras, py3.10) pins the full tree; regenerate on dep
+  changes.
+
 ### Reproducible mini-run (ADR 0055)
 - `python -m cropews.demo_evaluation`: synthetic fixture → labels → model → AUROC + lead time.
 
