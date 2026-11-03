@@ -7,6 +7,8 @@ quality (cloud/shadow, edge/exterior pixels, unstable view) is reported alongsid
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from scipy import ndimage
 
@@ -102,12 +104,7 @@ def zone_cells(
     return [[r, c] for r in range(r0, r1 + 1) for c in range(c0, c1 + 1)]
 
 
-def field_subfield(
-    geom: object,
-    crs: object,
-    item: object,
-    catalog_item_reader: object = None,
-) -> dict | None:
+def field_subfield(geom: Any, crs: Any, item: Any) -> dict | None:
     """Build the payload entry for one field's freshest view (spec 8.6)."""
     from cropews.data.sentinel2 import field_index_map
 
