@@ -1,5 +1,13 @@
 # Project memory
 
+### GRU-D corrective rerun (ADR 0067)
+- Post-decay-fix rerun: GRU-D 30d 0.833/0.804/0.792 on 2022 — below LightGBM at every
+  horizon; sequence models stay non-adopted. Pre-fix "GRU-D wins" claims superseded.
+
+### Matched peers rejected (ADR 0063)
+- District × soil-class peers (min_peers=5) lose on 2022 at all horizons, both models;
+  district peers stay. `build_features(peer_key=)` kept for future experiments.
+
 ### Matched peers rejected (ADR 0063)
 - District × soil-class peers (min_peers=5) lose on 2022 at all horizons, both models;
   district peers stay. `build_features(peer_key=)` kept for future experiments.

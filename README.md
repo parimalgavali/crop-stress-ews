@@ -31,12 +31,10 @@ reasons are written in plain language, and a one-screen web app can read them al
   horizon contained the onset ([ADR 0050](docs/decisions/0050-horizon-aware-lead-time.md)) — with a
   median **13 days** of lead time and ~3.7 repeated alerts per warned event; the older
   "21 of 29, median 15 days" figures (any-alarm-in-21-days rule) are superseded.
-- **Best research model:** the validation-selected GRU-D (30-day window) reaches AUROC
-  0.83 / 0.81 / 0.80 at 7 / 14 / 21 days. It beats persistence on every point estimate, but the
-  95% CIs still overlap, so by the project's own rule ([ADR 0008](docs/decisions/0008-evaluation-protocol.md))
-  this is "better on point estimates", not a proven win ([sequence models](docs/sequence_models.md)).
-  These GRU-D numbers predate the input-decay fix ([ADR 0049](docs/decisions/0049-grud-input-decay-init.md))
-  and will be recomputed in the corrective release.
+- **Best research model:** after the input-decay fix ([ADR 0067](docs/decisions/0067-grud-corrective-rerun.md)),
+  the validation-selected GRU-D (30-day window) reaches 0.83 / 0.80 / 0.79 on the 2022 gate —
+  below the LightGBM baseline (0.88 / 0.83 / 0.82) at every horizon, so sequence models are
+  not adopted and stay a research comparison ([sequence models](docs/sequence_models.md)).
 - **Model choice:** GRU-D/LSTM, LightGBM and the served model overlap in CI. The demo serves the
   simplest model, whose reasons are its own coefficient contributions
   ([ADR 0012](docs/decisions/0012-api-and-demo-model.md)).
