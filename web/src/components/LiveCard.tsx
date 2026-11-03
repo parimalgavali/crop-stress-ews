@@ -20,6 +20,7 @@ import { fieldLink } from "../fieldLink";
 import { FieldPhoto } from "./FieldPhoto";
 import { ObservationLog } from "./ObservationLog";
 import { SeasonChart } from "./SeasonChart";
+import { SubfieldMap } from "./SubfieldMap";
 import WeatherStrip from "./WeatherStrip";
 
 interface Props {
@@ -45,6 +46,7 @@ interface Props {
   fieldId?: string;
   light?: Level | null;
   evidence?: Evidence;
+  subfield?: import("../api").SubfieldEntry;
 }
 
 export function LiveCard({
@@ -70,6 +72,7 @@ export function LiveCard({
   fieldId,
   light = null,
   evidence,
+  subfield,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -85,6 +88,12 @@ export function LiveCard({
     seasonRain,
   );
   const chart = chartSummary(series, peers, lang);
+  const ha = subfield?.zones.reduce((a, z) => a + z.area_ha, 0) ?? 0;
+  const subText = subfield
+    ? (subfield.zones.length
+        ? l.patches?.(subfield.zones.length, Math.round(ha * 10) / 10, subfield.date)
+        : l.patchesNone?.(subfield.date)) ?? null
+    : null;
   const ev = evidence ? evidenceLines(evidence, lang) : null;
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -103,7 +112,7 @@ export function LiveCard({
     if (speaking) return setSpeaking(false);
     const checked = fieldId ? lastCheckText(fieldId, lang) : null;
     const u = new SpeechSynthesisUtterance(
-      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${ev ? `${ev.label}. ` : ""}${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}`,
+      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${ev ? `${ev.label}. ` : ""}${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
     );
     u.lang = lang === "de" ? "de-DE" : "en-GB";
     u.rate = 0.9;
@@ -147,6 +156,7 @@ export function LiveCard({
         peerKind={peerKind}
         lang={lang}
       />
+      {subfield && <SubfieldMap entry={subfield} lang={lang} />}
       {ring && cond.s2_date && (
         <FieldPhoto
           ring={ring}

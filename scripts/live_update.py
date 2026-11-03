@@ -29,7 +29,7 @@ from cropews.data.forecast import (
 )
 from cropews.data.lwk import LWK_ATTRIBUTION, load_arable_parcels
 from cropews.data.sentinel1 import extract_backscatter_series
-from cropews.data.sentinel2 import extract_field_series
+from cropews.data.sentinel2 import STAC_URL, extract_field_series
 from cropews.data.weather import extract_weather
 from cropews.live import (
     WHEAT_THRESHOLD,
@@ -77,7 +77,54 @@ def _window_start(as_of: date, days: int, whole_season: bool) -> date:
     return min(first_image, season_start(as_of)) if whole_season else first_image
 
 
-def _district(job: tuple[gpd.GeoDataFrame, date, int, bool, Cache]) -> tuple[pd.DataFrame, ...]:
+def _subfield_maps(fields: gpd.GeoDataFrame, s2: pd.DataFrame) -> dict:
+    """Freshest-view pixel map + zones per field (spec 8.6)."""
+    import pystac_client
+
+    from cropews.subfield import field_subfield
+
+    out: dict = {}
+    if s2.empty or "date" not in s2:
+        return out
+    catalog = pystac_client.Client.open(STAC_URL)
+    latest = s2.groupby("field_id")["date"].max()
+    for when, group in latest.groupby(latest):
+        subset = fields[fields["field_id"].isin(group.index)]
+        bbox = tuple(subset.to_crs(4326).total_bounds)
+        try:
+            items = list(
+                catalog.search(
+                    collections=["sentinel-2-l2a"],
+                    bbox=bbox,
+                    datetime=f"{when}T00:00:00Z/{when}T23:59:59Z",
+                ).items()
+            )
+        except Exception:
+            continue
+        for _, row in subset.iterrows():
+            item = next(
+                (
+                    i
+                    for i in sorted(items, key=lambda x: x.properties.get("eo:cloud_cover", 100))
+                    if i.geometry
+                    and __import__("shapely.geometry", fromlist=["shape"])
+                    .shape(i.geometry)
+                    .contains(row.geometry.centroid)
+                ),
+                None,
+            )
+            if item is None:
+                continue
+            try:
+                entry = field_subfield(row.geometry, fields.crs, item)
+            except Exception:
+                continue
+            if entry is not None:
+                out[row["field_id"]] = entry
+    return out
+
+
+def _district(job: tuple[gpd.GeoDataFrame, date, int, bool, Cache]) -> tuple:
     fields, as_of, days, whole_season, (meta, c2, c1) = job
     start = _window_start(as_of, days, whole_season)
     ids = set(fields["field_id"])
@@ -206,6 +253,8 @@ def main() -> None:
         for k, i in (("s2", 0), ("s1", 1))
     }
     s2, s1, daily = (pd.concat([r[i] for r in results], ignore_index=True) for i in range(3))
+    subfield = {k: v for r in results for k, v in r[3].items()}
+    payload_extra = {"subfield": subfield}
     fields = gpd.GeoDataFrame(pd.concat(sets, ignore_index=True), crs=parcels.crs)
     if args.cache is not None:
         start = _window_start(args.as_of, args.days, use_map)
@@ -258,6 +307,7 @@ def main() -> None:
         ev,
     )
 
+    payload.update(payload_extra)
     payload["season_rain"] = _season_rains(fields, args.as_of)
     # Scouting queue: declared horizon, explicit visit budget (spec 8.2); only when spring
     # risk scores exist. checked_recently stays device-local (ADR 0032) — not set here.

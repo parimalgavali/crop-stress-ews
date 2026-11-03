@@ -168,6 +168,11 @@ const T = {
     weatherLabel: "Rain and temperature for the next 5 days",
     seasonRain: (mm: number, lo: number, hi: number) =>
       `Since 1 October: ${Math.round(mm)} mm rain — usually ${Math.round(lo)}–${Math.round(hi)} mm by now`,
+    patches: (n: number, ha: number, date: string) =>
+      `Inside the field: ${n} ${n === 1 ? "patch looks" : "patches look"} weaker than the rest (about ${ha} ha in total, view from ${date})`,
+    patchesNone: (date: string) =>
+      `Inside the field: no clear weak patches (view from ${date})`,
+    patchyView: "the view is patchy — treat with care",
     seasonRainVerdict: {
       drier: "drier than usual",
       usual: "about the usual amount",
@@ -259,6 +264,11 @@ const T = {
     weatherLabel: "Regen und Temperatur der nächsten 5 Tage",
     seasonRain: (mm: number, lo: number, hi: number) =>
       `Seit 1. Oktober: ${Math.round(mm)} mm Regen — üblich sind ${Math.round(lo)}–${Math.round(hi)} mm`,
+    patches: (n: number, ha: number, date: string) =>
+      `Im Feld: ${n} ${n === 1 ? "Stelle sieht" : "Stellen sehen"} schwächer aus als der Rest (etwa ${ha} ha gesamt, Bild vom ${date})`,
+    patchesNone: (date: string) =>
+      `Im Feld: keine klaren Schwachstellen (Bild vom ${date})`,
+    patchyView: "das Bild ist lückenhaft — mit Vorsicht lesen",
     seasonRainVerdict: {
       drier: "trockener als üblich",
       usual: "etwa wie üblich",

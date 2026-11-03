@@ -161,3 +161,42 @@ def extract_field_series(
     out = select_observations(pd.DataFrame(rows), min_coverage) if rows else empty
     out.attrs["skipped_scenes"] = skipped  # read by live_update.py for run health
     return out
+
+
+def field_index_map(geom: Any, crs: Any, item: Any, inward_buffer_m: float = 10.0) -> dict | None:
+    """Per-pixel NDVI/SCL cutout and interior mask for one field on one acquisition (spec 8.6)."""
+    import geopandas as gpd
+    import planetary_computer
+    import rasterio
+    from rasterio.enums import Resampling
+    from rasterio.features import rasterize
+    from rasterio.windows import from_bounds
+
+    baseline = str(item.properties.get("s2:processing_baseline", "00.00"))
+    with rasterio.open(planetary_computer.sign(item.assets["SCL"].href)) as src:
+        local = gpd.GeoSeries([geom], crs=crs).to_crs(src.crs)
+        inner = local.buffer(-inward_buffer_m)
+        if inner.is_empty.all():
+            return None
+        window = from_bounds(*inner.total_bounds, transform=src.transform)
+        window = window.round_offsets().round_lengths()
+        scl = src.read(1, window=window, boundless=True, fill_value=NO_DATA_SCL)
+        scl_transform = src.transform
+        transform = src.window_transform(window)
+    refl = {}
+    for band in ("B04", "B08"):
+        with rasterio.open(planetary_computer.sign(item.assets[band].href)) as src:
+            win = aligned_window(window, scl_transform, src.transform)
+            refl[band] = reflectance(
+                src.read(
+                    1,
+                    window=win,
+                    out_shape=scl.shape,
+                    boundless=True,
+                    fill_value=0,
+                    resampling=Resampling.average,
+                ),
+                baseline,
+            )
+    interior = rasterize(inner, out_shape=scl.shape, transform=transform).astype(bool)
+    return {"ndvi": _nd(refl["B08"], refl["B04"]), "scl": scl, "interior": interior}
