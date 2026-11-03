@@ -47,12 +47,20 @@ def main() -> None:
             t = error_table(f, by)
             print(t.round(3).to_string(), "\n")
 
-    lt = lead_times(data[["field_id", "year", "date", "in_event"]], alarm)
+    events = pd.concat(
+        [pd.read_parquet(p) for p in sorted(args.processed_dir.glob("events_*.parquet"))],
+        ignore_index=True,
+    )
+    lt = lead_times(data[["field_id", "year", "date", "in_event"]], alarm, events=events)
     warned = lt["lead_days"].notna()
-    print(f"=== lead time ({args.level} alarm in the 21 days before onset) ===")
-    print(f"onsets: {len(lt)}, warned: {warned.sum()} ({warned.mean():.0%})")
+    print(f"=== lead time ({args.level} alarm whose horizon contains the onset) ===")
+    print(
+        f"events: {len(lt)}, warned: {warned.sum()} ({warned.mean():.0%}), "
+        f"missed: {(~warned).sum()}"
+    )
     if warned.any():
         print(lt.loc[warned, "lead_days"].describe().round(1).to_string())
+        print(f"repeated alerts per warned event: {lt.loc[warned, 'n_alarms'].mean():.1f}")
 
 
 if __name__ == "__main__":
