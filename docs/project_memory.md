@@ -1,5 +1,8 @@
 # Project memory
 
+### Reproducible mini-run (ADR 0055)
+- `python -m cropews.demo_evaluation`: synthetic fixture → labels → model → AUROC + lead time.
+
 ### Model comparison (ADR 0054)
 - `paired_auroc_diff` (field bootstrap of AUROC_A−AUROC_B) is the decision rule for challenger
   checks; CI-overlap superseded.

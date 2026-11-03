@@ -79,3 +79,12 @@ def test_paired_auroc_diff_resamples_fields_together() -> None:
     assert d > 0 and lo > 0
     d2, lo2, hi2 = paired_auroc_diff(df, "sb", "sa", n=100)
     assert d2 == -d and hi2 < 0
+
+
+def test_demo_evaluation_runs_offline() -> None:
+    from cropews.demo_evaluation import run
+
+    out = run()
+    assert out["synthetic"] is True
+    assert set(out["horizons"]) == {"7", "14", "21"}
+    assert out["lead_time"]["events"] > 0

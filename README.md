@@ -11,6 +11,8 @@ reasons are written in plain language, and a one-screen web app can read them al
 **Live demo:** <https://parimalgavali.github.io/crop-stress-ews/> (static build, precomputed
 2024/2025 predictions; [ADR 0014](docs/decisions/0014-static-pages-demo.md)).
 
+**Try it offline:** `python -m cropews.demo_evaluation` runs the causal chain on a synthetic fixture (no network).
+
 **In two minutes:** [one-page case study](docs/case_study.md) · [demo script](docs/demo_script.md).
 
 ![One-screen UI: field map, 7/14/21-day traffic lights with reasons, read-aloud and season replay](docs/img/ui.png)
