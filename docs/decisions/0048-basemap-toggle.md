@@ -1,6 +1,8 @@
 # ADR 0048: Basemap style toggle
 
-Status: Accepted (US-51, Issue #109)
+Status: ~~Accepted~~ Superseded — removed on owner request (2026-11-03). The
+Map/Light/Dark chips overlay was judged unnecessary UI; the app is back to a
+single OSM streets base. The record below is kept for history only.
 
 ## Context
 Aesthetic round: the plain OSM streets base is noisy at low zooms and a

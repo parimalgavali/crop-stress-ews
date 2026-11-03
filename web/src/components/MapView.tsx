@@ -15,32 +15,16 @@ const COLORS = [
   "#9e9e9e",
 ];
 
-export type Basemap = "streets" | "light" | "dark";
-
-export const BASEMAPS: Record<Basemap, maplibregl.RasterSourceSpecification> = {
-  streets: {
-    type: "raster",
-    tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-    tileSize: 256,
-    attribution: "© OpenStreetMap contributors",
-  },
-  light: {
-    type: "raster",
-    tiles: ["https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"],
-    tileSize: 256,
-    attribution: "© OpenStreetMap contributors © CARTO",
-  },
-  dark: {
-    type: "raster",
-    tiles: ["https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],
-    tileSize: 256,
-    attribution: "© OpenStreetMap contributors © CARTO",
-  },
+const OSM: maplibregl.RasterSourceSpecification = {
+  type: "raster",
+  tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+  tileSize: 256,
+  attribution: "© OpenStreetMap contributors",
 };
 
 const STYLE: maplibregl.StyleSpecification = {
   version: 8,
-  sources: { osm: BASEMAPS.streets },
+  sources: { osm: OSM },
   layers: [{ id: "osm", type: "raster", source: "osm" }],
 };
 
@@ -67,7 +51,6 @@ interface Props {
   onSelect: (fieldId: string) => void;
   draft?: [number, number][] | null;
   onMapClick?: (lngLat: [number, number]) => void;
-  basemap?: Basemap;
 }
 
 export function MapView({
@@ -76,7 +59,6 @@ export function MapView({
   onSelect,
   draft,
   onMapClick,
-  basemap = "streets",
 }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -214,17 +196,6 @@ export function MapView({
     src.setData({ type: "FeatureCollection", features });
     map.current!.getCanvas().style.cursor = onMapClick ? "crosshair" : "";
   }, [draft, onMapClick]);
-
-  // Swap the base raster without touching the field layers (US-51).
-  useEffect(() => {
-    const m = map.current;
-    if (!m?.getSource("osm")) return;
-    m.removeLayer("osm");
-    m.removeSource("osm");
-    m.addSource("osm", BASEMAPS[basemap]);
-    const first = m.getStyle().layers[0]?.id;
-    m.addLayer({ id: "osm", type: "raster", source: "osm" }, first);
-  }, [basemap]);
 
   return (
     <div

@@ -274,12 +274,7 @@ test('intro: shown once, reopened with ?', async ({ page }) => {
   await expect(page.getByRole('dialog', { name: 'How it works' })).toBeVisible()
 })
 
-test('basemap toggle switches and persists', async ({ page }) => {
+test('no basemap toggle is shown (ADR 0048 removal)', async ({ page }) => {
   await page.goto('/')
-  const dark = page.getByRole('button', { name: 'Dark', exact: true })
-  await expect(dark).toBeVisible()
-  await dark.click()
-  await expect(dark).toHaveAttribute('aria-pressed', 'true')
-  await page.reload()
-  await expect(page.getByRole('button', { name: 'Dark', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('.basemap-toggle')).toHaveCount(0)
 })
