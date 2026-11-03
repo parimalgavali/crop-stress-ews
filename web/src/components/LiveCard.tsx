@@ -22,6 +22,7 @@ import { ObservationLog } from "./ObservationLog";
 import { SeasonChart } from "./SeasonChart";
 import { SubfieldMap } from "./SubfieldMap";
 import WeatherStrip from "./WeatherStrip";
+import { speak } from "../speech";
 
 interface Props {
   cond: Conditions;
@@ -111,14 +112,12 @@ export function LiveCard({
     window.speechSynthesis.cancel();
     if (speaking) return setSpeaking(false);
     const checked = fieldId ? lastCheckText(fieldId, lang) : null;
-    const u = new SpeechSynthesisUtterance(
+    speak(
       `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${ev ? `${ev.label}. ` : ""}${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
+      lang,
+      () => setSpeaking(false),
     );
-    u.lang = lang === "de" ? "de-DE" : "en-GB";
-    u.rate = 0.9;
-    u.onend = () => setSpeaking(false);
     setSpeaking(true);
-    window.speechSynthesis.speak(u);
   };
 
   return (
@@ -135,21 +134,22 @@ export function LiveCard({
           </li>
         ))}
       </ul>
+      {canSpeak && (
+        <button
+          type="button"
+          className="big-button speak"
+          onClick={toggleSpeech}
+        >
+          <span aria-hidden="true">{speaking ? "■" : "🔊"}</span>{" "}
+          {speaking ? s.stop : s.listen}
+        </button>
+      )}
+      {fieldId && (
+        <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} />
+      )}
       {forecast?.fc_days?.length ? (
         <WeatherStrip days={forecast.fc_days} lang={lang} />
       ) : null}
-      {ev && (
-        <details className="evidence">
-          <summary>
-            {l.evidenceTitle} — {ev.label}
-          </summary>
-          <ul>
-            {ev.lines.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
-        </details>
-      )}
       <SeasonChart
         series={series}
         peers={peers}
@@ -165,67 +165,73 @@ export function LiveCard({
           lang={lang}
         />
       )}
+      {ev && (
+        <details className="evidence">
+          <summary>
+            {l.evidenceTitle} — {ev.label}
+          </summary>
+          <ul>
+            {ev.lines.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+        </details>
+      )}
       {!spring && <p className="hint">{l.springNote}</p>}
-      {alertTopic && (
-        <p>
-          <a
-            href={`https://ntfy.sh/${alertTopic}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            🔔 {l.alert}
-          </a>
-        </p>
+      {fieldId && (
+        <details className="evidence more">
+          <summary>{l.moreTitle}</summary>
+          {alertTopic && (
+            <p>
+              <a
+                href={`https://ntfy.sh/${alertTopic}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                🔔 {l.alert}
+              </a>
+            </p>
+          )}
+          <div className="more-buttons">
+            <button
+              type="button"
+              className="big-button"
+              onClick={async () => {
+                const url = fieldLink(fieldId);
+                try {
+                  await navigator.clipboard.writeText(url);
+                  setCopied(true);
+                } catch {
+                  window.prompt(l.linkManual, url);
+                }
+              }}
+            >
+              {l.fieldLink}
+            </button>
+            <button
+              type="button"
+              className="big-button"
+              onClick={() => window.print()}
+            >
+              {l.printReport}
+            </button>
+          </div>
+          {copied && <p role="status">{l.linkCopied}</p>}
+          <ObservationLog fieldId={fieldId} lang={lang} />
+        </details>
       )}
       {fieldId && (
-        <>
-          <button
-            type="button"
-            className="big-button"
-            onClick={async () => {
-              const url = fieldLink(fieldId);
-              try {
-                await navigator.clipboard.writeText(url);
-                setCopied(true);
-              } catch {
-                window.prompt(l.linkManual, url);
-              }
-            }}
-          >
-            {l.fieldLink}
-          </button>
-          {copied && <p role="status">{l.linkCopied}</p>}
-          <button
-            type="button"
-            className="big-button"
-            onClick={() => window.print()}
-          >
-            {l.printReport}
-          </button>
-          <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} />
-          <ObservationLog fieldId={fieldId} lang={lang} />
-          <div className="print-only" data-testid="print-report">
-            <p className="print-meta">
-              Crop Stress EWS · {district} · {fieldId}
-              {asOf ? ` · ${l.asOf} ${formatDate(asOf, lang)}` : ""}
-            </p>
-            <p className="print-meta">{fieldLink(fieldId)}</p>
-          </div>
-        </>
+        <div className="print-only" data-testid="print-report">
+          <p className="print-meta">
+            Crop Stress EWS · {district} · {fieldId}
+            {asOf ? ` · ${l.asOf} ${formatDate(asOf, lang)}` : ""}
+          </p>
+          <p className="print-meta">{fieldLink(fieldId)}</p>
+        </div>
       )}
       <p className="hint" data-testid="scoreboard">
         {scoreLine(board, lang)}
       </p>
-      {canSpeak && (
-        <button
-          type="button"
-          className="big-button speak"
-          onClick={toggleSpeech}
-        >
-          <span aria-hidden="true">{speaking ? "■" : "🔊"}</span>{" "}
-          {speaking ? s.stop : s.listen}
-        </button>
-      )}
     </section>
   );
 }

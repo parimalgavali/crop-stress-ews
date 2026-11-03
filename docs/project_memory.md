@@ -1,5 +1,15 @@
 # Project memory
 
+### Read-aloud and layout UX pass (ADRs 0071/0072)
+- `web/src/speech.ts`: shared read-aloud helper — best-voice selection
+  (natural/neural/Google preferred), per-sentence utterances, rate 0.98;
+  `RiskCard` + `LiveCard` both use it.
+- Split layout: `.main` 50/50 map|panel on desktop, sticky `.panel-tools`
+  (field picker + prev/next); mobile map 45 vh → 26 vh once a field is picked
+  (`main.has-selection`). Card order: status → Listen → CheckedIt → weather →
+  chart → patch map → photo → evidence → spring note → "More" details
+  (alerts, link, print, visit log) → scoreboard.
+
 ### Subfield anomaly view (ADR 0070)
 - `cropews.subfield`: mask_quality / anomaly_zones (median−0.15, 4-conn, ≥4 px) /
   downsample(≤28) / field_subfield; `live_update._subfield_maps` fills

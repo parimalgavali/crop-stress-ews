@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { FieldRisk } from '../api'
@@ -42,9 +42,14 @@ describe('RiskCard', () => {
     )
     render(<RiskCard risk={risk} lang="de" />)
     await userEvent.click(screen.getByRole('button', { name: /Vorlesen/ }))
-    expect(speak).toHaveBeenCalledOnce()
+    expect(speak).toHaveBeenCalled()
     expect(speak.mock.calls[0][0].lang).toBe('de-DE')
-    expect(speak.mock.calls[0][0].text).toContain('Hohes Risiko')
-    expect(screen.getByRole('button', { name: /Stopp/ })).toBeInTheDocument()
+    // each sentence is a separate utterance; fire onend to play the rest
+    act(() => {
+      for (let i = 0; i < speak.mock.calls.length; i++) speak.mock.calls[i][0].onend?.()
+    })
+    const spoken = speak.mock.calls.map((c) => c[0].text).join(' ')
+    expect(spoken).toContain('Hohes Risiko')
+    expect(screen.getByRole('button', { name: /Vorlesen/ })).toBeInTheDocument()
   })
 })

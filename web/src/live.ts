@@ -186,6 +186,7 @@ const T = {
     linkCopied: "Link copied",
     linkManual: "Copy this link yourself:",
     evidenceTitle: "📋 Evidence for this card",
+    moreTitle: "More things you can do",
     qualityLabel: {
       ok: "Evidence: good",
       limited: "Evidence: limited",
@@ -282,6 +283,7 @@ const T = {
     linkCopied: "Link kopiert",
     linkManual: "Diesen Link selbst kopieren:",
     evidenceTitle: "📋 Belege für diese Karte",
+    moreTitle: "Mehr Möglichkeiten",
     qualityLabel: {
       ok: "Datenlage: gut",
       limited: "Datenlage: eingeschränkt",
