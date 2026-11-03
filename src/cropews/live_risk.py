@@ -62,7 +62,7 @@ def score_live(
         z = b["model"].decision_function(x).reshape(-1, 1)
         risk = b["platt"].predict_proba(z)[:, 1]
         lvl = level(risk, b["amber"], b["red"])
-        reasons = top_reasons(contributions(b["model"], x))
+        reasons = top_reasons(contributions(b["model"], x), x)
         for i, fid in enumerate(last["field_id"]):
             # Like the replay export: no outcome label exists past senescence (labels.py).
             if last["date"].iat[i] + pd.Timedelta(days=int(h)) > cutoff:
