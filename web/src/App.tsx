@@ -383,6 +383,7 @@ export default function App() {
                   peerKind={live.season?.peer_kind}
                   ring={outerRing(liveField.geometry)}
                   pheno={live.phenology?.[liveField.properties.district]}
+                  evidence={live.evidence?.[liveField.properties.field_id]}
                   soil={live.soil?.[liveField.properties.field_id]}
                   fieldId={liveField.properties.field_id}
                   light={worstLevel(

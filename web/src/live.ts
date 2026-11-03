@@ -162,6 +162,33 @@ const T = {
       "This field is not monitored. Please pick one from the list.",
     linkCopied: "Link copied",
     linkManual: "Copy this link yourself:",
+    evidenceTitle: "📋 Evidence for this card",
+    qualityLabel: {
+      ok: "Evidence: good",
+      limited: "Evidence: limited",
+      insufficient: "Evidence: not enough — treat with care",
+    } as Record<string, string>,
+    qualityWhy: {
+      no_optical: "no clear satellite photo yet",
+      stale_optical: "last clear photo is old",
+      no_radar: "no radar image",
+      no_weather: "no weather data",
+      stale_weather: "weather data is old",
+      few_peers: "too few neighbouring fields with fresh data",
+      unconfirmed_crop: "crop on this field is not confirmed",
+    } as Record<string, string>,
+    evS2: (d: string, n: number) =>
+      `Clear satellite photo: ${d} (${n} ${n === 1 ? "day" : "days"} ago)`,
+    evS2None: "Clear satellite photo: none yet",
+    evS1: (d: string) => `Radar image: ${d}`,
+    evS1None: "Radar image: none",
+    evWeather: (d: string) => `Weather data through: ${d}`,
+    evWeatherNone: "Weather data: none",
+    evPeers: (n: number) =>
+      `${n} neighbouring ${n === 1 ? "field" : "fields"} with fresh data`,
+    evModel: (v: string) => `Model version: ${v}`,
+    evIssued: (t: string) => `Issued: ${t}`,
+    evCutoff: (d: string) => `All inputs at or before: ${d}`,
   },
   de: {
     live: "Aktuell",
@@ -211,6 +238,33 @@ const T = {
       "Dieses Feld wird nicht beobachtet. Bitte eines aus der Liste wählen.",
     linkCopied: "Link kopiert",
     linkManual: "Diesen Link selbst kopieren:",
+    evidenceTitle: "📋 Belege für diese Karte",
+    qualityLabel: {
+      ok: "Datenlage: gut",
+      limited: "Datenlage: eingeschränkt",
+      insufficient: "Datenlage: zu wenig — mit Vorsicht lesen",
+    } as Record<string, string>,
+    qualityWhy: {
+      no_optical: "noch kein klares Satellitenbild",
+      stale_optical: "letztes klares Bild ist alt",
+      no_radar: "kein Radarbild",
+      no_weather: "keine Wetterdaten",
+      stale_weather: "Wetterdaten sind alt",
+      few_peers: "zu wenig Nachbarfelder mit frischen Daten",
+      unconfirmed_crop: "Kultur auf diesem Feld nicht bestätigt",
+    } as Record<string, string>,
+    evS2: (d: string, n: number) =>
+      `Klares Satellitenbild: ${d} (vor ${n} ${n === 1 ? "Tag" : "Tagen"})`,
+    evS2None: "Klares Satellitenbild: noch keins",
+    evS1: (d: string) => `Radarbild: ${d}`,
+    evS1None: "Radarbild: keins",
+    evWeather: (d: string) => `Wetterdaten bis: ${d}`,
+    evWeatherNone: "Wetterdaten: keine",
+    evPeers: (n: number) =>
+      `${n} ${n === 1 ? "Nachbarfeld" : "Nachbarfelder"} mit frischen Daten`,
+    evModel: (v: string) => `Modellversion: ${v}`,
+    evIssued: (t: string) => `Ausgestellt: ${t}`,
+    evCutoff: (d: string) => `Alle Eingaben bis: ${d}`,
     springNote:
       "Stress-Vorhersagen beginnen am 5. April, wenn der Winterweizen wieder wächst.",
     prevCrop: (c: string) => `Angebaute Kultur dieses Jahr: ${c}`,
@@ -283,6 +337,40 @@ const T = {
   },
 };
 export const LIVE_STRINGS = T;
+
+import type { Evidence } from "./api";
+
+/** Factual evidence lines for the expandable card section (spec 8.1). */
+export function evidenceLines(
+  ev: Evidence,
+  lang: Lang,
+): { label: string; lines: string[] } {
+  const t = T[lang];
+  const lines: string[] = [];
+  lines.push(
+    ev.last_clear_s2_at && ev.s2_days_ago != null
+      ? t.evS2(formatDate(ev.last_clear_s2_at, lang), ev.s2_days_ago)
+      : t.evS2None,
+  );
+  lines.push(
+    ev.last_s1_at ? t.evS1(formatDate(ev.last_s1_at, lang)) : t.evS1None,
+  );
+  lines.push(
+    ev.weather_available_through
+      ? t.evWeather(formatDate(ev.weather_available_through, lang))
+      : t.evWeatherNone,
+  );
+  if (ev.usable_peer_count != null) lines.push(t.evPeers(ev.usable_peer_count));
+  if (ev.feature_cutoff)
+    lines.push(t.evCutoff(formatDate(ev.feature_cutoff, lang)));
+  if (ev.model_version) lines.push(t.evModel(ev.model_version));
+  if (ev.issued_at)
+    lines.push(t.evIssued(formatDate(ev.issued_at.slice(0, 10), lang)));
+  for (const r of ev.quality_reasons ?? [])
+    lines.push(`⚠ ${t.qualityWhy[r] ?? r}`);
+  const status = ev.quality_status ?? "limited";
+  return { label: t.qualityLabel[status] ?? status, lines };
+}
 
 /** Live data older than this gets a notice; runs are every 5 days (ADR 0023). */
 export const STALE_DAYS = 7;

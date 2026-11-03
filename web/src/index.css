@@ -123,3 +123,16 @@ h1 { font-size: 1.3rem; margin: 0; }
 .basemap-toggle { position: absolute; top: 0.5rem; right: 0.5rem; z-index: 5; display: flex; gap: 0; background: rgba(255,255,255,0.92); border-radius: 22px; border: 1px solid #ddd; }
 .basemap-toggle .chip { min-width: 40px; min-height: 36px; border: none; background: transparent; margin-left: 0; }
 .basemap-toggle .chip[aria-pressed='true'] { border-radius: 20px; }
+
+details.evidence {
+  margin: 0.5rem 0;
+}
+details.evidence summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+details.evidence ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.4rem;
+  font-size: 0.95rem;
+}
