@@ -1,8 +1,11 @@
 # crop-stress-ews
 
-Early warning for **crop stress in winter wheat in North Rhine-Westphalia (NRW)**. For any
-field and date, it predicts the risk that the field starts falling behind its neighbours within
-**7, 14 and 21 days**. Inputs are Sentinel-2 optical data, Sentinel-1 radar and DWD weather. The
+Satellite-and-weather forecasting of **relative winter-wheat canopy anomalies in North
+Rhine-Westphalia (NRW)**. For any field and date, it predicts the risk that the field starts
+falling behind its district peers within **7, 14 and 21 days** — a satellite-observable proxy
+event. It is investigated as a *crop-stress early warning*, but the prediction target is the
+canopy anomaly, not a diagnosed stress cause; agronomic interpretation needs independent
+field observation. Inputs are Sentinel-2 optical data, Sentinel-1 radar and DWD weather. The
 reasons are written in plain language, and a one-screen web app can read them aloud.
 
 **Live demo:** <https://parimalgavali.github.io/crop-stress-ews/> (static build, precomputed
@@ -20,12 +23,16 @@ reasons are written in plain language, and a one-screen web app can read them al
 | 14 d | 0.80 [0.72–0.86] | 0.72 | 0.31 / 39 |
 | 21 d | 0.77 [0.68–0.85] | 0.70 | 0.36 / 71 |
 
-- **Early warning:** red alarms came before 21 of 29 stress onsets (72%), a median of
-  **15 days** ahead; amber or red before 25 of 29 (86%) ([error analysis](docs/error_analysis.md)).
+- **Early warning:** red alarms covered 21 of 31 events (68%) — counted only when the alarm's own
+  horizon contained the onset ([ADR 0050](docs/decisions/0050-horizon-aware-lead-time.md)) — with a
+  median **13 days** of lead time and ~3.7 repeated alerts per warned event; the older
+  "21 of 29, median 15 days" figures (any-alarm-in-21-days rule) are superseded.
 - **Best research model:** the validation-selected GRU-D (30-day window) reaches AUROC
   0.83 / 0.81 / 0.80 at 7 / 14 / 21 days. It beats persistence on every point estimate, but the
   95% CIs still overlap, so by the project's own rule ([ADR 0008](docs/decisions/0008-evaluation-protocol.md))
   this is "better on point estimates", not a proven win ([sequence models](docs/sequence_models.md)).
+  These GRU-D numbers predate the input-decay fix ([ADR 0049](docs/decisions/0049-grud-input-decay-init.md))
+  and will be recomputed in the corrective release.
 - **Model choice:** GRU-D/LSTM, LightGBM and the served model overlap in CI. The demo serves the
   simplest model, whose reasons are its own coefficient contributions
   ([ADR 0012](docs/decisions/0012-api-and-demo-model.md)).
