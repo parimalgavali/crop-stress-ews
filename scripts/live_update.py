@@ -196,9 +196,11 @@ def main() -> None:
         for d in CORE_DISTRICTS
     ]
     cache = _load_cache(args.cache)
+    extract_started = time.monotonic()
     with ProcessPoolExecutor(args.workers) as pool:
         jobs = [(f, args.as_of, args.days, use_map, cache) for f in sets]
         results = list(pool.map(_district, jobs))
+    extract_seconds = time.monotonic() - extract_started
     skipped = {
         k: [x for r in results for x in r[i].attrs.get("skipped_scenes", [])]
         for k, i in (("s2", 0), ("s1", 1))
@@ -266,6 +268,11 @@ def main() -> None:
         skipped["s1"],
         skipped["s2"],
         time.monotonic() - started,
+        extraction_seconds=extract_seconds,
+        scenes_s2=int(s2["date"].notna().sum()) if "date" in s2 else 0,
+        scenes_s1=int(s1["date"].notna().sum()) if "date" in s1 else 0,
+        cache_hit=cache[0] is not None,
+        freshest_s2=str(s2["date"].max().date()) if len(s2) and s2["date"].notna().any() else None,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, separators=(",", ":"), ensure_ascii=False))

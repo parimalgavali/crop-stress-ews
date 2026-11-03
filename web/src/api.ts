@@ -179,7 +179,18 @@ export interface LiveSeason {
   season_rain?: Record<string, SeasonRain>
   evidence?: Record<string, Evidence>
   scouting?: Scouting | null
-  health?: { parcels: number; with_data: number; s1_scenes_skipped: string[]; s2_scenes_skipped: string[]; minutes: number }
+  health?: {
+    parcels: number
+    with_data: number
+    s1_scenes_skipped: string[]
+    s2_scenes_skipped: string[]
+    minutes: number
+    extraction_minutes?: number | null
+    scenes_s2?: number
+    scenes_s1?: number
+    cache_hit?: boolean
+    freshest_s2?: string | null
+  }
 }
 
 /** [ISO date, NDVI] on clear Sentinel-2 dates since 1 October (ADR 0027). */

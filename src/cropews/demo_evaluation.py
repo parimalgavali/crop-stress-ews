@@ -8,8 +8,11 @@ network access or licensed data. The fixture is deterministic and flagged synthe
 
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
 import sys
+import time
 from typing import Any
 
 import numpy as np  # noqa: E402
@@ -49,6 +52,7 @@ def synthetic_observations(seed: int = 0) -> pd.DataFrame:
 
 
 def run(seed: int = 0) -> dict[str, Any]:
+    started = time.monotonic()
     obs = synthetic_observations(seed)
     res = peer_residuals(obs, min_peers=8)
     scale = (
@@ -70,6 +74,14 @@ def run(seed: int = 0) -> dict[str, Any]:
         "synthetic": True,
         "seed": seed,
         "fields": N_FIELDS,
+        "observations": len(obs),
+        "parameters": {
+            "horizons_days": [7, 14, 21],
+            "dip": {"ndvi": 0.18, "ndmi": 0.12, "ndre": 0.1},
+            "split": "first half of sorted field_ids is train",
+            "min_peers": 8,
+            "doy_bin": DOY_BIN,
+        },
         "events": len(events),
         "horizons": {},
     }
@@ -99,13 +111,35 @@ def run(seed: int = 0) -> dict[str, Any]:
         "warned": int(warned.sum()),
         "median_days": float(lt["lead_days"].median()) if warned.any() else None,
     }
+    out["runtime_seconds"] = round(time.monotonic() - started, 2)
     return out
 
 
+# Keys that change between identical runs and are excluded from the expected-output diff
+# and the artifact hash (spec 8.5: expected output files + artifact hashes).
+VOLATILE = ("runtime_seconds", "python")
+
+
+def _stable(manifest: dict[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in manifest.items() if k not in VOLATILE}
+
+
 def main() -> None:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--check", help="diff against an expected manifest, ignoring volatile keys")
+    args = ap.parse_args()
     manifest = run()
     manifest["entry_point"] = "python -m cropews.demo_evaluation"
     manifest["python"] = sys.version.split()[0]
+    stable = json.dumps(_stable(manifest), sort_keys=True)
+    manifest["artifact_sha256"] = hashlib.sha256(stable.encode()).hexdigest()
+    if args.check:
+        expected = json.loads(open(args.check).read())
+        if _stable(expected) != _stable(manifest):
+            print("MISMATCH vs expected manifest", file=sys.stderr)
+            sys.exit(1)
+        print("manifest matches expected output")
+        return
     print(json.dumps(manifest, indent=1))
 
 

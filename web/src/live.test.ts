@@ -1,5 +1,6 @@
+import type { LiveSeason } from './api'
 import { describe, expect, it } from 'vitest'
-import { conditionLines, greenness, healthLine, overviewCounts, radarChanged, LIVE_STRINGS, scoreLine, seasonRainLine, soilLine, staleNotice, trend, worstFieldId } from './live'
+import { conditionLines, greenness, healthLine, overviewCounts, radarChanged, LIVE_STRINGS, scoreLine, seasonRainLine, soilLine, staleNotice, trend, worstFieldId, weeklyDigest } from './live'
 
 describe('live conditions', () => {
   it('maps numbers to plain words', () => {
@@ -134,7 +135,7 @@ describe('healthLine', () => {
   it('shows a check mark when all fields have data', () => {
     const line = healthLine(h, 'en')
     expect(line?.icon).toBe('✓')
-    expect(line?.text).toBe('Data check: 360 of 360 watched fields have data')
+    expect(line?.text).toBe('Data check: 360 of 360 watched fields have data · update took 20 min')
   })
   it('warns on skipped scenes and on too few fields', () => {
     expect(healthLine({ ...h, s1_scenes_skipped: ['a', 'b'] }, 'en')?.icon).toBe('⚠')
@@ -209,3 +210,30 @@ describe('evidenceLines', () => {
     expect(none.lines.join(' ')).toContain('none yet')
   })
 })
+
+describe("weeklyDigest", () => {
+  const live = {
+    mode: "live",
+    year: 2027,
+    as_of: "2027-04-10",
+    risk: {
+      f1: { field_id: "f1", year: 2027, date: "2027-04-09", district: "Soest",
+        horizons: [{ days: 14, risk: 0.8, level: "red",
+          reasons: [{ code: "water", text_en: "water stress", text_de: "Wasserstress" }] }] },
+    },
+    scouting: { horizon_days: 14, budget: 10, n_ranked: 1,
+      queue: [{ field_id: "f1", risk: 0.8, level: "red" }],
+      unavailable: [] },
+    evidence: { f1: { field_id: "f1", s2_days_ago: 3 } },
+  } as unknown as LiveSeason;
+  it("summarizes queue size, dominant reason and freshness", () => {
+    const line = weeklyDigest(live, "en");
+    expect(line).toContain("1 field needs a look");
+    expect(line).toContain("water stress");
+    expect(line).toContain("3 days old");
+  });
+  it("is null without a queue", () => {
+    const empty = { ...live, scouting: { horizon_days: 14, budget: 10, n_ranked: 0, queue: [], unavailable: [] } } as LiveSeason;
+    expect(weeklyDigest(empty, "de")).toBeNull();
+  });
+});

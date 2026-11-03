@@ -109,7 +109,25 @@ def test_health_problem_flags_missing_or_mostly_empty_payloads():
         "s1_scenes_skipped": ["a", "b"],
         "s2_scenes_skipped": [],
         "minutes": 2.1,
+        "extraction_minutes": None,
+        "scenes_s2": 0,
+        "scenes_s1": 0,
+        "cache_hit": False,
+        "freshest_s2": None,
     }
+    full = run_health(
+        4,
+        2,
+        [],
+        [],
+        125,
+        extraction_seconds=90,
+        scenes_s2=30,
+        scenes_s1=12,
+        cache_hit=True,
+        freshest_s2="2027-04-09",
+    )
+    assert full["extraction_minutes"] == 1.5 and full["freshest_s2"] == "2027-04-09"
 
 
 def test_cache_since_only_trusts_a_cache_that_covers_the_fields_and_window():

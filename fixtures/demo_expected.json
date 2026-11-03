@@ -1,0 +1,45 @@
+{
+ "synthetic": true,
+ "seed": 0,
+ "fields": 40,
+ "observations": 680,
+ "parameters": {
+  "horizons_days": [
+   7,
+   14,
+   21
+  ],
+  "dip": {
+   "ndvi": 0.18,
+   "ndmi": 0.12,
+   "ndre": 0.1
+  },
+  "split": "first half of sorted field_ids is train",
+  "min_peers": 8,
+  "doy_bin": 10
+ },
+ "events": 13,
+ "horizons": {
+  "7": {
+   "auroc": 0.624,
+   "n": 281
+  },
+  "14": {
+   "auroc": 0.375,
+   "n": 266
+  },
+  "21": {
+   "auroc": 0.448,
+   "n": 251
+  }
+ },
+ "lead_time": {
+  "events": 7,
+  "warned": 2,
+  "median_days": 17.5
+ },
+ "runtime_seconds": 0.19,
+ "entry_point": "python -m cropews.demo_evaluation",
+ "python": "3.10.12",
+ "artifact_sha256": "2b5948e10311a9100e3765257b03932b4161d518f76d750558025f76b4e9e34b"
+}
