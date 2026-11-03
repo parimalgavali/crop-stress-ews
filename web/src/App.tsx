@@ -24,6 +24,7 @@ import {
   staleNotice,
   worstLevel,
   worstFieldId,
+  weeklyDigest,
 } from "./live";
 import { setUrlField, urlField } from "./fieldLink";
 
@@ -82,6 +83,7 @@ export default function App() {
   const offline = online ? null : l.offline;
   const stale = isLive && live ? staleNotice(live.as_of, lang) : null;
   const overview = isLive && live ? overviewCounts(live.risk) : null;
+  const digest = isLive && live ? weeklyDigest(live, lang) : null;
   const liveField = isLive
     ? live?.fields.features.find((f) => f.properties.field_id === selected)
     : undefined;
@@ -256,6 +258,7 @@ export default function App() {
             {l.overviewWorst}
           </button>
           <span className="hint">{l.overviewNone}</span>
+          {digest && <p className="hint digest">{digest}</p>}
           {live?.scouting && live.scouting.queue.length > 0 && (
             <details className="queue">
               <summary>
