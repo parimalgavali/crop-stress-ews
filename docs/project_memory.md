@@ -1,5 +1,9 @@
 # Project memory
 
+### Visit observations (ADR 0060)
+- `web/src/observations.ts` (key `cropews.observations.v1`): structured visit records +
+  versioned JSON export; device-local only, review_status tracks adjudication state.
+
 ### Alert cooldown (ADR 0059)
 - `alert_state` on latest.json dedups ntfy repeats: re-alert only after 10-day cooldown once
   the field went non-red. send_alerts stamps state back onto the payload every run.

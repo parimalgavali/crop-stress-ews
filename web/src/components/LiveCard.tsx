@@ -18,6 +18,7 @@ import { CheckedIt } from "./CheckedIt";
 import { lastCheckText } from "../fieldChecks";
 import { fieldLink } from "../fieldLink";
 import { FieldPhoto } from "./FieldPhoto";
+import { ObservationLog } from "./ObservationLog";
 import { SeasonChart } from "./SeasonChart";
 import WeatherStrip from "./WeatherStrip";
 
@@ -192,6 +193,7 @@ export function LiveCard({
             {l.printReport}
           </button>
           <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} />
+          <ObservationLog fieldId={fieldId} lang={lang} />
           <div className="print-only" data-testid="print-report">
             <p className="print-meta">
               Crop Stress EWS · {district} · {fieldId}
