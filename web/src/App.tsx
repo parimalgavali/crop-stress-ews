@@ -292,7 +292,7 @@ export default function App() {
         </div>
       )}
 
-      <main className="main">
+      <main className={`main${selected ? " has-selection" : ""}`}>
         <div className="mapwrap">
           <MapView
             fields={shown}
@@ -323,56 +323,58 @@ export default function App() {
         </div>
         <aside className="panel">
           {error && <p role="alert">Data not reachable.</p>}
-          <label className="field-label" htmlFor="field-select">
-            {s.field}
-          </label>
-          <select
-            id="field-select"
-            className="big-select"
-            value={selected ?? ""}
-            onChange={(e) => setSelected(e.target.value || null)}
-          >
-            <option value="">{s.chooseField}</option>
-            {options.map((f, i) => (
-              <option key={f.properties.field_id} value={f.properties.field_id}>
-                {`${s.field} ${i + 1} · ${f.properties.district} · ${f.properties.area_ha.toFixed(1)} ha${
-                  f.properties.level ? ` · ${s.level[f.properties.level]}` : ""
-                }`}
-              </option>
-            ))}
-          </select>
-          {isLive &&
-            options.length > 1 &&
-            (() => {
-              const idx = options.findIndex(
-                (f) => f.properties.field_id === selected,
-              );
-              return (
-                <div className="field-nav">
-                  <button
-                    type="button"
-                    disabled={idx <= 0}
-                    onClick={() =>
-                      setSelected(options[idx - 1].properties.field_id)
-                    }
-                  >
-                    {l.prevField}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={idx === options.length - 1}
-                    onClick={() =>
-                      setSelected(
-                        options[Math.min(idx + 1, options.length - 1)]
-                          .properties.field_id,
-                      )
-                    }
-                  >
-                    {l.nextField}
-                  </button>
-                </div>
-              );
-            })()}
+          <div className="panel-tools">
+            <label className="field-label" htmlFor="field-select">
+              {s.field}
+            </label>
+            <select
+              id="field-select"
+              className="big-select"
+              value={selected ?? ""}
+              onChange={(e) => setSelected(e.target.value || null)}
+            >
+              <option value="">{s.chooseField}</option>
+              {options.map((f, i) => (
+                <option key={f.properties.field_id} value={f.properties.field_id}>
+                  {`${s.field} ${i + 1} · ${f.properties.district} · ${f.properties.area_ha.toFixed(1)} ha${
+                    f.properties.level ? ` · ${s.level[f.properties.level]}` : ""
+                  }`}
+                </option>
+              ))}
+            </select>
+            {isLive &&
+              options.length > 1 &&
+              (() => {
+                const idx = options.findIndex(
+                  (f) => f.properties.field_id === selected,
+                );
+                return (
+                  <div className="field-nav">
+                    <button
+                      type="button"
+                      disabled={idx <= 0}
+                      onClick={() =>
+                        setSelected(options[idx - 1].properties.field_id)
+                      }
+                    >
+                      {l.prevField}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={idx === options.length - 1}
+                      onClick={() =>
+                        setSelected(
+                          options[Math.min(idx + 1, options.length - 1)]
+                            .properties.field_id,
+                        )
+                      }
+                    >
+                      {l.nextField}
+                    </button>
+                  </div>
+                );
+              })()}
+          </div>
           {isLive && liveError && <p role="alert">{l.noLive}</p>}
           {isLive && (
             <CheckPanel

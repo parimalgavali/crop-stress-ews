@@ -42,6 +42,8 @@ test.beforeEach(async ({ page }) => {
     ;(window as unknown as { spoken: string[] }).spoken = []
     window.speechSynthesis.speak = (u: SpeechSynthesisUtterance) => {
       ;(window as unknown as { spoken: string[] }).spoken.push(`${u.lang}|${u.text}`)
+      // utterances are chained via onend; fire it so the whole queue is captured
+      queueMicrotask(() => u.onend?.(new Event('end') as never))
     }
   })
 })
@@ -62,7 +64,8 @@ test('choose a field, see three traffic lights, hear it, step the season', async
 
   await page.getByRole('button', { name: /Listen/ }).click()
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
-  expect(spoken[0]).toMatch(/^en-GB\|Field, Soest\. Next 7 days: Low risk/)
+  expect(spoken[0]).toMatch(/^en-GB\|Field, Soest\./)
+  expect(spoken.join(' ')).toContain('Next 7 days: Low risk')
 
   await page.getByRole('slider').fill('1')
   await expect(page.getByTestId('current-date')).toHaveText('10 May')
@@ -130,9 +133,10 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await expect(page.getByRole('status')).toContainText('looks fine')
   await page.getByRole('button', { name: /Listen/ }).click()
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
-  expect(spoken.at(-1)).toMatch(/^en-GB\|Field, Soest\. Last clear satellite image/)
-  expect(spoken.at(-1)).toMatch(/You checked it on .*: looks fine\.$/)
-  expect(spoken.at(-1)).toContain('Greenness since 1 October: from 0.50 to 0.70')
+  const spokenText = spoken.map((x) => x.replace(/^[^|]+\|/, '')).join(' ')
+  expect(spokenText).toMatch(/^Field, Soest\. Last clear satellite image/)
+  expect(spokenText).toMatch(/You checked it on .*: looks fine\./)
+  expect(spokenText).toContain('Greenness since 1 October: from 0.50 to 0.70')
 })
 
 test('check my field: draw corners, then read satellite data for that polygon', async ({ page }) => {
@@ -180,6 +184,7 @@ test('a shared ?field= link opens the Live card and the address bar follows', as
   await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await expect(page.getByLabel('Field', { exact: true })).toHaveValue('LWK-1')
   await expect(page.getByTestId('live-lines')).toContainText('Last clear satellite image')
+  await page.locator('details.more > summary').click()
   await expect(page.getByRole('button', { name: '🔗 Link to this field' })).toBeVisible()
 
   // Switching off Live clears the link target again
@@ -249,6 +254,7 @@ test('live mode: print stylesheet shows a one-page field report', async ({ page 
   await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await page.getByRole('button', { name: 'Live' }).click()
   await page.getByLabel('Field', { exact: true }).selectOption('LWK-1')
+  await page.locator('details.more > summary').click()
   await expect(page.getByRole('button', { name: /Print this card/ })).toBeVisible()
   await page.emulateMedia({ media: 'print' })
   await expect(page.getByTestId('print-report')).toBeVisible()

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FieldRisk, HorizonRisk } from '../api'
 import { reasonText, speechText, STRINGS, type Lang } from '../i18n'
+import { speak } from '../speech'
 
 const ICON = { green: '✓', amber: '!', red: '‼' } as const
 
@@ -39,12 +40,8 @@ export function RiskCard({ risk, lang }: { risk: FieldRisk; lang: Lang }) {
       setSpeaking(false)
       return
     }
-    const u = new SpeechSynthesisUtterance(speechText(risk, lang))
-    u.lang = lang === 'de' ? 'de-DE' : 'en-GB'
-    u.rate = 0.9
-    u.onend = () => setSpeaking(false)
+    speak(speechText(risk, lang), lang, () => setSpeaking(false))
     setSpeaking(true)
-    window.speechSynthesis.speak(u)
   }
 
   return (
