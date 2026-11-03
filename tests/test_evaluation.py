@@ -62,3 +62,20 @@ def test_logistic_model_handles_missing_values():
     x.loc[::7, "a"] = np.nan
     proba = logistic_model().fit(x, y).predict_proba(x)[:, 1]
     assert ((proba > 0.5) == y)[x["a"].notna()].mean() > 0.9
+
+
+def test_paired_auroc_diff_resamples_fields_together() -> None:
+    from cropews.evaluation import paired_auroc_diff
+
+    rng = np.random.default_rng(0)
+    rows = [
+        dict(field_id=f"f{i}", year=2024, y=y, sa=y + rng.normal(0, 0.3), sb=rng.normal(0, 1))
+        for i in range(40)
+        for y in [rng.integers(0, 2)]
+        for _ in range(3)
+    ]
+    df = pd.DataFrame(rows)
+    d, lo, hi = paired_auroc_diff(df, "sa", "sb", n=100)
+    assert d > 0 and lo > 0
+    d2, lo2, hi2 = paired_auroc_diff(df, "sb", "sa", n=100)
+    assert d2 == -d and hi2 < 0

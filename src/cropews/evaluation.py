@@ -53,3 +53,36 @@ def bootstrap_ci(
             stats.append(fn(sample))
     lo, hi = np.quantile(stats, [alpha / 2, 1 - alpha / 2])
     return float(lo), float(hi)
+
+
+def paired_auroc_diff(
+    frame: pd.DataFrame,
+    score_a: str,
+    score_b: str,
+    n: int = 500,
+    seed: int = 0,
+    alpha: float = 0.05,
+) -> tuple[float, float, float]:
+    """(diff, lo, hi) for AUROC(score_a) - AUROC(score_b) on identical rows.
+
+    Whole ``field_id``s are resampled together so both scores are evaluated on the same fields —
+    the direct test of the difference that overlapping separate CIs cannot give (review 4.7).
+    An interval containing zero means the observed gap is uncertain under this procedure.
+    """
+    rng = np.random.default_rng(seed)
+    groups = {k: v.index.to_numpy() for k, v in frame.groupby("field_id")}
+    keys = list(groups)
+
+    def diff(s: pd.DataFrame) -> float | None:
+        if s["y"].nunique() < 2:
+            return None
+        return float(roc_auc_score(s["y"], s[score_a]) - roc_auc_score(s["y"], s[score_b]))
+
+    stats = []
+    for _ in range(n):
+        idx = np.concatenate([groups[keys[i]] for i in rng.integers(0, len(keys), len(keys))])
+        d = diff(frame.loc[idx])
+        if d is not None:
+            stats.append(d)
+    lo, hi = np.quantile(stats, [alpha / 2, 1 - alpha / 2])
+    return float(diff(frame) or 0.0), float(lo), float(hi)
