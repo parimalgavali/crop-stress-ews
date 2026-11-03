@@ -15,8 +15,11 @@ class GRUD(nn.Module):
 
     def __init__(self, n_in: int, n_out: int, hidden: int = 32, dropout: float = 0.2) -> None:
         super().__init__()
-        self.w_x = nn.Parameter(torch.zeros(n_in))
-        self.b_x = nn.Parameter(torch.zeros(n_in))
+        # Positive decay-rate init: with w_x/b_x at zero, relu(0) has zero gradient and the
+        # input-decay branch can never learn (review finding 4.1). Positive weights give every
+        # gap d>0 a nonzero gradient from the first step.
+        self.w_x = nn.Parameter(torch.full((n_in,), 0.1))
+        self.b_x = nn.Parameter(torch.full((n_in,), 0.01))
         self.decay_h = nn.Linear(n_in, hidden)
         self.cell = nn.GRUCell(2 * n_in, hidden)
         self.head = nn.Sequential(nn.Dropout(dropout), nn.Linear(hidden, n_out))
