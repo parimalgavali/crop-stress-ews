@@ -1,5 +1,13 @@
 # Project memory
 
+### EO encoder check rejected (ADR 0069)
+- Frozen embedding is strictly weaker than trained GRU-D, which already failed the
+  2022 gate; input cadence also mismatches Presto/Prithvi. Not run.
+
+### Thermal fusion rejected (ADR 0068)
+- Landsat ST check: ~2 usable obs/field/month at 100 m — 10× below 5-day cadence;
+  licensing/latency fine. Bounded check failed before implementation.
+
 ### Thermal fusion rejected (ADR 0068)
 - Landsat ST check: ~2 usable obs/field/month at 100 m — 10× below 5-day cadence;
   licensing/latency fine. Bounded check failed before implementation.
