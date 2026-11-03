@@ -1,5 +1,9 @@
 # Project memory
 
+### Alert cooldown (ADR 0059)
+- `alert_state` on latest.json dedups ntfy repeats: re-alert only after 10-day cooldown once
+  the field went non-red. send_alerts stamps state back onto the payload every run.
+
 ### Scouting queue (ADR 0058)
 - `scouting.scout_queue` (14d, budget 10, stable tie-break, unavailable visible) →
   `payload.scouting`; `queue_capture` benchmark beats persistence/random on held seasons.
