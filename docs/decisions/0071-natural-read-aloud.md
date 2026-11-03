@@ -17,4 +17,9 @@
   with better voices installed (Android Google voices, Windows natural voices)
   quality improves automatically.
 - Consequences: utterances are chained via `onend`, so a card read is a queue of
-  short utterances; cancelling still works through `speechSynthesis.cancel()`.
+  short utterances. `speak()` returns a `cancel` handle that sets a cancelled
+  flag — `speechSynthesis.cancel()` alone is NOT enough, because browsers fire
+  the interrupted utterance's `end`/`error`, which would re-queue the chain;
+  both cards store the handle and call it on Stop, unmount, and field/lang
+  change. Segments do not split after a digit+period, so German dates like
+  "vom 25. Oktober" stay in one utterance.

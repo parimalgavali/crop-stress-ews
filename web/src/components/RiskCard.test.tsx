@@ -52,4 +52,24 @@ describe('RiskCard', () => {
     expect(spoken).toContain('Hohes Risiko')
     expect(screen.getByRole('button', { name: /Vorlesen/ })).toBeInTheDocument()
   })
+
+  it('stop really stops the utterance queue (ADR 0071)', async () => {
+    const speak = vi.fn()
+    vi.stubGlobal('speechSynthesis', { speak, cancel: vi.fn() })
+    vi.stubGlobal(
+      'SpeechSynthesisUtterance',
+      class {
+        lang = ''
+        onend: (() => void) | null = null
+        constructor(public text: string) {}
+      },
+    )
+    render(<RiskCard risk={risk} lang="en" />)
+    await userEvent.click(screen.getByRole('button', { name: /Listen/ }))
+    expect(speak).toHaveBeenCalledOnce()
+    await userEvent.click(screen.getByRole('button', { name: /Stop/ }))
+    // the interrupted utterance's end event must not queue the next sentence
+    speak.mock.calls[0][0].onend?.()
+    expect(speak).toHaveBeenCalledOnce()
+  })
 })

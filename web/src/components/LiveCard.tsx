@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   Conditions,
   Evidence,
@@ -100,22 +100,33 @@ export function LiveCard({
   const [copied, setCopied] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 
+  const stopRef = useRef<(() => void) | null>(null);
+
   useEffect(
     () => () => {
+      stopRef.current?.();
       if (canSpeak) window.speechSynthesis.cancel();
     },
     [canSpeak, cond, lang],
   );
 
+  useEffect(() => setCopied(false), [fieldId]);
+
   const toggleSpeech = () => {
     if (!canSpeak) return;
+    if (speaking) {
+      stopRef.current?.();
+      return setSpeaking(false);
+    }
     window.speechSynthesis.cancel();
-    if (speaking) return setSpeaking(false);
     const checked = fieldId ? lastCheckText(fieldId, lang) : null;
-    speak(
+    stopRef.current = speak(
       `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${ev ? `${ev.label}. ` : ""}${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
       lang,
-      () => setSpeaking(false),
+      () => {
+        stopRef.current = null;
+        setSpeaking(false);
+      },
     );
     setSpeaking(true);
   };
