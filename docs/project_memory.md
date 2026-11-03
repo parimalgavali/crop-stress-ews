@@ -1,5 +1,11 @@
 # Project memory
 
+### Interchange contract (ADR 0062)
+- `src/cropews/interchange.py`: cropews-fields v1 GeoJSON (EPSG:4326, ha),
+  cropews-scores v1 CSV (directive line, issued_at/feature_cutoff mandatory),
+  cropews-observations v1 (= web envelope). ContractError on violations.
+- Simulated adapter fixture in `fixtures/adapter_demo/`; CLI `scripts/import_validate.py`.
+
 ### Visit observations (ADR 0060)
 - `web/src/observations.ts` (key `cropews.observations.v1`): structured visit records +
   versioned JSON export; device-local only, review_status tracks adjudication state.

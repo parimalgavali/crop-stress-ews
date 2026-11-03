@@ -1,0 +1,49 @@
+{
+  "adapter": "agriconnect-simulated-v1",
+  "note": "SIMULATED partner export for the adapter demo. Not real farm data.",
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "feldname": "K0347",
+        "kreis": "Soest",
+        "frucht": "Winterweizen",
+        "flaeche_ha": 3.71
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [8.0712, 51.5602],
+            [8.0755, 51.5602],
+            [8.0755, 51.5579],
+            [8.0712, 51.5579],
+            [8.0712, 51.5602]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "feldname": "K0348",
+        "kreis": "Soest",
+        "frucht": "Wintergerste",
+        "flaeche_ha": 1.98
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [8.0831, 51.5644],
+            [8.0862, 51.5644],
+            [8.0862, 51.5618],
+            [8.0831, 51.5618],
+            [8.0831, 51.5644]
+          ]
+        ]
+      }
+    }
+  ]
+}
