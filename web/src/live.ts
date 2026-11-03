@@ -147,6 +147,12 @@ const T = {
       `${r} need a look · ${a} keep watching · ${g} look fine`,
     overviewWorst: "Show the field that needs it most",
     overviewNone: "Fields without a traffic light are not counted",
+    queueTitle: (k: number, h: number) =>
+      `First ${k} fields to check (${h}-day risk)`,
+    queueNone: "No scored fields yet",
+    queueUnavailable: (n: number) =>
+      `${n} ${n === 1 ? "field" : "fields"} cannot be ranked — data missing`,
+    queueChecked: "already checked",
     weatherLabel: "Rain and temperature for the next 5 days",
     seasonRain: (mm: number, lo: number, hi: number) =>
       `Since 1 October: ${Math.round(mm)} mm rain — usually ${Math.round(lo)}–${Math.round(hi)} mm by now`,
@@ -223,6 +229,12 @@ const T = {
       `${r} brauchen einen Blick · ${a} beobachten · ${g} sehen gut aus`,
     overviewWorst: "Zeig das Feld, das es am nötigsten hat",
     overviewNone: "Felder ohne Ampel zählen nicht mit",
+    queueTitle: (k: number, h: number) =>
+      `Erst diese ${k} Felder ansehen (${h}-Tage-Risiko)`,
+    queueNone: "Noch keine bewerteten Felder",
+    queueUnavailable: (n: number) =>
+      `${n} ${n === 1 ? "Feld" : "Felder"} ohne Daten — nicht einzuordnen`,
+    queueChecked: "schon angesehen",
     weatherLabel: "Regen und Temperatur der nächsten 5 Tage",
     seasonRain: (mm: number, lo: number, hi: number) =>
       `Seit 1. Oktober: ${Math.round(mm)} mm Regen — üblich sind ${Math.round(lo)}–${Math.round(hi)} mm`,

@@ -136,3 +136,14 @@ details.evidence ul {
   padding-left: 1.4rem;
   font-size: 0.95rem;
 }
+
+details.queue summary {
+  cursor: pointer;
+}
+details.queue ol {
+  margin: 0.4rem 0;
+  padding-left: 1.4rem;
+}
+details.queue li button {
+  font: inherit;
+}

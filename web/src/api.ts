@@ -178,6 +178,7 @@ export interface LiveSeason {
   season?: SeasonChart
   season_rain?: Record<string, SeasonRain>
   evidence?: Record<string, Evidence>
+  scouting?: Scouting | null
   health?: { parcels: number; with_data: number; s1_scenes_skipped: string[]; s2_scenes_skipped: string[]; minutes: number }
 }
 
@@ -229,6 +230,24 @@ export interface Forecast {
 }
 
 /** Rain since 1 October vs past seasons at the district (US-50). */
+export interface ScoutingEntry {
+  field_id: string
+  district?: string
+  risk: number
+  level: Level
+  quality_status?: 'ok' | 'limited' | 'insufficient' | null
+  checked_recently?: boolean
+  rank?: number
+}
+
+export interface Scouting {
+  horizon_days: number
+  budget: number
+  queue: ScoutingEntry[]
+  n_ranked: number
+  unavailable: { field_id: string; reasons: string[] }[]
+}
+
 export interface SeasonRain {
   rain_mm: number
   usual_lo: number

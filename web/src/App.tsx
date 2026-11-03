@@ -256,6 +256,36 @@ export default function App() {
             {l.overviewWorst}
           </button>
           <span className="hint">{l.overviewNone}</span>
+          {live?.scouting && live.scouting.queue.length > 0 && (
+            <details className="queue">
+              <summary>
+                {l.queueTitle(
+                  live.scouting.queue.length,
+                  live.scouting.horizon_days,
+                )}
+              </summary>
+              <ol>
+                {live.scouting.queue.map((q) => (
+                  <li key={q.field_id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelected(q.field_id)}
+                    >
+                      {q.field_id} · {q.district} ·{" "}
+                      {Math.round(q.risk * 100)}%
+                      {q.quality_status === "limited" ? " ⚠" : ""}
+                      {q.checked_recently ? ` · ${l.queueChecked}` : ""}
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              {live.scouting.unavailable.length > 0 && (
+                <p className="hint">
+                  {l.queueUnavailable(live.scouting.unavailable.length)}
+                </p>
+              )}
+            </details>
+          )}
         </div>
       )}
 
