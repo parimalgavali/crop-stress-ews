@@ -24,7 +24,8 @@ function bestVoice(lang: Lang): SpeechSynthesisVoice | null {
 export function speak(text: string, lang: Lang, onEnd: () => void): () => void {
   const synth = window.speechSynthesis
   const segments = text
-    .split(/(?<=[.!?])\s+/)
+    // don't break mid-date: "vom 25. Oktober" / "25.  November"
+    .split(/(?<=[.!?])(?<!\d[.!?])\s+/)
     .map((s) => s.trim())
     .filter(Boolean)
   let cancelled = false

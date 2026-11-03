@@ -20,3 +20,8 @@
 - Consequences: only visible-information order changed; no data or evaluation
   logic was touched. Utilities are one tap away behind an expandable section
   rather than removed, keeping the card scannable.
+- Follow-up fix (same day, found in UI verification): `.app` was
+  `grid-template-rows: auto 1fr auto`, so the `.overview` strip stole the `1fr`
+  row and squeezed `.main` — on phones the Live card was invisible without
+  scrolling, and desktop showed an empty band. `.app` is now a flex column and
+  `.main` takes `flex: 1` regardless of how many bars render above/below it.

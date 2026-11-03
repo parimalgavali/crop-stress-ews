@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FieldRisk, HorizonRisk } from '../api'
 import { reasonText, speechText, STRINGS, type Lang } from '../i18n'
 import { speak } from '../speech'
@@ -27,20 +27,29 @@ function Light({ h, lang }: { h: HorizonRisk; lang: Lang }) {
 export function RiskCard({ risk, lang }: { risk: FieldRisk; lang: Lang }) {
   const s = STRINGS[lang]
   const [speaking, setSpeaking] = useState(false)
+  const stopRef = useRef<(() => void) | null>(null)
   const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window
 
-  useEffect(() => () => {
-    if (canSpeak) window.speechSynthesis.cancel()
-  }, [canSpeak, risk, lang])
+  useEffect(
+    () => () => {
+      stopRef.current?.()
+      if (canSpeak) window.speechSynthesis.cancel()
+    },
+    [canSpeak, risk, lang],
+  )
 
   const toggleSpeech = () => {
     if (!canSpeak) return
-    window.speechSynthesis.cancel()
     if (speaking) {
+      stopRef.current?.()
       setSpeaking(false)
       return
     }
-    speak(speechText(risk, lang), lang, () => setSpeaking(false))
+    window.speechSynthesis.cancel()
+    stopRef.current = speak(speechText(risk, lang), lang, () => {
+      stopRef.current = null
+      setSpeaking(false)
+    })
     setSpeaking(true)
   }
 
