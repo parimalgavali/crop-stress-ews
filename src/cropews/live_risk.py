@@ -78,6 +78,7 @@ def score_live(
                     "horizon_days": int(h),
                     "risk": r,
                     "level": str(lvl[i]),
+                    "model_version": bundle.get("version", ""),
                 }
             )
     return {k: c for k, c in cards.items() if c["horizons"]}, rows
