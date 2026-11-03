@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from cropews.alerts import new_red, send, topic
+from cropews.alerts import new_red, send, topic, update_alert_state
 
 
 def main() -> None:
@@ -23,6 +23,10 @@ def main() -> None:
     alerts = new_red(prev, cur)
     for fid, h in alerts:
         print(f"{topic(fid)}: red at {h['days']} d")
+    # Persist the episode state on the payload so the next run's --previous carries it:
+    # an alert is only re-sent for a field after the cooldown, even across runs.
+    update_alert_state(cur, alerts)
+    args.current.write_text(json.dumps(cur, separators=(",", ":"), ensure_ascii=False))
     if not args.dry_run:
         print(f"sent {send(alerts, cur['as_of'])} of {len(alerts)} alerts")
 

@@ -43,7 +43,6 @@ const T = {
       mild: "mild",
       moderate: "moderate",
       severe: "severe",
-      unknown: "don't know",
       water: "water (too much / too little)",
       frost: "frost",
       heat: "heat",
@@ -54,7 +53,6 @@ const T = {
       farmer: "farmer",
       agronomist: "agronomist",
       developer: "developer",
-      other: "other",
     } as Record<string, string>,
   },
   de: {
@@ -71,6 +69,7 @@ const T = {
     none: "Noch keine Besuchseinträge auf diesem Gerät.",
     export: "Alle Einträge exportieren (JSON)",
     unknown: "unsicher",
+    privacy: "Einträge bleiben auf diesem Gerät. Es wird nichts gesendet.",
     labels: {
       none_seen: "nichts Auffälliges gesehen",
       patchy_growth: "unterschiedlicher Bewuchs",
@@ -83,7 +82,6 @@ const T = {
       mild: "leicht",
       moderate: "mittel",
       severe: "schwer",
-      unknown: "weiß nicht",
       water: "Wasser (zu viel / zu wenig)",
       frost: "Frost",
       heat: "Hitze",
@@ -94,7 +92,6 @@ const T = {
       farmer: "Landwirt/in",
       agronomist: "Agronom/in",
       developer: "Entwickler/in",
-      other: "andere",
     } as Record<string, string>,
   },
 };
