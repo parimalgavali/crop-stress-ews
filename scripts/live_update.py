@@ -323,7 +323,7 @@ def main() -> None:
         scenes_s2=int(s2["date"].notna().sum()) if "date" in s2 else 0,
         scenes_s1=int(s1["date"].notna().sum()) if "date" in s1 else 0,
         cache_hit=cache[0] is not None,
-        freshest_s2=str(s2["date"].max().date()) if len(s2) and s2["date"].notna().any() else None,
+        freshest_s2=str(s2["date"].max())[:10] if len(s2) and s2["date"].notna().any() else None,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, separators=(",", ":"), ensure_ascii=False))
