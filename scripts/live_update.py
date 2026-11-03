@@ -43,6 +43,7 @@ from cropews.live import (
     season_series,
 )
 from cropews.live_risk import load_bundle, score_live, spring_active
+from cropews.scouting import scout_queue
 from cropews.winter import live_winter
 
 ATTRIBUTION = (
@@ -256,6 +257,9 @@ def main() -> None:
     )
 
     payload["season_rain"] = _season_rains(fields, args.as_of)
+    # Scouting queue: declared horizon, explicit visit budget (spec 8.2); only when spring
+    # risk scores exist. checked_recently stays device-local (ADR 0032) — not set here.
+    payload["scouting"] = scout_queue(risk, horizon=14, budget=10, quality=ev) if risk else None
     payload["health"] = run_health(
         len(fields),
         len(payload["conditions"]),

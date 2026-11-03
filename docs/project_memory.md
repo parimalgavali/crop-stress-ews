@@ -1,5 +1,9 @@
 # Project memory
 
+### Scouting queue (ADR 0058)
+- `scouting.scout_queue` (14d, budget 10, stable tie-break, unavailable visible) →
+  `payload.scouting`; `queue_capture` benchmark beats persistence/random on held seasons.
+
 ### Evidence card (ADR 0057)
 - `live.evidence` → `payload.evidence`: per-field observation ages, model_version, issued_at,
   usable_peer_count, quality_status (ok/limited/insufficient) + reason codes; null = unknown.
