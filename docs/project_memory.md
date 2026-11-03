@@ -1,5 +1,9 @@
 # Project memory
 
+### Run manifest (ADR 0066)
+- `demo_evaluation` manifest: observations, parameters, runtime_seconds,
+  artifact_sha256; `--check fixtures/demo_expected.json` verifies stable keys.
+
 ### Interchange contract (ADR 0062)
 - `src/cropews/interchange.py`: cropews-fields v1 GeoJSON (EPSG:4326, ha),
   cropews-scores v1 CSV (directive line, issued_at/feature_cutoff mandatory),
