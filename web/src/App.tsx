@@ -417,6 +417,7 @@ export default function App() {
                   ring={outerRing(liveField.geometry)}
                   pheno={live.phenology?.[liveField.properties.district]}
                   evidence={live.evidence?.[liveField.properties.field_id]}
+                  subfield={live.subfield?.[liveField.properties.field_id]}
                   soil={live.soil?.[liveField.properties.field_id]}
                   fieldId={liveField.properties.field_id}
                   light={worstLevel(

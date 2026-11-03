@@ -1,5 +1,18 @@
 # Project memory
 
+### Subfield anomaly view (ADR 0070)
+- `cropews.subfield`: mask_quality / anomaly_zones (median−0.15, 4-conn, ≥4 px) /
+  downsample(≤28) / field_subfield; `live_update._subfield_maps` fills
+  `payload["subfield"]`; web `SubfieldMap` renders grid + bilingual patch line.
+
+### EO encoder check rejected (ADR 0069)
+- Frozen embedding is strictly weaker than trained GRU-D, which already failed the
+  2022 gate; input cadence also mismatches Presto/Prithvi. Not run.
+
+### Thermal fusion rejected (ADR 0068)
+- Landsat ST check: ~2 usable obs/field/month at 100 m — 10× below 5-day cadence;
+  licensing/latency fine. Bounded check failed before implementation.
+
 ### EO encoder check rejected (ADR 0069)
 - Frozen embedding is strictly weaker than trained GRU-D, which already failed the
   2022 gate; input cadence also mismatches Presto/Prithvi. Not run.

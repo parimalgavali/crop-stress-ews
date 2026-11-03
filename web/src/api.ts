@@ -179,6 +179,7 @@ export interface LiveSeason {
   season_rain?: Record<string, SeasonRain>
   evidence?: Record<string, Evidence>
   scouting?: Scouting | null
+  subfield?: Record<string, SubfieldEntry>
   health?: {
     parcels: number
     with_data: number
@@ -308,4 +309,22 @@ export function loadLive(): Promise<LiveSeason> {
     live.catch(() => (live = null))
   }
   return live
+}
+
+/** Per-pixel view of a field on its freshest clear date (spec 8.6, ADR 0070). */
+export interface SubfieldZone {
+  row: number
+  col: number
+  height: number
+  width: number
+  pixels: number
+  area_ha: number
+  mean_delta: number
+}
+
+export interface SubfieldEntry {
+  date: string
+  quality: { clear: number; cloud_shadow: number; unstable: boolean; interior_px: number }
+  zones: SubfieldZone[]
+  grid: { h: number; w: number; ndvi: (number | null)[][]; zone_cells: [number, number][] }
 }
