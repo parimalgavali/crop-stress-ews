@@ -1,5 +1,9 @@
 # Project memory
 
+### Model comparison (ADR 0054)
+- `paired_auroc_diff` (field bootstrap of AUROC_A−AUROC_B) is the decision rule for challenger
+  checks; CI-overlap superseded.
+
 ### Check-my-field gap (ADR 0053)
 - `optical` skips scenes <20d before the latest clear one (was inverted); exported with injectable
   deps for flow-level tests.
