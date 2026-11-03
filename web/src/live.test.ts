@@ -180,3 +180,32 @@ describe('seasonRainLine', () => {
     expect(seasonRainLine(base, 'de')!.text).toContain('nasser als üblich')
   })
 })
+
+describe('evidenceLines', () => {
+  it('separates quality status from facts, EN/DE', async () => {
+    const { evidenceLines } = await import('./live')
+    const ev = {
+      field_id: 'x',
+      last_clear_s2_at: '2026-10-25',
+      s2_days_ago: 3,
+      last_s1_at: '2026-10-26',
+      weather_available_through: '2026-10-28',
+      usable_peer_count: 6,
+      feature_cutoff: '2026-10-28',
+      model_version: 'v1',
+      issued_at: '2026-10-28T09:00:00+00:00',
+      quality_status: 'limited' as const,
+      quality_reasons: ['unconfirmed_crop'],
+    }
+    const en = evidenceLines(ev, 'en')
+    expect(en.label).toContain('limited')
+    expect(en.lines.join(' ')).toContain('October')
+    expect(en.lines.join(' ')).toContain('3 days')
+    expect(en.lines.join(' ')).toContain('not confirmed')
+    const de = evidenceLines(ev, 'de')
+    expect(de.label).toContain('eingeschränkt')
+    const none = evidenceLines({ field_id: 'y', quality_status: 'insufficient' }, 'en')
+    expect(none.label).toContain('not enough')
+    expect(none.lines.join(' ')).toContain('none yet')
+  })
+})

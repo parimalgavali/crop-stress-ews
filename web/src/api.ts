@@ -138,6 +138,26 @@ export interface Conditions {
   rain_30d_mm?: number
   tmean_7d_c?: number
   tmin_7d_c?: number
+  s2_clear_fraction?: number
+}
+
+/** Evidence/data-quality record behind a Live card (spec 8.1; null = unknown, never healthy). */
+export interface Evidence {
+  field_id: string
+  declared_crop?: string | null
+  crop_status?: 'eligible' | 'not_eligible' | null
+  model_version?: string | null
+  issued_at?: string | null
+  feature_cutoff?: string | null
+  last_clear_s2_at?: string | null
+  s2_days_ago?: number | null
+  s2_clear_fraction?: number | null
+  last_s1_at?: string | null
+  s1_days_ago?: number | null
+  weather_available_through?: string | null
+  usable_peer_count?: number
+  quality_status?: 'ok' | 'limited' | 'insufficient'
+  quality_reasons?: string[]
 }
 
 export interface LiveFieldProps extends FieldProps {
@@ -157,6 +177,7 @@ export interface LiveSeason {
   soil?: Record<string, Soil>
   season?: SeasonChart
   season_rain?: Record<string, SeasonRain>
+  evidence?: Record<string, Evidence>
   health?: { parcels: number; with_data: number; s1_scenes_skipped: string[]; s2_scenes_skipped: string[]; minutes: number }
 }
 

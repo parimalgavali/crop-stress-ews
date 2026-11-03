@@ -1,5 +1,9 @@
 # Project memory
 
+### Evidence card (ADR 0057)
+- `live.evidence` → `payload.evidence`: per-field observation ages, model_version, issued_at,
+  usable_peer_count, quality_status (ok/limited/insufficient) + reason codes; null = unknown.
+
 ### Environment lock (ADR 0056)
 - `requirements-lock.txt` (pip-compile, all extras, py3.10) pins the full tree; regenerate on dep
   changes.

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type {
   Conditions,
+  Evidence,
   Level,
   Forecast,
   Phenology,
@@ -12,7 +13,7 @@ import type {
 } from "../api";
 import type { Ring } from "../geo";
 import { formatDate, STRINGS, type Lang } from "../i18n";
-import { chartSummary, conditionLines, LIVE_STRINGS, scoreLine } from "../live";
+import { chartSummary, conditionLines, evidenceLines, LIVE_STRINGS, scoreLine } from "../live";
 import { CheckedIt } from "./CheckedIt";
 import { lastCheckText } from "../fieldChecks";
 import { fieldLink } from "../fieldLink";
@@ -42,6 +43,7 @@ interface Props {
   soil?: Soil;
   fieldId?: string;
   light?: Level | null;
+  evidence?: Evidence;
 }
 
 export function LiveCard({
@@ -66,6 +68,7 @@ export function LiveCard({
   asOf,
   fieldId,
   light = null,
+  evidence,
 }: Props) {
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -81,6 +84,7 @@ export function LiveCard({
     seasonRain,
   );
   const chart = chartSummary(series, peers, lang);
+  const ev = evidence ? evidenceLines(evidence, lang) : null;
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
@@ -98,7 +102,7 @@ export function LiveCard({
     if (speaking) return setSpeaking(false);
     const checked = fieldId ? lastCheckText(fieldId, lang) : null;
     const u = new SpeechSynthesisUtterance(
-      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}`,
+      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${ev ? `${ev.label}. ` : ""}${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}`,
     );
     u.lang = lang === "de" ? "de-DE" : "en-GB";
     u.rate = 0.9;
@@ -124,6 +128,18 @@ export function LiveCard({
       {forecast?.fc_days?.length ? (
         <WeatherStrip days={forecast.fc_days} lang={lang} />
       ) : null}
+      {ev && (
+        <details className="evidence">
+          <summary>
+            {l.evidenceTitle} — {ev.label}
+          </summary>
+          <ul>
+            {ev.lines.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ul>
+        </details>
+      )}
       <SeasonChart
         series={series}
         peers={peers}

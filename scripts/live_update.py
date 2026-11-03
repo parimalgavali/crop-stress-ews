@@ -10,7 +10,7 @@ import argparse
 import json
 import time
 from concurrent.futures import ProcessPoolExecutor
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import geopandas as gpd
@@ -35,6 +35,7 @@ from cropews.live import (
     WHEAT_THRESHOLD,
     cache_since,
     conditions,
+    evidence,
     forecast_summary,
     live_payload,
     merge_cached,
@@ -224,6 +225,18 @@ def main() -> None:
         winter = live_winter(s2, s1, daily, cereals.set_index("field_id")["district"], args.as_of)
     district = fields.set_index("field_id")["district"]
     peer_ids = set(cereals["field_id"]) if wheat_p is not None else set(district.index)
+    # Evidence: usable peers are same-district peers with a recent clear view (spec 8.1).
+    by_district = (cereals if wheat_p is not None else fields).groupby("district")["field_id"]
+    peer_map = {fid: set(by_district.get_group(d)) for fid, d in district.items()}
+    ev = evidence(
+        cond,
+        fields,
+        peer_map,
+        args.as_of,
+        model_version=(bundle or {}).get("version", ""),
+        issued_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        wheat_p=wheat_p,
+    )
     season_chart = season_series(s2, district, peer_ids, args.as_of)
     season_chart["peer_kind"] = "cereal" if wheat_p is not None else "all"
     payload = live_payload(
@@ -239,6 +252,7 @@ def main() -> None:
         season_chart,
         _phenology(fields, args.as_of),
         _soils(fields, args.cache),
+        ev,
     )
 
     payload["season_rain"] = _season_rains(fields, args.as_of)

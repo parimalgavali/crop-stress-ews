@@ -170,3 +170,49 @@ def test_season_series_keeps_clear_dates_since_october_and_peer_medians_with_eno
     # 28 Oct has only 4 clear peers, below the minimum of 5
     assert out["peers"] == {"Soest": [["2026-10-10", 0.225]]}
     assert season_series(s2, district, set(), AS_OF)["peers"] == {}
+
+
+def test_evidence_separates_quality_status_and_never_makes_null_mean_healthy() -> None:
+    import geopandas as gpd
+    from shapely.geometry import Point
+
+    from cropews.live import evidence
+
+    fields = gpd.GeoDataFrame(
+        {"field_id": ["a", "b", "c"], "district": "Soest", "declared_crop": "x"},
+        geometry=[Point(0, 0)] * 3,
+    )
+    fresh = {
+        "s2_date": "2026-10-25",
+        "s2_days_ago": 3,
+        "s2_clear_fraction": 0.9,
+        "s1_date": "2026-10-26",
+        "s1_days_ago": 2,
+        "weather_to": "2026-10-28",
+    }
+    cond = {"a": dict(fresh), "b": {}, "c": {**fresh, "s2_days_ago": 40}}
+    peers = {fid: {f"p{i}" for i in range(6)} for fid in "abc"}
+    cond.update({f"p{i}": dict(fresh) for i in range(6)})
+    out = evidence(
+        cond,
+        fields,
+        peers,
+        date(2026, 10, 28),
+        model_version="v1",
+        issued_at="2026-10-28T09:00:00+00:00",
+        wheat_p={"a": 0.9, "b": 0.3, "c": 0.8},
+    )
+    assert out["a"]["quality_status"] == "ok"
+    assert out["a"]["model_version"] == "v1"
+    assert out["a"]["usable_peer_count"] == 6
+    assert out["b"]["quality_status"] == "insufficient"
+    assert set(out["b"]["quality_reasons"]) >= {
+        "no_optical",
+        "no_radar",
+        "no_weather",
+        "unconfirmed_crop",
+    }
+    assert out["b"]["feature_cutoff"] is None  # null = unknown, not healthy
+    assert out["b"]["crop_status"] == "not_eligible"
+    assert out["c"]["quality_status"] == "limited"
+    assert "stale_optical" in out["c"]["quality_reasons"]

@@ -48,6 +48,7 @@ def optical(s2: pd.DataFrame, as_of: date) -> dict[str, dict[str, Any]]:
             "ndvi": float(last["ndvi"]),
             "ndmi": float(last["ndmi"]),
             "ndvi_change": change,
+            "s2_clear_fraction": float(last["clear_fraction"]),
         }
     return out
 
@@ -180,6 +181,7 @@ def live_payload(
     season: dict[str, Any] | None = None,
     phenology: dict[str, dict[str, Any]] | None = None,
     soil: dict[str, dict[str, Any]] | None = None,
+    evidence_map: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """``wheat_p``: field_id -> P(winter wheat) (ADR 0018); ``forecast``: district -> summary
     from :func:`forecast_summary` (ADR 0019)."""
@@ -214,6 +216,7 @@ def live_payload(
         "season": season or {},
         "phenology": phenology or {},
         "soil": {k: v for k, v in (soil or {}).items() if k in set(f["field_id"])},
+        "evidence": {k: v for k, v in (evidence_map or {}).items() if k in set(f["field_id"])},
         "spring_monitoring": sorted(k for k, p in wheat_p.items() if p >= WHEAT_THRESHOLD),
     }
 
@@ -280,4 +283,84 @@ def merge_cached(
     out = pd.concat([old, new], ignore_index=True).drop_duplicates(keys, keep="last")
     out = out.sort_values(keys).reset_index(drop=True)
     out.attrs = new.attrs
+    return out
+
+
+STALE_OPTICAL_DAYS = 15
+STALE_WEATHER_DAYS = 2
+MIN_USABLE_PEERS = 5
+CROP_CONFIRMED_P = 0.5
+
+
+def evidence(
+    cond: dict[str, dict[str, Any]],
+    fields: gpd.GeoDataFrame,
+    peer_ids: dict[str, set[str]],
+    as_of: date,
+    model_version: str = "",
+    issued_at: str | None = None,
+    wheat_p: dict[str, float] | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Per-field evidence/quality record (spec 8.1).
+
+    ``peer_ids``: field_id -> the peer set used for its district comparison. ``Null`` means
+    unknown — never a healthy zero. ``quality_status``: ok | limited | insufficient.
+    """
+    peers_with_recent: dict[str, int] = {}
+    for fid, peers in peer_ids.items():
+        peers_with_recent[fid] = sum(
+            1
+            for p in peers
+            if (c := cond.get(p, {})).get("s2_days_ago") is not None
+            and c["s2_days_ago"] <= STALE_OPTICAL_DAYS
+        )
+    crop = fields.set_index("field_id")["declared_crop"] if len(fields) else pd.Series(dtype=str)
+    out: dict[str, dict[str, Any]] = {}
+    for fid in sorted(set(cond) | set(peers_with_recent)):
+        c = cond.get(fid, {})
+        reasons: list[str] = []
+        if c.get("s2_date") is None:
+            reasons.append("no_optical")
+        elif c.get("s2_days_ago", 0) > STALE_OPTICAL_DAYS:
+            reasons.append("stale_optical")
+        if c.get("s1_date") is None:
+            reasons.append("no_radar")
+        w = c.get("weather_to")
+        if w is None:
+            reasons.append("no_weather")
+        elif (as_of - date.fromisoformat(str(w))).days > STALE_WEATHER_DAYS:
+            reasons.append("stale_weather")
+        if peers_with_recent.get(fid, 0) < MIN_USABLE_PEERS:
+            reasons.append("few_peers")
+        wp = (wheat_p or {}).get(fid)
+        crop_status = (
+            None if wp is None else "eligible" if wp >= CROP_CONFIRMED_P else "not_eligible"
+        )
+        if wp is not None and wp < CROP_CONFIRMED_P:
+            reasons.append("unconfirmed_crop")
+        out[fid] = {
+            "field_id": fid,
+            "declared_crop": crop.get(fid) if fid in crop.index else None,
+            "crop_status": crop_status,
+            "model_version": model_version or None,
+            "issued_at": issued_at,
+            "feature_cutoff": max(
+                [str(x) for x in (c.get("s2_date"), c.get("s1_date"), w) if x], default=None
+            ),
+            "last_clear_s2_at": c.get("s2_date"),
+            "s2_days_ago": c.get("s2_days_ago"),
+            "s2_clear_fraction": c.get("s2_clear_fraction"),
+            "last_s1_at": c.get("s1_date"),
+            "s1_days_ago": c.get("s1_days_ago"),
+            "weather_available_through": w,
+            "usable_peer_count": peers_with_recent.get(fid, 0),
+            "quality_status": (
+                "insufficient"
+                if {"no_optical", "no_weather"} & set(reasons)
+                else "limited"
+                if reasons
+                else "ok"
+            ),
+            "quality_reasons": reasons,
+        }
     return out
