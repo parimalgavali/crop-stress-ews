@@ -1,5 +1,8 @@
 # Project memory
 
+### GRU-D input decay
+- `w_x`/`b_x` init 0.1/0.01 (ADR 0049); zero-init left the decay dead (review 4.1). Pre-fix GRU-D scores predate learned decay.
+
 ## Purpose
 
 Portfolio project for applied-AI / AgriTech roles in Germany (target employers include xarvio/BASF
