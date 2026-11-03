@@ -87,8 +87,8 @@ def _subfield_maps(fields: gpd.GeoDataFrame, s2: pd.DataFrame) -> dict:
     if s2.empty or "date" not in s2:
         return out
     catalog = pystac_client.Client.open(STAC_URL)
-    latest = s2.groupby("field_id")["date"].max()
-    for when, group in latest.groupby(latest):
+    latest = pd.to_datetime(s2.groupby("field_id")["date"].max())
+    for when, group in latest.groupby(latest.dt.date):
         subset = fields[fields["field_id"].isin(group.index)]
         bbox = tuple(subset.to_crs(4326).total_bounds)
         try:
@@ -101,7 +101,8 @@ def _subfield_maps(fields: gpd.GeoDataFrame, s2: pd.DataFrame) -> dict:
             )
         except Exception:
             continue
-        for _, row in subset.iterrows():
+        centroids = subset.centroid.to_crs(4326)
+        for (_, row), centroid in zip(subset.iterrows(), centroids, strict=True):
             item = next(
                 (
                     i
@@ -109,7 +110,7 @@ def _subfield_maps(fields: gpd.GeoDataFrame, s2: pd.DataFrame) -> dict:
                     if i.geometry
                     and __import__("shapely.geometry", fromlist=["shape"])
                     .shape(i.geometry)
-                    .contains(row.geometry.centroid)
+                    .contains(centroid)
                 ),
                 None,
             )
