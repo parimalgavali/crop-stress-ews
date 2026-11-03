@@ -8,6 +8,10 @@
 - District × soil-class peers (min_peers=5) lose on 2022 at all horizons, both models;
   district peers stay. `build_features(peer_key=)` kept for future experiments.
 
+### Matched peers rejected (ADR 0063)
+- District × soil-class peers (min_peers=5) lose on 2022 at all horizons, both models;
+  district peers stay. `build_features(peer_key=)` kept for future experiments.
+
 ### Run manifest (ADR 0066)
 - `demo_evaluation` manifest: observations, parameters, runtime_seconds,
   artifact_sha256; `--check fixtures/demo_expected.json` verifies stable keys.
