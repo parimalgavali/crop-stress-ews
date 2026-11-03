@@ -1,5 +1,9 @@
 # Project memory
 
+### Run budget (ADR 0065)
+- `run_health` emits extraction_minutes/scenes_s2/s1/cache_hit/freshest_s2; health
+  line shows "update took X min". Cost tracked as runtime + scenes, not money.
+
 ### Weekly digest (ADR 0064)
 - `web/src/live.ts` weeklyDigest: deterministic one-liner over live.scouting —
   queue size, dominant first reason, freshest s2_days_ago. No LLM.
