@@ -15,11 +15,13 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 KEY = ["field_id", "date", "horizon_days"]
-COLUMNS = [*KEY, "risk", "level", "issued_at"]
+COLUMNS = [*KEY, "risk", "level", "issued_at", "model_version"]
 
 
 def append_log(path: Path, entries: pd.DataFrame) -> pd.DataFrame:
     """Append ``entries``; a forecast already in the log is never overwritten."""
+    if "model_version" not in entries:
+        entries = entries.assign(model_version="")
     new = entries.assign(date=pd.to_datetime(entries["date"]).dt.strftime("%Y-%m-%d"))[COLUMNS]
     if path.exists():
         old = pd.read_csv(path, dtype={"field_id": str})
@@ -44,7 +46,13 @@ def scoreboard(log: pd.DataFrame, outcomes: pd.DataFrame, today: date) -> dict[s
         date=pd.to_datetime(outcomes["date"]), field_id=outcomes["field_id"].astype(str)
     )
     due = log["date"] + pd.to_timedelta(log["horizon_days"], unit="D") <= pd.Timestamp(today)
-    scored = log[due].merge(out, on=KEY, how="inner")
+    # Review finding 4.3: a forecast issued after its feature origin is "stale" — part of its
+    # window already elapsed at issuance, so it can never earn outcome credit (aligned-schedule
+    # policy: only forecasts issued on their origin day are scored). Same-day issuance counts as
+    # aligned; intraday issuance lag is a documented limit.
+    issued_day = pd.to_datetime(log["issued_at"], utc=True, errors="coerce").dt.date
+    stale = (issued_day > log["date"].dt.date).fillna(False)
+    scored = log[due & ~stale].merge(out, on=KEY, how="inner")
     board: dict[str, Any] = {"as_of": today.isoformat(), "horizons": {}}
     for h, g in log.groupby("horizon_days"):
         s = scored[scored["horizon_days"] == h]
@@ -55,6 +63,7 @@ def scoreboard(log: pd.DataFrame, outcomes: pd.DataFrame, today: date) -> dict[s
             "pending": int((~due[g.index]).sum()),
             "scored": int(len(s)),
             "no_outcome": int(due[g.index].sum() - len(s)),
+            "stale_origin": int(stale[g.index].sum()),
             "onsets": int(y.sum()),
             "auroc": round(float(roc_auc_score(y, s["risk"])), 3) if both else None,
             "red_hits": int((red & (y == 1)).sum()),

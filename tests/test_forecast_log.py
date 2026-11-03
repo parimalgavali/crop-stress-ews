@@ -46,3 +46,28 @@ def test_scoreboard_counts_due_forecasts_without_outcome(tmp_path) -> None:
     )
     h = scoreboard(log, outcomes_long(targets, (7,)), date(2027, 4, 12))["horizons"]["7"]
     assert (h["issued"], h["pending"], h["scored"], h["no_outcome"]) == (2, 0, 1, 1)
+
+
+def test_scoreboard_marks_delayed_issuance_stale() -> None:
+    # Review finding 4.3: a forecast logged with an origin before its issuance day must not
+    # earn credit for events in the already-elapsed part of its window.
+    log = append_log(tmp_path_fixture(), _entries("2027-04-05", 0.9, "red", "2027-04-10T06:00:00Z"))
+    targets = pd.DataFrame(
+        {"field_id": ["a", "b"], "date": pd.to_datetime(["2027-04-05"] * 2), "onset_7d": [1, 0]}
+    )
+    h = scoreboard(log, outcomes_long(targets, (7,)), date(2027, 4, 13))["horizons"]["7"]
+    assert h["stale_origin"] == 2
+    assert h["scored"] == 0
+    # same-day issuance is aligned and scores normally
+    log2 = append_log(
+        tmp_path_fixture("l2"), _entries("2027-04-05", 0.9, "red", "2027-04-05T23:00:00Z")
+    )
+    h2 = scoreboard(log2, outcomes_long(targets, (7,)), date(2027, 4, 13))["horizons"]["7"]
+    assert h2["stale_origin"] == 0 and h2["scored"] == 2
+
+
+def tmp_path_fixture(name: str = "l"):
+    import tempfile
+    from pathlib import Path
+
+    return Path(tempfile.mkdtemp()) / f"{name}.csv"

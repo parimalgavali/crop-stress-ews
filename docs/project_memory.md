@@ -1,5 +1,9 @@
 # Project memory
 
+### Aligned issuance (ADR 0051)
+- Scoreboard: rows with issued_at day > origin date = `stale_origin`, never scored. Log rows
+  carry `model_version`.
+
 ### Event lead time (ADR 0050)
 - Alarm hits only if origin < onset <= origin + horizon_days; exact event onsets, all events
   reported, `n_alarms` = repeated-alert burden. 2024: 21/31 warned, median 13 d (supersedes
