@@ -43,18 +43,52 @@ def error_table(frame: pd.DataFrame, by: str, alarm_level: str = "red") -> pd.Da
     return frame.groupby(by, observed=True)[["y", "level", "field_id", "year"]].apply(summarise)
 
 
-def lead_times(labels: pd.DataFrame, preds: pd.DataFrame, alarm_level: str = "red") -> pd.DataFrame:
-    """Days between the first alarm (any horizon) in the 21 days before onset and the onset.
+def _events_from_labels(labels: pd.DataFrame) -> pd.DataFrame:
+    """Onsets = first date of each contiguous ``in_event`` run (fallback when no events table)."""
+    g = labels.sort_values(["field_id", "year", "date"])
+    run = g["in_event"] & ~g.groupby(["field_id", "year"])["in_event"].shift(fill_value=False)
+    return g[run][["field_id", "year", "date"]].rename(columns={"date": "onset"})
 
-    Onset is the first grid date a field is ``in_event``. Fields whose event starts on the first
-    grid date are dropped (no history to warn from). ``lead_days`` is NaN when no alarm came.
+
+def lead_times(
+    labels: pd.DataFrame,
+    preds: pd.DataFrame,
+    events: pd.DataFrame | None = None,
+    alarm_level: str = "red",
+) -> pd.DataFrame:
+    """Valid-warning analysis per event (review finding 4.2).
+
+    An alarm (``level == alarm_level`` issued at ``date`` with ``horizon_days``) only counts for an
+    event when its own interval contains the onset: ``date < onset <= date + horizon_days``. Events
+    come from the exact ``events`` table (field_id, year, onset) when given, else from contiguous
+    ``in_event`` runs in ``labels``; every event is reported, not just the first per field-season.
+    Events starting on or before the first predict date are dropped (nothing could warn them).
+
+    Columns: ``onset``, ``first_alarm`` (earliest matching forecast origin), ``lead_days`` (NaN when
+    no valid alarm — a missed event) and ``n_alarms`` (matching forecasts = repeated-alert burden).
+    One forecast may warn several events; each event counts it against its own onset.
     """
-    first = labels[labels["in_event"]].groupby(["field_id", "year"])["date"].min()
-    start = labels.groupby(["field_id", "year"])["date"].min()
-    onset = first[first > start.reindex(first.index)].rename("onset").reset_index()
-    alarms = preds[preds["level"] == alarm_level][["field_id", "year", "date"]].drop_duplicates()
-    m = onset.merge(alarms, on=["field_id", "year"], how="left")
-    before = (m["date"] < m["onset"]) & (m["date"] >= m["onset"] - pd.Timedelta(days=21))
-    first_alarm = m[before].groupby(["field_id", "year"])["date"].min().rename("first_alarm")
-    out = onset.merge(first_alarm.reset_index(), on=["field_id", "year"], how="left")
+    if events is None:
+        events = _events_from_labels(labels)
+    else:
+        events = events[["field_id", "year", "onset"]].copy()
+    first_pred = preds.groupby(["field_id", "year"])["date"].min()
+    keep = events.merge(first_pred.rename("first_pred").reset_index(), on=["field_id", "year"])
+    keep = keep[keep["onset"] > keep["first_pred"]][["field_id", "year", "onset"]]
+    alarms = preds[preds["level"] == alarm_level][
+        ["field_id", "year", "date", "horizon_days"]
+    ].drop_duplicates()
+    m = keep.merge(alarms, on=["field_id", "year"], how="left")
+    hit = (
+        m["date"].notna()
+        & (m["date"] < m["onset"])
+        & (m["onset"] <= m["date"] + pd.to_timedelta(m["horizon_days"], unit="D"))
+    )
+    valid = (
+        m[hit]
+        .groupby(["field_id", "year", "onset"])["date"]
+        .agg(first_alarm="min", n_alarms="size")
+    )
+    out = keep.merge(valid.reset_index(), on=["field_id", "year", "onset"], how="left")
+    out["n_alarms"] = out["n_alarms"].fillna(0).astype(int)
     return out.assign(lead_days=(out["onset"] - out["first_alarm"]).dt.days)

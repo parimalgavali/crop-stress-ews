@@ -1,5 +1,10 @@
 # Project memory
 
+### Event lead time (ADR 0050)
+- Alarm hits only if origin < onset <= origin + horizon_days; exact event onsets, all events
+  reported, `n_alarms` = repeated-alert burden. 2024: 21/31 warned, median 13 d (supersedes
+  "21 of 29, median 15 d").
+
 ### GRU-D input decay
 - `w_x`/`b_x` init 0.1/0.01 (ADR 0049); zero-init left the decay dead (review 4.1). Pre-fix GRU-D scores predate learned decay.
 
