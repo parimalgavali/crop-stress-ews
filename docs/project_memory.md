@@ -13,6 +13,18 @@
 - Landsat ST check: ~2 usable obs/field/month at 100 m — 10× below 5-day cadence;
   licensing/latency fine. Bounded check failed before implementation.
 
+### EO encoder check rejected (ADR 0069)
+- Frozen embedding is strictly weaker than trained GRU-D, which already failed the
+  2022 gate; input cadence also mismatches Presto/Prithvi. Not run.
+
+### Thermal fusion rejected (ADR 0068)
+- Landsat ST check: ~2 usable obs/field/month at 100 m — 10× below 5-day cadence;
+  licensing/latency fine. Bounded check failed before implementation.
+
+### Thermal fusion rejected (ADR 0068)
+- Landsat ST check: ~2 usable obs/field/month at 100 m — 10× below 5-day cadence;
+  licensing/latency fine. Bounded check failed before implementation.
+
 ### GRU-D corrective rerun (ADR 0067)
 - Post-decay-fix rerun: GRU-D 30d 0.833/0.804/0.792 on 2022 — below LightGBM at every
   horizon; sequence models stay non-adopted. Pre-fix "GRU-D wins" claims superseded.
