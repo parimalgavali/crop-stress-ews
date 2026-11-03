@@ -226,15 +226,36 @@ MIN_DATA_SHARE = 0.5
 
 
 def run_health(
-    parcels: int, with_data: int, skipped_s1: list[str], skipped_s2: list[str], seconds: float
+    parcels: int,
+    with_data: int,
+    skipped_s1: list[str],
+    skipped_s2: list[str],
+    seconds: float,
+    *,
+    extraction_seconds: float | None = None,
+    scenes_s2: int = 0,
+    scenes_s1: int = 0,
+    cache_hit: bool = False,
+    freshest_s2: str | None = None,
 ) -> dict[str, Any]:
-    """Per-run health block for ``latest.json``; checked by scripts/check_live_health.py."""
+    """Per-run health + budget block for ``latest.json`` (dossier P2 monitoring budget).
+
+    Checked by scripts/check_live_health.py; the extra keys report extraction cost and
+    data freshness so the run report is visible without opening the pipeline.
+    """
     return {
         "parcels": parcels,
         "with_data": with_data,
         "s1_scenes_skipped": sorted(set(skipped_s1)),
         "s2_scenes_skipped": sorted(set(skipped_s2)),
         "minutes": round(seconds / 60, 1),
+        "extraction_minutes": (
+            round(extraction_seconds / 60, 1) if extraction_seconds is not None else None
+        ),
+        "scenes_s2": scenes_s2,
+        "scenes_s1": scenes_s1,
+        "cache_hit": cache_hit,
+        "freshest_s2": freshest_s2,
     }
 
 
