@@ -52,13 +52,8 @@ export function speak(text: string, lang: Lang, onEnd: () => void): () => void {
     }
     next()
   }
-  if (!(synth.getVoices?.() ?? []).length && synth.onvoiceschanged !== undefined) {
-    synth.onvoiceschanged = () => {
-      synth.onvoiceschanged = null
-      if (!cancelled) run()
-    }
-  } else {
-    run()
-  }
+  // Never gate on the voice list: it loads asynchronously and may stay empty in
+  // some browsers — speech still works without an explicit voice.
+  run()
   return cancel
 }

@@ -6,8 +6,9 @@
   long blob and sounded robotic in both English and German.
 - Decision: a shared `web/src/speech.ts` helper now
   - picks the best matching voice (`getVoices()`), preferring
-    natural/neural/Google/enhanced voices and the exact locale (`en-GB`/`de-DE`),
-    waiting for `onvoiceschanged` when the list is not loaded yet;
+    natural/neural/Google/enhanced voices and the exact locale (`en-GB`/`de-DE`);
+    speech is never blocked on the asynchronously-loaded voice list — without an
+    explicit voice the browser default speaks anyway;
   - splits the text into sentences and queues one utterance per sentence, so the
     browser produces natural pauses and resets prosody between clauses;
   - speaks at `rate 0.98` (near normal) with neutral pitch.

@@ -184,7 +184,7 @@ test('a shared ?field= link opens the Live card and the address bar follows', as
   await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await expect(page.getByLabel('Field', { exact: true })).toHaveValue('LWK-1')
   await expect(page.getByTestId('live-lines')).toContainText('Last clear satellite image')
-  await page.locator('details.more summary').click()
+  await page.locator('details.more > summary').click()
   await expect(page.getByRole('button', { name: '🔗 Link to this field' })).toBeVisible()
 
   // Switching off Live clears the link target again
@@ -254,7 +254,7 @@ test('live mode: print stylesheet shows a one-page field report', async ({ page 
   await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
   await page.getByRole('button', { name: 'Live' }).click()
   await page.getByLabel('Field', { exact: true }).selectOption('LWK-1')
-  await page.locator('details.more summary').click()
+  await page.locator('details.more > summary').click()
   await expect(page.getByRole('button', { name: /Print this card/ })).toBeVisible()
   await page.emulateMedia({ media: 'print' })
   await expect(page.getByTestId('print-report')).toBeVisible()
