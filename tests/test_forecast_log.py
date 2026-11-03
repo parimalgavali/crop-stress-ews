@@ -71,3 +71,28 @@ def tmp_path_fixture(name: str = "l"):
     from pathlib import Path
 
     return Path(tempfile.mkdtemp()) / f"{name}.csv"
+
+
+def test_scoreboard_splits_pending_outcome_from_unobservable(tmp_path) -> None:
+    log = append_log(tmp_path / "l.csv", _entries("2027-04-05", 0.9, "red", "2027-04-05T06:00Z"))
+    # "a" has a real outcome; "b" has a row but NaN label (permanently unobservable); "c"'s
+    # forecast (added next) has no outcome row at all (still pending confirmation).
+    targets = pd.DataFrame(
+        {
+            "field_id": ["a", "b"],
+            "date": pd.to_datetime(["2027-04-05"] * 2),
+            "onset_7d": [1, float("nan")],
+        }
+    )
+    extra = _entries("2027-04-05", 0.4, "green", "2027-04-05T06:00Z")
+    extra["field_id"] = ["c", "d"]
+    extra["risk"] = [0.4, 0.2]
+    log = append_log(tmp_path / "l.csv", extra)
+    h = scoreboard(log, outcomes_long(targets, (7,), keep_nan=True), date(2027, 4, 13))["horizons"][
+        "7"
+    ]
+    assert h["issued"] == 4
+    assert h["evaluated"] == 1 and h["scored"] == 1
+    assert h["unobservable"] == 1 and h["pending_outcome"] == 2
+    assert h["no_outcome"] == h["pending_outcome"] + h["unobservable"]
+    assert h["withheld"] == 0 and h["eligible"] == 4

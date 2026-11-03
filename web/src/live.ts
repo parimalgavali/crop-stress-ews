@@ -97,6 +97,8 @@ const T = {
       "Forecast check: none checked yet. Every forecast is saved before the outcome is known and checked later.",
     scoreSome: (n: number, hits: number, onsets: number) =>
       `Forecast check: ${n} forecasts checked so far. A red alarm came before ${hits} of ${onsets} stress events (14 days ahead).`,
+    scoreDenoms: (e: number, p: number, u: number) =>
+      `${e} checked · ${p} still waiting for their outcome · ${u} can never be checked`,
     forecastFrost: (n: number) =>
       `frost on ${n} ${n === 1 ? "night" : "nights"}`,
     frostSnow: "snow expected — that protects the crop",
@@ -325,6 +327,8 @@ const T = {
       "Vorhersage-Kontrolle: noch keine geprüft. Jede Vorhersage wird gespeichert, bevor das Ergebnis bekannt ist, und später geprüft.",
     scoreSome: (n: number, hits: number, onsets: number) =>
       `Vorhersage-Kontrolle: bisher ${n} Vorhersagen geprüft. Vor ${hits} von ${onsets} Stressereignissen gab es einen roten Alarm (14 Tage vorher).`,
+    scoreDenoms: (e: number, p: number, u: number) =>
+      `${e} geprüft · ${p} warten noch auf ihr Ergebnis · ${u} sind nie prüfbar`,
     forecastFrost: (n: number) =>
       `Frost in ${n} ${n === 1 ? "Nacht" : "Nächten"}`,
     frostSnow: "Schnee erwartet — der schützt den Bestand",
@@ -627,9 +631,11 @@ export function scoreLine(
 ): string {
   const s = T[lang];
   const h = board?.horizons["14"];
-  return h && h.scored > 0
-    ? s.scoreSome(h.scored, h.red_hits, h.onsets)
-    : s.scoreNone;
+  if (!h || h.scored <= 0) return s.scoreNone;
+  const line = s.scoreSome(h.scored, h.red_hits, h.onsets);
+  return h.evaluated != null && h.pending_outcome != null && h.unobservable != null
+    ? `${line} ${s.scoreDenoms(h.evaluated, h.pending_outcome, h.unobservable)}`
+    : line;
 }
 
 /** Field vs peer median on the latest peer date at or before the field's last clear image. */
