@@ -135,7 +135,7 @@ describe('healthLine', () => {
   it('shows a check mark when all fields have data', () => {
     const line = healthLine(h, 'en')
     expect(line?.icon).toBe('✓')
-    expect(line?.text).toBe('Data check: 360 of 360 watched fields have data')
+    expect(line?.text).toBe('Data check: 360 of 360 watched fields have data · update took 20 min')
   })
   it('warns on skipped scenes and on too few fields', () => {
     expect(healthLine({ ...h, s1_scenes_skipped: ['a', 'b'] }, 'en')?.icon).toBe('⚠')

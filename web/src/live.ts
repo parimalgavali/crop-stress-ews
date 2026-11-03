@@ -143,6 +143,7 @@ const T = {
     fieldLink: "🔗 Link to this field",
     dataHealth: (w: number, n: number) =>
       `Data check: ${w} of ${n} watched fields have data`,
+    runMinutes: (m: number) => `update took ${m} min`,
     scenesSkipped: (n: number) =>
       `${n} satellite ${n === 1 ? "image" : "images"} could not be read`,
     overviewLabel: "Status of the watched fields",
@@ -233,6 +234,7 @@ const T = {
     fieldLink: "🔗 Link zu diesem Feld",
     dataHealth: (w: number, n: number) =>
       `Daten-Check: ${w} von ${n} beobachteten Feldern haben Daten`,
+    runMinutes: (m: number) => `Aktualisierung dauerte ${m} min`,
     scenesSkipped: (n: number) =>
       `${n} ${n === 1 ? "Satellitenbild" : "Satellitenbilder"} konnten nicht gelesen werden`,
     overviewLabel: "Stand der beobachteten Felder",
@@ -502,6 +504,7 @@ export function healthLine(health: LiveHealth, lang: Lang): Line | null {
     text: [
       T[lang].dataHealth(health.with_data, health.parcels),
       skipped ? T[lang].scenesSkipped(skipped) : null,
+      health.minutes != null ? T[lang].runMinutes(health.minutes) : null,
     ]
       .filter(Boolean)
       .join(" · "),
