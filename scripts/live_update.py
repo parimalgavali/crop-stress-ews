@@ -142,7 +142,8 @@ def _district(job: tuple[gpd.GeoDataFrame, date, int, bool, Cache]) -> tuple:
         lo = max(first, date(year, 1, 1)).strftime("%m-%d")
         hi = min(end, date(year, 12, 31)).strftime("%m-%d")
         frames.append(extract_weather(fields, year, lo, hi, ambav=False))
-    return s2, s1, pd.concat(frames, ignore_index=True)
+    subfield = _subfield_maps(fields, s2)
+    return s2, s1, pd.concat(frames, ignore_index=True), subfield
 
 
 def _season_rains(fields: gpd.GeoDataFrame, as_of: date) -> dict[str, dict[str, object]]:
