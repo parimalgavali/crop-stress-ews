@@ -90,3 +90,11 @@ Test 2024 (calibrated, validation-frozen thresholds; 95% field-bootstrap CI):
   up on six districts; the honest claim is "helps on test, not shown on validation".
 - Removing weather slightly lowers validation AUROC and raises test AUROC; weather adds no robust
   signal for this optical label.
+
+## Corrective rerun (2026-10-26, post ADR 0049 fix)
+
+Decay init fixed (w_x/b_x = 0.1/0.01). All earlier tables above are pre-fix and
+superseded. Validation 2022 AUROC: GRU-D 30d-window 0.833/0.804/0.792, GRU-D
+0.830/0.797/0.788, LSTM 0.822/0.790/0.788 — all below the LightGBM baseline
+(0.878/0.833/0.823) at every horizon, so sequence models are not adopted (ADR 0067).
+Test 2024 (selected): 0.827/0.810/0.799; extra check 2025: 0.902/0.891/0.834.
