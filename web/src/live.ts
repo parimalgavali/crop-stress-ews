@@ -9,6 +9,7 @@ import type {
   Phenology,
   SeasonRain,
   Soil,
+  LiveSeason,
 } from "./api";
 import { formatDate, type Lang } from "./i18n";
 
@@ -155,6 +156,14 @@ const T = {
     queueUnavailable: (n: number) =>
       `${n} ${n === 1 ? "field" : "fields"} cannot be ranked — data missing`,
     queueChecked: "already checked",
+    weekDigest: (n: number, reason: string | null, days: number | null) =>
+      `This week: ${n} ${n === 1 ? "field needs" : "fields need"} a look${
+        reason ? `, most often ${reason}` : ""
+      }${
+        days != null
+          ? `. Newest satellite view is ${days} ${days === 1 ? "day" : "days"} old`
+          : ""
+      }.`,
     weatherLabel: "Rain and temperature for the next 5 days",
     seasonRain: (mm: number, lo: number, hi: number) =>
       `Since 1 October: ${Math.round(mm)} mm rain — usually ${Math.round(lo)}–${Math.round(hi)} mm by now`,
@@ -237,6 +246,14 @@ const T = {
     queueUnavailable: (n: number) =>
       `${n} ${n === 1 ? "Feld" : "Felder"} ohne Daten — nicht einzuordnen`,
     queueChecked: "schon angesehen",
+    weekDigest: (n: number, reason: string | null, days: number | null) =>
+      `Diese Woche: ${n} ${n === 1 ? "Feld braucht" : "Felder brauchen"} einen Blick${
+        reason ? `, am häufigsten ${reason}` : ""
+      }${
+        days != null
+          ? `. Neuestes Satellitenbild ist ${days} ${days === 1 ? "Tag" : "Tage"} alt`
+          : ""
+      }.`,
     weatherLabel: "Regen und Temperatur der nächsten 5 Tage",
     seasonRain: (mm: number, lo: number, hi: number) =>
       `Seit 1. Oktober: ${Math.round(mm)} mm Regen — üblich sind ${Math.round(lo)}–${Math.round(hi)} mm`,
@@ -663,4 +680,27 @@ export function chartSummary(
   const base = t.chartSummary(series.length, fmt(series[0][1]), fmt(series.at(-1)![1]));
   const cmp = compareToPeers(series, peers);
   return cmp ? `${base}; ${t.chartCompare[cmp]}` : base;
+}
+
+/** Deterministic weekly digest over the scouting queue + evidence freshness (ADR 0064). */
+export function weeklyDigest(live: LiveSeason, lang: Lang): string | null {
+  const queue = live.scouting?.queue ?? [];
+  if (!queue.length) return null;
+  const s = T[lang];
+  const horizon = live.scouting?.horizon_days;
+  const counts = new Map<string, number>();
+  for (const e of queue) {
+    const hr = live.risk?.[e.field_id]?.horizons?.find(
+      (x) => x.days === horizon,
+    ) ?? live.risk?.[e.field_id]?.horizons?.[0];
+    const r = hr?.reasons?.[0];
+    const t = r ? (lang === "de" ? r.text_de : r.text_en) : null;
+    if (t) counts.set(t, (counts.get(t) ?? 0) + 1);
+  }
+  const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  const ages = queue
+    .map((e) => live.evidence?.[e.field_id]?.s2_days_ago)
+    .filter((x): x is number => typeof x === "number");
+  const newest = ages.length ? Math.min(...ages) : null;
+  return s.weekDigest(queue.length, top, newest);
 }
