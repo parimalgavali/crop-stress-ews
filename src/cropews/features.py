@@ -27,10 +27,17 @@ def _slope(g: pd.DataFrame, col: str) -> pd.Series:
     return slope.groupby(g["field_id"]).ffill()
 
 
-def build_features(grid: pd.DataFrame) -> pd.DataFrame:
-    """One feature row per grid row; needs a ``district`` column for peer anomalies."""
+def build_features(
+    grid: pd.DataFrame, peer_key: str | None = None, min_peers: int = 1
+) -> pd.DataFrame:
+    """One feature row per grid row; needs a ``district`` column for peer anomalies.
+
+    ``peer_key`` (a column in ``grid``, e.g. a soil water class) narrows the peer group to
+    (peer_key, date); groups smaller than ``min_peers`` fall back to the district median.
+    """
     g = grid.sort_values(["field_id", "date"]).reset_index(drop=True)
-    out = g[["field_id", "year", "date", "district"]].copy()
+    keep = ["field_id", "year", "date", "district"] + ([peer_key] if peer_key else [])
+    out = g[keep].copy()
     out["doy"] = g["date"].dt.dayofyear
     for col in (*S2_FEATURES, *S1_FEATURES):
         last = g[col].groupby(g["field_id"]).ffill()
@@ -38,7 +45,14 @@ def build_features(grid: pd.DataFrame) -> pd.DataFrame:
         out[f"{col}_slope"] = _slope(g, col)
         out[f"{col}_mean15d"] = _rolling(g, g[col], SHORT_STEPS, "mean")
     for col in S2_FEATURES:
-        peer = out.groupby(["district", "date"])[f"{col}_last"].transform("median")
+        if peer_key:
+            peer = out.groupby([peer_key, "date"])[f"{col}_last"].transform("median")
+            if min_peers > 1:
+                support = out.groupby([peer_key, "date"])[f"{col}_last"].transform("size")
+                fallback = out.groupby(["district", "date"])[f"{col}_last"].transform("median")
+                peer = peer.where(support >= min_peers, fallback)
+        else:
+            peer = out.groupby(["district", "date"])[f"{col}_last"].transform("median")
         out[f"{col}_peer_anom"] = out[f"{col}_last"] - peer
     for col in DAYS_SINCE:
         out[col] = g[col]
