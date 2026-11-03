@@ -1,5 +1,9 @@
 # Project memory
 
+### Reason text (ADR 0052)
+- `top_reasons(contrib, x)`: physical phrasing only when raw data supports it, else attribution
+  ("X contributed to the estimate"); `kind` field = fact|attribution.
+
 ### Aligned issuance (ADR 0051)
 - Scoreboard: rows with issued_at day > origin date = `stale_origin`, never scored. Log rows
   carry `model_version`.

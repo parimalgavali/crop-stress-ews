@@ -55,7 +55,7 @@ def main() -> None:
         cutoff = pd.to_datetime(demo["year"].astype(str) + "-" + SENESCENCE_CUTOFF)
         keep = (demo["date"] + pd.Timedelta(days=h) <= cutoff).to_numpy()
         risk = platt.predict_proba(model.decision_function(demo[cols]).reshape(-1, 1))[:, 1]
-        reasons = top_reasons(contributions(model, demo[cols]))
+        reasons = top_reasons(contributions(model, demo[cols]), demo[cols])
         frames.append(
             demo[["field_id", "year", "date"]]
             .assign(
