@@ -6,6 +6,10 @@
   cropews-observations v1 (= web envelope). ContractError on violations.
 - Simulated adapter fixture in `fixtures/adapter_demo/`; CLI `scripts/import_validate.py`.
 
+### Scorecard v2 (ADR 0061)
+- scoreboard schema_version 2: issued/eligible/withheld/pending/evaluated/pending_outcome/
+  unobservable + auroc_persistence; rebuild outcomes.parquet with keep_nan=True for the split.
+
 ### Visit observations (ADR 0060)
 - `web/src/observations.ts` (key `cropews.observations.v1`): structured visit records +
   versioned JSON export; device-local only, review_status tracks adjudication state.
