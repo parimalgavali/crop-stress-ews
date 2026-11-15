@@ -35,7 +35,7 @@ interface Props {
   asOf?: string;
   board?: Scoreboard | null;
   spring?: boolean;
-  alertTopic?: string;
+  alertUrl?: string;
   notice?: string | null;
   winter?: WinterCheck;
   series?: SeriesPoint[];
@@ -59,7 +59,7 @@ export function LiveCard({
   forecast,
   board,
   spring = false,
-  alertTopic,
+  alertUrl,
   notice,
   winter,
   series,
@@ -192,10 +192,10 @@ export function LiveCard({
       {fieldId && (
         <details className="evidence more">
           <summary>{l.moreTitle}</summary>
-          {alertTopic && (
+          {alertUrl && (
             <p>
               <a
-                href={`https://ntfy.sh/${alertTopic}`}
+                href={alertUrl}
                 target="_blank"
                 rel="noreferrer"
               >

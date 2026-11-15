@@ -1,9 +1,10 @@
-"""Send ntfy.sh alerts for Live fields that turned red since the previous run (ADR 0022)."""
+"""Send ntfy alerts for Live fields that turned red since the previous run (ADRs 0022/0073)."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 from cropews.alerts import new_red, send, topic, update_alert_state
@@ -28,6 +29,9 @@ def main() -> None:
     update_alert_state(cur, alerts)
     args.current.write_text(json.dumps(cur, separators=(",", ":"), ensure_ascii=False))
     if not args.dry_run:
+        if not os.environ.get("NTFY_TOKEN"):
+            print("NTFY_TOKEN not set: alerts not sent (topics must be write-protected)")
+            return
         print(f"sent {send(alerts, cur['as_of'])} of {len(alerts)} alerts")
 
 

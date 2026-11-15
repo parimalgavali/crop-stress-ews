@@ -1,3 +1,5 @@
+import pytest
+
 from cropews.alerts import message, new_red, send, topic
 
 REASON = {"code": "weak_canopy", "text_en": "Crop is behind", "text_de": "Bestand liegt zurück"}
@@ -33,18 +35,42 @@ def test_message_is_bilingual_with_ui_reasons() -> None:
     assert "Crop is behind" in body and "Bestand liegt zurück" in body
 
 
-def test_send_posts_to_field_topic() -> None:
-    calls = []
+def _recorder() -> tuple[list, object]:
+    calls: list = []
 
     class Ok:
         ok = True
 
     def post(url, **kw):  # type: ignore[no-untyped-def]
-        calls.append(url)
+        calls.append((url, kw["headers"]))
         return Ok()
 
-    assert send(new_red(None, {"risk": {"LWK-9": _card("red")}}), "2027-04-10", post) == 1
-    assert calls == ["https://ntfy.sh/" + topic("LWK-9")] and topic("LWK-9") == "cropews-nrw-lwk-9"
+    return calls, post
+
+
+def test_send_posts_to_field_topic_with_token() -> None:
+    calls, post = _recorder()
+    alerts = new_red(None, {"risk": {"LWK-9": _card("red")}})
+    assert send(alerts, "2027-04-10", post, token="tk", url="https://ntfy.example/") == 1
+    [(url, headers)] = calls
+    assert url == "https://ntfy.example/" + topic("LWK-9") and topic("LWK-9") == "cropews-nrw-lwk-9"
+    assert headers["Authorization"] == "Bearer tk"
+
+
+def test_send_without_token_sends_nothing(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.delenv("NTFY_TOKEN", raising=False)
+    calls, post = _recorder()
+    assert send(new_red(None, {"risk": {"LWK-9": _card("red")}}), "2027-04-10", post) == 0
+    assert calls == []
+
+
+def test_send_reads_token_and_server_from_env(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    monkeypatch.setenv("NTFY_TOKEN", "envtk")
+    monkeypatch.setenv("NTFY_URL", "https://ntfy.example")
+    calls, post = _recorder()
+    assert send(new_red(None, {"risk": {"a": _card("red")}}), "2027-04-10", post) == 1
+    assert calls[0][0] == "https://ntfy.example/cropews-nrw-a"
+    assert calls[0][1]["Authorization"] == "Bearer envtk"
 
 
 def test_cooldown_suppresses_flap_within_episode() -> None:
@@ -77,3 +103,11 @@ def test_cooldown_suppresses_flap_within_episode() -> None:
         "alert_state": day0["alert_state"],
     }
     assert new_red({"risk": {"a": _card("red")}}, day4) == []
+
+
+def test_send_refuses_plain_http() -> None:
+    calls, post = _recorder()
+    alerts = new_red(None, {"risk": {"a": _card("red")}})
+    with pytest.raises(ValueError):
+        send(alerts, "2027-04-10", post, token="tk", url="http://ntfy.example")
+    assert calls == []

@@ -26,7 +26,7 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0019](0019-weather-forecast.md) | 5-day DWD ICON forecast shown on Live cards, evaluated but not a model input | Accepted |
 | [0020](0020-forecast-log.md) | Prospective forecast log on the forecast-log branch, scored after the window | Accepted |
 | [0021](0021-live-spring-risk.md) | Live spring risk from 5 April, model without AMBAV features | Accepted |
-| [0022](0022-alerts-ntfy.md) | Alerts through public ntfy.sh topics per field | Accepted |
+| [0022](0022-alerts-ntfy.md) | Alerts through public ntfy.sh topics per field | Amended by 0073 |
 | [0023](0023-pipeline-health.md) | Live pipeline health: health block, pipeline-health issue, stale-data notice | Accepted |
 | [0024](0024-installable-offline.md) | Installable web app: manifest and service worker with last-data fallback | Accepted |
 | [0025](0025-incremental-live.md) | Incremental live extraction (observation cache) and 60 fields per district | Accepted |
@@ -53,3 +53,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0046](0046-field-notes.md) | Field notes saved on the phone next to checks | Accepted |
 | [0047](0047-season-rain.md) | Card shows season rain vs the usual range (ERA5) | Accepted |
 | [0048](0048-basemap-toggle.md) | Basemap toggle: streets / light / dark raster styles | Accepted |
+| [0073](0073-alerts-write-protected.md) | Alerts only on write-protected ntfy topics (publisher token) | Accepted |

@@ -87,6 +87,8 @@ test('keyboard only: tab to the field list and the read-aloud button', async ({ 
 })
 
 test('live mode shows current conditions in plain words', async ({ page }) => {
+  // Pin today near as_of so the stale-data notice (older than 7 days) doesn't appear.
+  await page.clock.setFixedTime(new Date('2026-11-02T10:00:00'))
   await page.route('**/live/latest.json', (r) =>
     r.fulfill({
       json: {
