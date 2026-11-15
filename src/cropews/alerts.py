@@ -1,18 +1,21 @@
-"""Opt-in alerts when a Live field turns red (US-21, ADR 0022).
+"""Opt-in alerts when a Live field turns red (US-21, ADRs 0022/0073).
 
-Each field has a public ntfy.sh topic. Anyone can subscribe to it in the ntfy app or browser,
-so no names, e-mail addresses or chat ids are stored anywhere in this project.
+Each field has an ntfy topic. Anyone can subscribe to it in the ntfy app or browser,
+so no names, e-mail addresses or chat ids are stored anywhere in this project. Topic names
+are derived from public field ids, so the server must only accept posts made with
+``NTFY_TOKEN`` (everyone else read-only); without a token nothing is sent.
 """
 
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 from datetime import date
 from typing import Any
 
 import requests
 
-NTFY_URL = "https://ntfy.sh"
+DEFAULT_NTFY_URL = "https://ntfy.sh"
 TOPIC_PREFIX = "cropews-nrw-"
 
 
@@ -91,15 +94,27 @@ def send(
     alerts: list[tuple[str, dict[str, Any]]],
     as_of: str,
     post: Callable[..., Any] = requests.post,
+    token: str | None = None,
+    url: str | None = None,
 ) -> int:
-    """POST each alert to its field topic; returns how many were accepted."""
+    """POST each alert to its field topic with the publisher token; returns how many were
+    accepted. Sends nothing without a token: an open topic lets anyone fake alerts."""
+    token = token if token is not None else os.environ.get("NTFY_TOKEN", "")
+    if not token:
+        return 0
+    base = (url or os.environ.get("NTFY_URL") or DEFAULT_NTFY_URL).rstrip("/")
     sent = 0
     for fid, h in alerts:
         title, body = message(fid, h, as_of)
         res = post(
-            f"{NTFY_URL}/{topic(fid)}",
+            f"{base}/{topic(fid)}",
             data=body.encode(),
-            headers={"Title": title.encode(), "Tags": "warning", "Priority": "high"},
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Title": title.encode(),
+                "Tags": "warning",
+                "Priority": "high",
+            },
             timeout=20,
         )
         sent += int(getattr(res, "ok", False))

@@ -1,6 +1,6 @@
 # 0022 — Alerts through public ntfy.sh topics per field
 
-Status: accepted (US-21, Issue #40).
+Status: accepted (US-21, Issue #40); amended by [0073](0073-alerts-write-protected.md): topics must be write-protected, posts need `NTFY_TOKEN`.
 
 ## Context
 Farmers want a message when a field turns red without checking the website. E-mail or Telegram

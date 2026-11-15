@@ -1,5 +1,10 @@
 # Project memory
 
+### Alerts only on write-protected ntfy topics (ADR 0073)
+- `alerts.send()` needs `NTFY_TOKEN` (Actions secret) and posts to `NTFY_URL` (repo variable)
+  with a Bearer token; no token → nothing sent. Server must allow only that token to write
+  `cropews-nrw-*`. Live card link needs build var `VITE_NTFY_URL`.
+
 ### Read-aloud and layout UX pass (ADRs 0071/0072)
 - `web/src/speech.ts`: shared read-aloud helper — best-voice selection
   (natural/neural/Google preferred), per-sentence utterances, rate 0.98;
@@ -196,7 +201,7 @@ How it works:
 - US-19 weather forecast (Issue #38, ADR 0019, [weather_forecast.md](weather_forecast.md)): DWD ICON via Open-Meteo (CC BY 4.0, CORS, non-commercial free tier). Archived runs with lead time only from Feb 2024. Perfect-forecast features add nothing on 2022, so the risk model is unchanged; the forecast is display context only (`forecast[district]` in `latest.json`). Archive cached in `data/interim/forecast/icon_<district>_<year>.parquet`.
 - US-20 forecast log (Issue #39, ADR 0020, [forecast_log.md](forecast_log.md)): append-only `forecasts.csv` on orphan branch `forecast-log` (never `main`), written by scheduled/manual Pages runs (`contents: write`). Scored only after `date + horizon` with outcomes from `outcomes.parquet` on the same branch. 2025 replay = offline AUROC exactly. Filling it needs live spring scoring, US-22 (Issue #46).
 - US-22 live spring risk (Issue #46, ADR 0021): `risk_live.joblib` (no AMBAV features, since AMBAV is monthly) from `scripts/export_live_model.py`, release `risk-v1`. From 5 Apr to 31 Jul, `live_update.py --risk-model` scores `spring_monitoring` parcels and writes `risk` + `forecasts` to `latest.json`.
-- US-21 alerts (Issue #40, ADR 0022): public ntfy.sh topic per field `cropews-nrw-<field_id>`. No personal data or secrets. Scheduled runs alert only fields that newly turned red.
+- US-21 alerts (Issue #40, ADR 0022): ntfy topic per field `cropews-nrw-<field_id>`, write-protected with `NTFY_TOKEN` since ADR 0073. No personal data. Scheduled runs alert only fields that newly turned red.
 - Review fixes after US-21: push deploys reuse the deployed `live/latest.json` (only scheduled/manual runs publish new lights and send alerts, so no red change is skipped); release model files must match `models.sha256` before they are unpickled (update it when republishing `cropmap-v1`/`risk-v1`); live risk drops horizons ending after the 30 June senescence cutoff and stops on 23 June, like the replay export; scoreboard adds `no_outcome` (due, but no label).
 - S1/S2 extractors retry a scene read 3 times (`READ_ATTEMPTS`) and then skip the scene: the first Pages run after the live-season merges (run 40716638280) lost all Live data to one truncated Sentinel-1 COG tile (`TIFFReadEncodedTile() failed`).
 - US-14 six-district rerun (Issue #31; Sentinel-1 42/42 done): test 2024, 190 fields. Served logistic AUROC 0.74 / 0.80 / 0.77 (7/14/21 d) vs persistence 0.72 / 0.72 / 0.70; best research model GRU-D 30-day window 0.83 / 0.81 / 0.80. CIs still overlap persistence (ADR 0008 gate not met). Red alarms before 21/29 onsets, median 15 d. Sentinel-1 ablation no longer shows an effect on validation (test −0.03 only), so the earlier "Sentinel-1 matters most" Soest claim is withdrawn. Düren had no 2024 onsets; Coesfeld has many false alarms. Per-district calibration was tested cross-fit on 2022 and rejected (ADR 0037): it moves false alarms between districts instead of reducing them — the Coesfeld signal is less separable, not miscalibrated.

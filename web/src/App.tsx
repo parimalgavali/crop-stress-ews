@@ -30,6 +30,8 @@ import { setUrlField, urlField } from "./fieldLink";
 
 const YEARS = [2024, 2025];
 const RANK: Record<Level, number> = { green: 0, amber: 1, red: 2 };
+// Write-protected ntfy server (ADR 0073); no subscribe link without one.
+const NTFY_URL = (import.meta.env.VITE_NTFY_URL ?? "").replace(/\/+$/, "");
 
 function useOnline(): boolean {
   const [online, setOnline] = useState(navigator.onLine);
@@ -383,9 +385,9 @@ export default function App() {
                   asOf={live.as_of}
                   board={board}
                   spring={Boolean(live.risk?.[liveField.properties.field_id])}
-                  alertTopic={
-                    live.risk?.[liveField.properties.field_id]
-                      ? `cropews-nrw-${liveField.properties.field_id.toLowerCase()}`
+                  alertUrl={
+                    NTFY_URL && live.risk?.[liveField.properties.field_id]
+                      ? `${NTFY_URL}/cropews-nrw-${liveField.properties.field_id.toLowerCase()}`
                       : undefined
                   }
                   notice={[offline, stale].filter(Boolean).join(" ") || null}
