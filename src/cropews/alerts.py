@@ -103,6 +103,8 @@ def send(
     if not token:
         return 0
     base = (url or os.environ.get("NTFY_URL") or DEFAULT_NTFY_URL).rstrip("/")
+    if not base.startswith("https://"):
+        raise ValueError("NTFY_URL must use https:// so the publisher token stays secret")
     sent = 0
     for fid, h in alerts:
         title, body = message(fid, h, as_of)

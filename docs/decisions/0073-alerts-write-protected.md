@@ -9,7 +9,8 @@ all-clear that looks like ours.
 
 ## Decision
 - `send()` posts with `Authorization: Bearer $NTFY_TOKEN` to `$NTFY_URL` (default ntfy.sh).
-  Without a token it sends nothing (fail closed).
+  Without a token it sends nothing (fail closed); a non-https `NTFY_URL` is refused so the
+  token never travels in plain text.
 - The ntfy server must only let that token write `cropews-nrw-*`; everyone else read-only.
   Either reserve the topics on an ntfy.sh account, or self-host ntfy with
   `auth-default-access: deny-all`, a publisher user with write on `cropews-nrw-*` and

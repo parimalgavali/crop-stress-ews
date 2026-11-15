@@ -1,3 +1,5 @@
+import pytest
+
 from cropews.alerts import message, new_red, send, topic
 
 REASON = {"code": "weak_canopy", "text_en": "Crop is behind", "text_de": "Bestand liegt zurück"}
@@ -101,3 +103,11 @@ def test_cooldown_suppresses_flap_within_episode() -> None:
         "alert_state": day0["alert_state"],
     }
     assert new_red({"risk": {"a": _card("red")}}, day4) == []
+
+
+def test_send_refuses_plain_http() -> None:
+    calls, post = _recorder()
+    alerts = new_red(None, {"risk": {"a": _card("red")}})
+    with pytest.raises(ValueError):
+        send(alerts, "2027-04-10", post, token="tk", url="http://ntfy.example")
+    assert calls == []
