@@ -54,3 +54,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0047](0047-season-rain.md) | Card shows season rain vs the usual range (ERA5) | Accepted |
 | [0048](0048-basemap-toggle.md) | Basemap toggle: streets / light / dark raster styles | Accepted |
 | [0073](0073-alerts-write-protected.md) | Alerts only on write-protected ntfy topics (publisher token) | Accepted |
+| [0074](0074-field-warning-guidance.md) | Plain-language field-warning guidance | Accepted |

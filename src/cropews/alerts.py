@@ -81,11 +81,15 @@ def message(field_id: str, h: dict[str, Any], as_of: str) -> tuple[str, str]:
     d = h["days"]
     title = f"Field {field_id}: high risk / hohes Risiko ({d} d)"
     body = (
-        f"High risk of crop stress in the next {d} days (as of {as_of}). Why: {en}.\n"
-        f"Hohes Risiko für Pflanzenstress in den nächsten {d} Tagen (Stand {as_of}). "
+        f"High risk of falling behind nearby wheat fields in the next {d} days "
+        f"(as of {as_of}). Why: {en}.\n"
+        f"Hohes Risiko, in den nächsten {d} Tagen hinter benachbarte Weizenfelder "
+        f"zurückzufallen (Stand {as_of}). "
         f"Warum: {de}.\n"
         "Satellite-based estimate, not yet checked in the field. / "
-        "Schätzung aus Satellitendaten, noch nicht im Feld geprüft."
+        "Schätzung aus Satellitendaten, noch nicht im Feld geprüft.\n"
+        "Inspect the field. The cause is unknown; this is not a treatment recommendation. / "
+        "Bitte das Feld ansehen. Die Ursache ist unbekannt; dies ist keine Behandlungsempfehlung."
     )
     return title, body
 

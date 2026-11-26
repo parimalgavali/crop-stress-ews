@@ -1,3 +1,7 @@
+### Clear field-warning language (ADR 0074)
+- Alerts describe the peer-relative canopy target, suggest inspection, and do not diagnose or
+  prescribe treatment. Cooldown and sending rules are unchanged (story #168).
+
 # Project memory
 
 ### Alerts only on write-protected ntfy topics (ADR 0073)
