@@ -62,3 +62,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0079](0079-device-backup.md) | Explicit download of device-local field work | Accepted |
 | [0080](0080-atomic-restore.md) | Previewed atomic restore of device-local field work | Accepted |
 | [0081](0081-keyboard-help.md) | Keyboard help focus and native-select test path | Accepted |
+| [0082](0082-phone-reflow.md) | Phone touch targets and enlarged-text reflow | Accepted |

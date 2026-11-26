@@ -166,3 +166,38 @@ details.queue li button {
 .skip-link { position: fixed; top: -10rem; left: 1rem; z-index: 2000; background: #fff; color: #111; padding: 0.8rem; }
 .skip-link:focus { top: 0.5rem; }
 @media print { .skip-link { display: none; } }
+
+/* Comfortable touch targets and reflow, including browser-enlarged text. */
+button, select, input, textarea { font: inherit; }
+button { min-height: 48px; min-width: 48px; white-space: normal; overflow-wrap: anywhere; }
+button, input, select, textarea { max-width: 100%; }
+input:not([type='checkbox']):not([type='radio']):not([type='range']) { min-height: 48px; }
+input[type='checkbox'], input[type='radio'] { width: 1.3rem; height: 1.3rem; vertical-align: middle; margin-right: 0.5rem; }
+.backup-tools label { min-height: 48px; padding-block: 0.25rem; }
+summary { min-height: 48px; padding-block: 0.5rem; }
+.toggles, .toggles [role='group'] { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.toggles { min-width: 0; max-width: 100%; }
+.panel, .panel-tools { min-width: 0; }
+.panel { scroll-padding-top: 9rem; overflow-wrap: anywhere; }
+.big-select { min-width: 0; width: 100%; }
+.field-nav { flex-wrap: wrap; }
+.field-nav button { min-width: 0; flex: 1 1 7rem; }
+.more-buttons .big-button { flex: 1 1 10rem; min-width: 0; }
+.light-amber .light-dot { color: #111; }
+.intro-card { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+.date-nav { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.fcstrip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.fcday { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  /* Use document scrolling so a large header or keyboard cannot consume the whole panel. */
+  .app { height: auto; min-height: 100dvh; }
+  .main { display: flex; flex-direction: column; overflow: visible; flex: 1 0 auto; }
+  .mapwrap { flex: none; }
+  .panel { overflow: visible; width: 100%; }
+  .panel-tools { position: static; margin: 0; padding: 0 0 0.6rem; }
+  .timeline, .slider { min-width: 0; width: 100%; }
+}
+@media print { .date-nav { display: none; } }
+.bar { overflow-wrap: anywhere; }
+.bar > div { min-width: 0; max-width: 100%; }
+@media print { .main { display: block; } .mapwrap { display: none; } }

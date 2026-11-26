@@ -453,6 +453,14 @@ export default function App() {
             <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span>{" "}
             {playing ? s.pause : s.play}
           </button>
+          <div className="date-nav" role="group" aria-label={lang === 'de' ? 'Datum wechseln' : 'Change date'}>
+            <button type="button" disabled={dateIdx <= 0 || !dates.length} onClick={() => { setPlaying(false); setDateIdx((i) => Math.max(0, i - 1)); }}>
+              {lang === 'de' ? 'Vorheriges Datum' : 'Previous date'}
+            </button>
+            <button type="button" disabled={dateIdx >= dates.length - 1 || !dates.length} onClick={() => { setPlaying(false); setDateIdx((i) => Math.min(dates.length - 1, i + 1)); }}>
+              {lang === 'de' ? 'Nächstes Datum' : 'Next date'}
+            </button>
+          </div>
           <label className="slider">
             <span>
               {s.day}:{" "}
