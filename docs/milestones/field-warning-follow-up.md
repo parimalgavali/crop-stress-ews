@@ -9,3 +9,6 @@
 
 - Story #169: forecast cards and read-aloud share inspection guidance and distinguish low risk
   from missing forecasts. General observation wording still needs adviser/user review.
+
+- Story #170: evidence quality and clear-image freshness are visible above Live conditions
+  and read aloud; missing status is explicitly unknown. No model/threshold changes.

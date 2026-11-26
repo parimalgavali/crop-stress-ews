@@ -1,3 +1,7 @@
+### Visible evidence summary (ADR 0075)
+- Live cards show existing quality status and last clear image before conditions (#170).
+  Missing status is unknown; risk and quality remain separate. Summary is read aloud.
+
 ### Clear field-warning language (ADR 0074)
 - Alerts describe the peer-relative canopy target, suggest inspection, and do not diagnose or
   prescribe treatment. Forecast cards share bilingual next steps with read-aloud (#169).
