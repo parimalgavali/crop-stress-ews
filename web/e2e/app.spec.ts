@@ -78,9 +78,11 @@ test('choose a field, see three traffic lights, hear it, step the season', async
 test('keyboard only: tab to the field list and the read-aloud button', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
-  await page.getByLabel('Field', { exact: true }).focus()
-  await page.keyboard.press('ArrowDown')
-  await page.keyboard.press('ArrowDown')
+  const select = page.getByLabel('Field', { exact: true })
+  await expect(select.locator('option')).toHaveCount(3)
+  await select.focus()
+  // Native type-ahead selects the first Field option without an OS popup.
+  await page.keyboard.press('f')
   await expect(page.getByTestId('horizon-7')).toBeVisible()
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: /Listen/ })).toBeFocused()
@@ -318,4 +320,39 @@ test('saved Live fields keep their names after reload and reopen the original fi
   await expect(mine.getByRole('button', { name: 'Behind the barn', exact: true })).toBeVisible()
   await page.reload()
   await expect(mine.getByRole('button', { name: 'Behind the barn', exact: true })).toBeVisible()
+})
+
+
+test('intro keyboard focus stays inside help and returns to its opener', async ({ page }) => {
+  await page.goto('/')
+  const dialog = page.getByRole('dialog')
+  const close = dialog.getByRole('button')
+  await expect(close).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(close).toBeFocused()
+  await page.keyboard.press('Shift+Tab')
+  await expect(close).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(dialog).not.toBeVisible()
+  const help = page.getByRole('button', { name: /How it works|So funktioniert es/, exact: true })
+  await help.focus(); await page.keyboard.press('Enter')
+  await expect(dialog).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(help).toBeFocused()
+})
+
+test('keyboard visits can read a Live card, open details and save a visit', async ({ page }) => {
+  await page.route('**/live/latest.json', (r) => r.fulfill({ json: {
+    as_of: '2026-11-26', attribution: 'test', fields: { ...fields, features: fields.features.map((f) => ({ ...f, properties: { ...f.properties, declared_crop: 'wheat' } })) },
+    conditions: { f1: {}, f2: {} },
+  } }))
+  await page.goto('/?field=f2')
+  await page.getByRole('button', { name: /Listen/ }).focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => page.evaluate(() => (window as unknown as { spoken: string[] }).spoken.length)).toBeGreaterThan(0)
+  await page.locator('details.more > summary').focus(); await page.keyboard.press('Enter')
+  await page.getByText('📝 Field visit record', { exact: true }).focus(); await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: 'Record what you saw' }).focus(); await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: 'Save record', exact: true }).focus(); await page.keyboard.press('Enter')
+  await expect(page.getByText(/Saved: visit on/)).toBeVisible()
 })

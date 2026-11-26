@@ -355,3 +355,7 @@ How it works:
 - restore.ts validates the whole file before preview. Merge preserves names/deduplicates records;
   replace requires acknowledgement. localStore.ts wraps all browser work access; one atomic
   cropews.local-data.v1 snapshot supersedes legacy keys after restore. New writes update it.
+
+## Keyboard access (#178, ADR 0081)
+- IntroDialog contains focus, supports Escape and restores opener focus; skip link goes to
+  field controls. Native select test waits for options and uses type-ahead, avoiding macOS popup.

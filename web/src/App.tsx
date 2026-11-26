@@ -11,6 +11,7 @@ import {
   type Level,
   type LiveSeason,
 } from "./api";
+import { IntroDialog } from "./components/IntroDialog";
 import { BackupTools } from "./components/BackupTools";
 import { MyFields } from "./components/MyFields";
 import { browserStore } from "./savedFields";
@@ -157,31 +158,11 @@ export default function App() {
 
   return (
     <div className="app">
-      {intro && (
-        <div className="intro-backdrop">
-          <div
-            className="intro-card"
-            role="dialog"
-            aria-modal="true"
-            aria-label={s.introTitle}
-          >
-            <h2>{s.introTitle}</h2>
-            <p className="intro-lights">{s.introLights}</p>
-            <p>{s.introPick}</p>
-            <p>{s.introListen}</p>
-            <button
-              type="button"
-              className="big-button"
-              onClick={() => {
-                try { browserStore()?.setItem("cropews-intro-seen", "1"); } catch { /* The dialog still closes without storage. */ }
-                setIntro(false);
-              }}
-            >
-              {s.introDone}
-            </button>
-          </div>
-        </div>
-      )}
+      <a className="skip-link" href="#field-panel">{lang === 'de' ? 'Direkt zu den Feldern' : 'Skip to field controls'}</a>
+      {intro && <IntroDialog lang={lang} onClose={() => {
+        try { browserStore()?.setItem("cropews-intro-seen", "1"); } catch { /* Help can close without storage. */ }
+        setIntro(false);
+      }} />}
 
       <header className="bar">
         <div>
@@ -304,7 +285,7 @@ export default function App() {
             }
           />
         </div>
-        <aside className="panel">
+        <aside id="field-panel" className="panel" tabIndex={-1} aria-label={lang === "de" ? "Feldbedienung" : "Field controls"}>
           {error && <p role="alert">Data not reachable.</p>}
           <div className="panel-tools">
             <label className="field-label" htmlFor="field-select">

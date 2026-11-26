@@ -163,3 +163,6 @@ details.queue li button {
 @media print { .backup-tools { display: none; } }
 .backup-tools label { display: block; margin: 0.6rem 0; }
 .backup-file input { display: block; max-width: 100%; }
+.skip-link { position: fixed; top: -10rem; left: 1rem; z-index: 2000; background: #fff; color: #111; padding: 0.8rem; }
+.skip-link:focus { top: 0.5rem; }
+@media print { .skip-link { display: none; } }
