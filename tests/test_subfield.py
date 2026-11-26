@@ -50,3 +50,21 @@ def test_downsample_and_zone_cells() -> None:
     assert grid.shape == (28, 28)
     cells = zone_cells({"row": 8, "col": 8, "height": 8, "width": 8}, (56, 56), (28, 28))
     assert (4, 4) in [tuple(c) for c in cells]
+
+
+def test_assessment_requires_clear_coverage_and_enough_finite_pixels() -> None:
+    from cropews.subfield import assess_patches
+
+    ndvi, scl, interior = _field()
+    assert assess_patches(ndvi, scl, interior)["status"] == "none_detected"
+    ndvi[5:9, 5:9] = 0.2
+    assert assess_patches(ndvi, scl, interior)["status"] == "detected"
+    scl[:, :10] = 8
+    assert assess_patches(ndvi, scl, interior)["status"] == "insufficient"
+    scl[:] = 0
+    assert assess_patches(ndvi, scl, interior)["status"] == "insufficient"
+    scl[:] = 4
+    ndvi[:] = np.nan
+    ndvi[3, 3] = 0.4
+    assert assess_patches(ndvi, scl, interior)["status"] == "insufficient"
+    assert assess_patches(*_field(6, 6))["status"] == "insufficient"

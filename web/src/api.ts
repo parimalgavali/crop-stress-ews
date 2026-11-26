@@ -323,6 +323,7 @@ export interface SubfieldZone {
 }
 
 export interface SubfieldEntry {
+  assessment?: { status: "detected" | "none_detected" | "insufficient"; usable_pixels: number; clear_fraction: number }
   date: string
   quality: { clear: number; cloud_shadow: number; unstable: boolean; interior_px: number }
   zones: SubfieldZone[]

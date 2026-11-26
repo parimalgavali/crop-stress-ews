@@ -22,6 +22,7 @@ import { ObservationLog } from "./ObservationLog";
 import { SeasonChart } from "./SeasonChart";
 import { SubfieldMap } from "./SubfieldMap";
 import WeatherStrip from "./WeatherStrip";
+import { patchSummary } from "../patches";
 import { speak } from "../speech";
 
 interface Props {
@@ -89,12 +90,7 @@ export function LiveCard({
     seasonRain,
   );
   const chart = chartSummary(series, peers, lang);
-  const ha = subfield?.zones.reduce((a, z) => a + z.area_ha, 0) ?? 0;
-  const subText = subfield
-    ? (subfield.zones.length
-        ? l.patches?.(subfield.zones.length, Math.round(ha * 10) / 10, subfield.date)
-        : l.patchesNone?.(subfield.date)) ?? null
-    : null;
+  const subText = subfield ? patchSummary(subfield, lang) : null;
   const qualitySummary = evidenceSummary(evidence, cond, lang);
   const ev = evidence ? evidenceLines(evidence, lang) : null;
   const [speaking, setSpeaking] = useState(false);

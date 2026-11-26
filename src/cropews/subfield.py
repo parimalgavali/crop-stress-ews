@@ -21,6 +21,8 @@ MIN_ZONE_PX = 4
 MIN_INSIDE_PX = 10
 UNSTABLE_CLEAR = 0.5
 MAX_GRID = 28
+# Match the field-observation clear-view rule; include missing pixels in the denominator.
+MIN_ASSESSMENT_CLEAR = 0.8
 
 
 def mask_quality(scl: np.ndarray, interior: np.ndarray) -> dict:
@@ -74,6 +76,22 @@ def anomaly_zones(
     return sorted(out, key=lambda z: -z["pixels"])
 
 
+def assess_patches(ndvi: np.ndarray, scl: np.ndarray, interior: np.ndarray) -> dict:
+    """Report whether the usable interior supports a patch assessment, not crop health."""
+    usable = interior & np.isin(scl, CLEAR_SCL) & np.isfinite(ndvi)
+    n = int(usable.sum())
+    total = int(interior.sum())
+    share = n / total if total else 0.0
+    enough = n >= MIN_INSIDE_PX and share >= MIN_ASSESSMENT_CLEAR
+    zones = anomaly_zones(ndvi, scl, interior) if enough else []
+    return {
+        "status": "detected" if zones else "none_detected" if enough else "insufficient",
+        "usable_pixels": n,
+        "clear_fraction": round(share, 3),
+        "zones": zones,
+    }
+
+
 def downsample(ndvi: np.ndarray, valid: np.ndarray, max_size: int = MAX_GRID) -> np.ndarray:
     """Block-mean NDVI to at most max_size cells per side; invalid cells → NaN."""
     h, w = ndvi.shape
@@ -112,12 +130,14 @@ def field_subfield(geom: Any, crs: Any, item: Any) -> dict | None:
     if m is None:
         return None
     quality = mask_quality(m["scl"], m["interior"])
-    zn = anomaly_zones(m["ndvi"], m["scl"], m["interior"])
-    valid = m["interior"] & (m["scl"] != NO_DATA_SCL)
+    assessment = assess_patches(m["ndvi"], m["scl"], m["interior"])
+    zn = assessment.pop("zones")
+    valid = m["interior"] & np.isin(m["scl"], CLEAR_SCL) & np.isfinite(m["ndvi"])
     grid = downsample(m["ndvi"], valid)
     entry = {
         "date": str(item.datetime.date()),
         "quality": quality,
+        "assessment": assessment,
         "zones": zn,
         "grid": {
             "h": int(grid.shape[0]),

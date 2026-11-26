@@ -346,3 +346,7 @@ How it works:
 ## Saved fields (#175, ADR 0078)
 - web/src/savedFields.ts and MyFields.tsx: cropews.saved-fields.v1 stores stable Live ids,
   personal names and districts. No account/upload; failures visible. Replay ids not saved.
+
+## Satellite clarity (ADR 0083)
+- #203: subfield assessment requires >=10 finite clear pixels and >=80% interior coverage.
+  Legacy assessment is unknown; UI/read-aloud share patchSummary. No model change.
