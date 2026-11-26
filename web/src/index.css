@@ -151,3 +151,10 @@ details.queue li button {
 
 .more-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.4rem 0; }
 .more-buttons .big-button { flex: 1; min-width: 10rem; }
+
+.my-fields { border-top: 1px solid #ddd; padding-top: 0.75rem; }
+.my-fields h2 { font-size: 1.1rem; }
+.my-fields li { margin-bottom: 0.6rem; overflow-wrap: anywhere; }
+.my-fields form { display: flex; flex-direction: column; gap: 0.5rem; }
+.my-fields input { min-width: 0; max-width: 100%; padding: 0.5rem; }
+@media print { .my-fields { display: none; } }

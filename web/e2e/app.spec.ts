@@ -280,3 +280,25 @@ test('no basemap toggle is shown (ADR 0048 removal)', async ({ page }) => {
   await page.goto('/')
   await expect(page.locator('.basemap-toggle')).toHaveCount(0)
 })
+
+test('saved Live fields keep their names after reload and reopen the original field', async ({ page }) => {
+  await page.route('**/live/latest.json', (r) => r.fulfill({ json: {
+    as_of: '2026-11-26', attribution: 'test',
+    fields: { ...fields, features: fields.features.map((f) => ({ ...f, properties: { ...f.properties, declared_crop: 'wheat' } })) },
+    conditions: { f1: {}, f2: {} },
+  } }))
+  await page.goto('/?field=f2')
+  await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
+  const mine = page.getByRole('region', { name: 'My fields', exact: true })
+  await mine.getByLabel('Name for this field').fill('Behind the barn')
+  await mine.getByRole('button', { name: 'Save field name' }).click()
+  await expect(mine.getByRole('status')).toContainText('Saved on this device')
+  await page.reload()
+  await expect(mine.getByRole('button', { name: 'Behind the barn', exact: true })).toBeVisible()
+  await page.getByLabel('Field', { exact: true }).selectOption('f1')
+  await mine.getByRole('button', { name: 'Behind the barn', exact: true }).click()
+  await expect(page.getByLabel('Field', { exact: true })).toHaveValue('f2')
+  await expect(mine).toContainText('No forecast available')
+  await mine.getByRole('button', { name: 'Remove: Behind the barn' }).click()
+  await expect(mine).toContainText('No saved fields yet')
+})
