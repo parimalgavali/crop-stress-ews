@@ -158,3 +158,6 @@ details.queue li button {
 .my-fields form { display: flex; flex-direction: column; gap: 0.5rem; }
 .my-fields input { min-width: 0; max-width: 100%; padding: 0.5rem; }
 @media print { .my-fields { display: none; } }
+.backup-tools { border-top: 1px solid #ddd; overflow-wrap: anywhere; }
+.backup-tools h2 { font-size: 1.1rem; }
+@media print { .backup-tools { display: none; } }

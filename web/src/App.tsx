@@ -11,6 +11,7 @@ import {
   type Level,
   type LiveSeason,
 } from "./api";
+import { BackupTools } from "./components/BackupTools";
 import { MyFields } from "./components/MyFields";
 import { browserStore } from "./savedFields";
 import { MapView } from "./components/MapView";
@@ -423,6 +424,7 @@ export default function App() {
             <p className="hint">{selected ? s.noData : s.pickHint}</p>
           )}
           {isLive && <MyFields live={live} selected={selected} onSelect={setSelected} lang={lang} />}
+          {isLive && <BackupTools lang={lang} />}
         </aside>
       </main>
 
