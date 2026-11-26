@@ -24,6 +24,7 @@ import { CHART_TEXT, SeasonChart } from "./SeasonChart";
 import { SubfieldMap } from "./SubfieldMap";
 import WeatherStrip from "./WeatherStrip";
 import { PATCH_TEXT, patchSummary } from "../patches";
+import { photoExplanation } from "../photoText";
 import { speak } from "../speech";
 
 interface Props {
@@ -97,6 +98,7 @@ export function LiveCard({
   const qualitySummary = evidenceSummary(evidence, cond, lang);
   const ev = evidence ? evidenceLines(evidence, lang) : null;
   const [speaking, setSpeaking] = useState(false);
+  const [photoReadout, setPhotoReadout] = useState(photoExplanation(lang));
   const [copied, setCopied] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -121,7 +123,7 @@ export function LiveCard({
     window.speechSynthesis.cancel();
     const checked = fieldId ? lastCheckText(fieldId, lang) : null;
     stopRef.current = speak(
-      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ${CHART_TEXT[lang].explain} ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
+      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ${CHART_TEXT[lang].explain} ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}${ring && cond.s2_date ? ` ${photoReadout}` : ""}`,
       lang,
       () => {
         stopRef.current = null;
@@ -174,6 +176,7 @@ export function LiveCard({
       {ring && cond.s2_date && (
         <FieldPhoto
           ring={ring}
+          onDescription={setPhotoReadout}
           date={cond.s2_date}
           dateLabel={formatDate(cond.s2_date, lang)}
           lang={lang}

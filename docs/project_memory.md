@@ -359,3 +359,5 @@ How it works:
 - #200: descriptive chart comparisons require same date, known crop kind and >=5 known peers.
   Coverage changes exposed in summary/table. Published 26 Nov data has changing membership in
   most adjacent eligible dates; specific screenshot jump is not diagnosed (ADR 0083).
+- #201: photos report actual acquisition date and effective extraction spacing; shared EN/DE
+  explanation/readout distinguishes source detail, cloud clarity and transparent no-data.

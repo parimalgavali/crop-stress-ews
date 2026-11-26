@@ -50,3 +50,11 @@ adjacent eligible-date pairs in Coesfeld, 7/7 Düren, 12/12 Höxter, 13/13 Rhein
 15/15 Soest and 12/13 Warendorf. This establishes changing coverage, not the cause of any
 particular plotted jump; the screenshot's field was not identified. New membership metadata
 requires a new live extraction. Legacy data stays visible but without unsupported comparisons.
+
+## #201: Source resolution versus extracted detail
+
+Photo metadata reports actual acquisition date and effective extraction spacing separately
+from the 10 m Sentinel-2 colour source. Explain coarser large-field reads, cloudy-versus-detailed
+views, transparent exterior/no-data and ambiguous brown colours, visibly and in speech. Reject
+next-day STAC results and ignore late responses after the selected field/date changes. No
+satellite photo is fetched until requested.

@@ -12,6 +12,8 @@ export interface Photo {
   date: string;
   width: number;
   height: number;
+  /** Effective extraction grid, which can be coarser than the 10 m source. */
+  pixel_size_m?: number;
   /** RGBA, transparent outside the field border. */
   rgba: Uint8ClampedArray;
 }
@@ -73,6 +75,7 @@ export async function fieldPhoto(ring: Ring, date: string): Promise<Photo | null
   if (!items.length) return null;
   const sas = ((await (await fetch(SAS)).json()) as { token: string }).token;
   for (const item of items) {
+    if (item.properties.datetime.slice(0, 10) !== date) continue;
     const zone = Number(item.properties["proj:epsg"]) - 32600;
     const local = ring.map(([x, y]) => toUtm(x, y, zone));
     const image = await (await fromUrl(`${item.assets.visual.href}?${sas}`)).getImage();
@@ -99,7 +102,7 @@ export async function fieldPhoto(ring: Ring, date: string): Promise<Photo | null
     ];
     const rgba = maskRgb(bands, width, height, centre, local);
     if (!rgba.some((v, k) => k % 4 === 3 && v > 0)) continue;
-    return { date, width, height, rgba };
+    return { date: item.properties.datetime.slice(0, 10), width, height, rgba, pixel_size_m: size };
   }
   return null;
 }
