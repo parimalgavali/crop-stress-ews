@@ -11,6 +11,8 @@ import {
   type Level,
   type LiveSeason,
 } from "./api";
+import { MyFields } from "./components/MyFields";
+import { browserStore } from "./savedFields";
 import { MapView } from "./components/MapView";
 import { LiveCard } from "./components/LiveCard";
 import { CheckPanel } from "./components/CheckPanel";
@@ -66,7 +68,7 @@ export default function App() {
   const [live, setLive] = useState<LiveSeason | null>(null);
   const [liveError, setLiveError] = useState(false);
   const [intro, setIntro] = useState(
-    () => localStorage.getItem("cropews-intro-seen") == null,
+    () => { try { return browserStore()?.getItem("cropews-intro-seen") == null; } catch { return true; } },
   );
   const [draft, setDraft] = useState<[number, number][] | null>(null);
   const s = STRINGS[lang];
@@ -169,7 +171,7 @@ export default function App() {
               type="button"
               className="big-button"
               onClick={() => {
-                localStorage.setItem("cropews-intro-seen", "1");
+                try { browserStore()?.setItem("cropews-intro-seen", "1"); } catch { /* The dialog still closes without storage. */ }
                 setIntro(false);
               }}
             >
@@ -420,6 +422,7 @@ export default function App() {
           ) : (
             <p className="hint">{selected ? s.noData : s.pickHint}</p>
           )}
+          {isLive && <MyFields live={live} selected={selected} onSelect={setSelected} lang={lang} />}
         </aside>
       </main>
 

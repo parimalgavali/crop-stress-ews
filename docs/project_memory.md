@@ -342,3 +342,7 @@ How it works:
 
 ## US-51 basemap toggle (ADR 0048, Issue #109) — REMOVED 2026-11-03
 - Owner judged the Map/Light/Dark chips unnecessary; single OSM streets base.
+
+## Saved fields (#175, ADR 0078)
+- web/src/savedFields.ts and MyFields.tsx: cropews.saved-fields.v1 stores stable Live ids,
+  personal names and districts. No account/upload; failures visible. Replay ids not saved.
