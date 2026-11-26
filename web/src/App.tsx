@@ -71,6 +71,7 @@ export default function App() {
   const [intro, setIntro] = useState(
     () => { try { return browserStore()?.getItem("cropews-intro-seen") == null; } catch { return true; } },
   );
+  const [localRevision, setLocalRevision] = useState(0);
   const [draft, setDraft] = useState<[number, number][] | null>(null);
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -375,7 +376,7 @@ export default function App() {
                     lang={lang}
                   />
                 )}
-                <LiveCard
+                <LiveCard key={`${selected}-${localRevision}`}
                   cond={live.conditions[liveField.properties.field_id]}
                   crop={liveField.properties.declared_crop}
                   district={liveField.properties.district}
@@ -423,8 +424,8 @@ export default function App() {
           ) : (
             <p className="hint">{selected ? s.noData : s.pickHint}</p>
           )}
-          {isLive && <MyFields live={live} selected={selected} onSelect={setSelected} lang={lang} />}
-          {isLive && <BackupTools lang={lang} />}
+          {isLive && <MyFields key={localRevision} live={live} selected={selected} onSelect={setSelected} lang={lang} />}
+          {isLive && <BackupTools lang={lang} onRestored={() => setLocalRevision((n) => n + 1)} />}
         </aside>
       </main>
 

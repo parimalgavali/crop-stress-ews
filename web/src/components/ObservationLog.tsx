@@ -1,3 +1,4 @@
+import { browserStore, unavailableStore, type LocalStore } from "../localStore";
 import { useState } from "react";
 import {
   addObservation,
@@ -99,10 +100,10 @@ const T = {
 interface Props {
   fieldId: string;
   lang: Lang;
-  store?: Storage;
+  store?: LocalStore;
 }
 
-export function ObservationLog({ fieldId, lang, store = localStorage }: Props) {
+export function ObservationLog({ fieldId, lang, store = browserStore() ?? unavailableStore }: Props) {
   const t = T[lang];
   const [all, setAll] = useState<Observation[]>(() => loadObservations(store));
   const [open, setOpen] = useState(false);

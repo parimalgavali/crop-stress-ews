@@ -1,3 +1,4 @@
+import { browserStore, unavailableStore } from "./localStore";
 import type { Level } from "./api";
 import { formatDate, type Lang } from "./i18n";
 
@@ -111,7 +112,7 @@ export const CHECK_STRINGS = {
 export function lastCheckText(
   fieldId: string,
   lang: Lang,
-  store: Store = localStorage,
+  store: Store = browserStore() ?? unavailableStore,
 ) {
   const last = loadChecks(store)[fieldId]?.at(-1);
   if (!last) return null;

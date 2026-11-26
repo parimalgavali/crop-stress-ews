@@ -350,3 +350,8 @@ How it works:
 ## Backup (#176, ADR 0079)
 - backup.ts / BackupTools: versioned local JSON download of names, checks/notes, observations.
   Files/images/caches/reports excluded and explained. No upload; unreadable data fails visibly.
+
+## Restore (#177, ADR 0080)
+- restore.ts validates the whole file before preview. Merge preserves names/deduplicates records;
+  replace requires acknowledgement. localStore.ts wraps all browser work access; one atomic
+  cropews.local-data.v1 snapshot supersedes legacy keys after restore. New writes update it.
