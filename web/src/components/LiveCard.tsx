@@ -13,7 +13,7 @@ import type {
 } from "../api";
 import type { Ring } from "../geo";
 import { formatDate, STRINGS, type Lang } from "../i18n";
-import { chartSummary, conditionLines, evidenceLines, LIVE_STRINGS, scoreLine } from "../live";
+import { chartSummary, conditionLines, evidenceLines, evidenceSummary, LIVE_STRINGS, scoreLine } from "../live";
 import { CheckedIt } from "./CheckedIt";
 import { lastCheckText } from "../fieldChecks";
 import { fieldLink } from "../fieldLink";
@@ -95,6 +95,7 @@ export function LiveCard({
         ? l.patches?.(subfield.zones.length, Math.round(ha * 10) / 10, subfield.date)
         : l.patchesNone?.(subfield.date)) ?? null
     : null;
+  const qualitySummary = evidenceSummary(evidence, cond, lang);
   const ev = evidence ? evidenceLines(evidence, lang) : null;
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -121,7 +122,7 @@ export function LiveCard({
     window.speechSynthesis.cancel();
     const checked = fieldId ? lastCheckText(fieldId, lang) : null;
     stopRef.current = speak(
-      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${ev ? `${ev.label}. ` : ""}${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
+      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
       lang,
       () => {
         stopRef.current = null;
@@ -138,6 +139,7 @@ export function LiveCard({
       aria-label={`${s.field} ${district}`}
     >
       <h2 className="live-title">{l.title}</h2>
+      <p className="hint" data-testid="evidence-summary">{qualitySummary}</p>
       <ul className="live-lines" data-testid="live-lines">
         {lines.map((x) => (
           <li key={x.text}>

@@ -26,6 +26,7 @@ describe('RiskCard', () => {
     expect(screen.getByTestId('horizon-14')).toHaveTextContent('Hot days recently')
     expect(screen.getByTestId('horizon-21')).toHaveTextContent('High risk')
     expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
+    expect(screen.getByTestId('risk-guidance')).toHaveTextContent('standing water')
   })
 
   it('reads aloud in the chosen language', async () => {

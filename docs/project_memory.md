@@ -1,3 +1,20 @@
+### Regional-warning research plan (ADR 0077)
+- docs/regional_warning_experiment.md (#172) requires independent dated outcomes and a future
+  season check. No new regional score or change to the served model has been implemented.
+
+### Field-trial preparation (ADR 0076)
+- Proposed protocol in docs/field_trial.md (#171); no recruitment or field validation performed.
+  Device-local records remain unchanged. Comparison visits and independent review are required.
+
+### Visible evidence summary (ADR 0075)
+- Live cards show existing quality status and last clear image before conditions (#170).
+  Missing status is unknown; risk and quality remain separate. Summary is read aloud.
+
+### Clear field-warning language (ADR 0074)
+- Alerts describe the peer-relative canopy target, suggest inspection, and do not diagnose or
+  prescribe treatment. Forecast cards share bilingual next steps with read-aloud (#169).
+  Green does not confirm health; no forecast is not low risk. Cooldown and sending rules are unchanged (story #168).
+
 # Project memory
 
 ### Alerts only on write-protected ntfy topics (ADR 0073)

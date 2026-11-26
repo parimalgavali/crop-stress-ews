@@ -3,9 +3,9 @@
 One page for reviewers. Every number links to the doc it comes from.
 
 ## Problem
-Wheat fields that start falling behind in spring lose yield, and a farmer or advisor can't walk
-every field. **Question:** for each field and date, will it start falling behind its district
-neighbours within 7, 14 or 21 days? The answer has to be usable by someone who can't read a chart.
+A farmer or adviser cannot walk every field. Satellite-observed changes may help prioritise
+visits, but they do not establish a stress cause or a harvest loss. **Question:** for each field
+and date, will it start falling behind its district neighbours within 7, 14 or 21 days? The answer has to be usable by someone who can't read a chart.
 
 ## Data (all free and open)
 Europe-LAND/IACS parcels 2019–2025 and the weekly LWK parcel file, Sentinel-2 optical data,
@@ -21,7 +21,7 @@ monitored winter-wheat fields per historical season.
 - **Missing data:** satellite values are never forward-filled; every input has an observed mask
   and a days-since value.
 - **Models:** persistence, logistic regression, LightGBM, GRU-D/LSTM. The served model is the
-  calibrated logistic model, because the CIs overlap and its reasons are its own coefficients
+  calibrated logistic model for simple, model-specific explanations
   ([ADR 0012](decisions/0012-api-and-demo-model.md)).
 
 ## Results (test season 2024, held out)
@@ -31,11 +31,19 @@ monitored winter-wheat fields per historical season.
 | 14 d | 0.80 [0.72–0.86] | 0.72 |
 | 21 d | 0.77 [0.68–0.85] | 0.70 |
 
-- Red alarms came before 21 of 29 onsets, a median of **15 days** ahead ([error analysis](error_analysis.md)).
-- The best research model (GRU-D) beats persistence on point estimates only, because the CIs
-  overlap, and it is reported that way ([sequence models](sequence_models.md)).
+- Red alarms warned 21 of 31 canopy events (68%), a median of **13 days** ahead, with about
+  3.7 repeated alerts per warned event. Only alarms whose own window contains the onset count
+  ([ADR 0050](decisions/0050-horizon-aware-lead-time.md)).
+- Corrected GRU-D results did not beat LightGBM on the validation gate; sequence models were
+  not adopted ([ADR 0067](decisions/0067-grud-corrective-rerun.md)). Future challenger checks
+  use paired field-bootstrap differences ([ADR 0054](decisions/0054-paired-comparison.md)).
 - **Limits:** the label is relative to neighbouring fields, false alarms rise at 21 days, and Düren
   had no test onsets ([model card](model_card.md)).
+
+## Historical replay versus Live
+The 2024/2025 replay shows precomputed historical predictions. The separate Live view
+shows periodically refreshed observations for season 2026/27; spring forecasts start on
+5 April 2027 when eligible data and models are available. Neither is validated treatment advice.
 
 ## From a model to a running system (season 2026/27)
 - **Live pipeline** on GitHub Actions every 5 days: current LWK parcels, Sentinel-1/2 and DWD data
@@ -69,3 +77,5 @@ monitored winter-wheat fields per historical season.
 ## Next
 - Score spring 2027 from the forecast log, which is the true out-of-sample test.
 - Add harvest-2026 labels from the LWK declarations and run the yearly champion/challenger retrain.
+- Prepare a partner-led [field trial](field_trial.md) to test useful visits and alert burden.
+- Investigate [regional warnings](regional_warning_experiment.md) only with independent outcomes.

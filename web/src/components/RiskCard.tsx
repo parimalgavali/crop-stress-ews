@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FieldRisk, HorizonRisk } from '../api'
-import { reasonText, speechText, STRINGS, type Lang } from '../i18n'
+import { reasonText, riskGuidance, speechText, STRINGS, type Lang } from '../i18n'
 import { speak } from '../speech'
 
 const ICON = { green: '✓', amber: '!', red: '‼' } as const
@@ -60,6 +60,10 @@ export function RiskCard({ risk, lang }: { risk: FieldRisk; lang: Lang }) {
           <Light key={h.days} h={h} lang={lang} />
         ))}
       </ul>
+      <div className="hint" data-testid="risk-guidance">
+        <strong>{s.nextStep}</strong>
+        <p>{riskGuidance(risk, lang)}</p>
+      </div>
       {canSpeak && (
         <button type="button" className="big-button speak" onClick={toggleSpeech}>
           <span aria-hidden="true">{speaking ? '■' : '🔊'}</span> {speaking ? s.stop : s.listen}

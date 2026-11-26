@@ -33,6 +33,11 @@ def test_message_is_bilingual_with_ui_reasons() -> None:
     title, body = message("LWK-1", _card("red")["horizons"][0], "2027-04-10")
     assert "LWK-1" in title and "7 d" in title
     assert "Crop is behind" in body and "Bestand liegt zurück" in body
+    assert "falling behind nearby wheat fields in the next 7 days" in body
+    assert "hinter benachbarte Weizenfelder" in body
+    assert "Inspect the field" in body and "Bitte das Feld ansehen" in body
+    assert "cause is unknown" in body and "Ursache ist unbekannt" in body
+    assert "not a treatment recommendation" in body
 
 
 def _recorder() -> tuple[list, object]:

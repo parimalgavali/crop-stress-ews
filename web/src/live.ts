@@ -187,6 +187,8 @@ const T = {
     linkManual: "Copy this link yourself:",
     evidenceTitle: "📋 Evidence for this card",
     moreTitle: "More things you can do",
+    qualityUnknown: "Evidence: unknown — data quality has not been reported",
+    qualityCaution: "Data quality is separate from crop risk. Low risk does not confirm a healthy crop.",
     qualityLabel: {
       ok: "Evidence: good",
       limited: "Evidence: limited",
@@ -284,6 +286,8 @@ const T = {
     linkManual: "Diesen Link selbst kopieren:",
     evidenceTitle: "📋 Belege für diese Karte",
     moreTitle: "Mehr Möglichkeiten",
+    qualityUnknown: "Datenlage: unbekannt — Datenqualität wurde nicht gemeldet",
+    qualityCaution: "Datenqualität und Bestandsrisiko sind getrennt. Geringes Risiko bestätigt keinen gesunden Bestand.",
     qualityLabel: {
       ok: "Datenlage: gut",
       limited: "Datenlage: eingeschränkt",
@@ -415,8 +419,8 @@ export function evidenceLines(
     lines.push(t.evIssued(formatDate(ev.issued_at.slice(0, 10), lang)));
   for (const r of ev.quality_reasons ?? [])
     lines.push(`⚠ ${t.qualityWhy[r] ?? r}`);
-  const status = ev.quality_status ?? "limited";
-  return { label: t.qualityLabel[status] ?? status, lines };
+  const status = ev.quality_status;
+  return { label: status ? t.qualityLabel[status] ?? t.qualityUnknown : t.qualityUnknown, lines };
 }
 
 /** Live data older than this gets a notice; runs are every 5 days (ADR 0023). */
@@ -718,4 +722,15 @@ export function weeklyDigest(live: LiveSeason, lang: Lang): string | null {
     .filter((x): x is number => typeof x === "number");
   const newest = ages.length ? Math.min(...ages) : null;
   return s.weekDigest(queue.length, top, newest);
+}
+
+/** Show existing quality facts without calculating another confidence or risk score. */
+export function evidenceSummary(ev: Evidence | undefined, cond: Conditions, lang: Lang): string {
+  const t = T[lang];
+  const status = ev?.quality_status;
+  const label = status ? t.qualityLabel[status] ?? t.qualityUnknown : t.qualityUnknown;
+  const date = ev?.last_clear_s2_at ?? cond.s2_date;
+  const age = ev?.s2_days_ago ?? cond.s2_days_ago;
+  const photo = date && age != null ? t.evS2(formatDate(date, lang), age) : t.evS2None;
+  return `${label}. ${photo}. ${t.qualityCaution}`;
 }

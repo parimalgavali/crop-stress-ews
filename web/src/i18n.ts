@@ -15,6 +15,11 @@ export const STRINGS = {
     listen: 'Listen',
     stop: 'Stop',
     why: 'Why',
+    nextStep: 'What to do next',
+    inspect: 'Inspect the field for uneven growth, standing water or visible leaf damage. Record what you find in the field visit record in Live view.',
+    lowRiskNote: 'Low risk does not confirm that the crop is healthy. Continue your usual field checks.',
+    unknownCause: 'This estimates falling behind nearby wheat fields. It does not identify the cause or recommend treatment.',
+    missingRiskNote: 'No forecast is available. This does not mean low risk.',
     nothing: 'Nothing unusual',
     noData: 'No forecast for this day',
     inDays: (d: number) => `Next ${d} days`,
@@ -40,6 +45,11 @@ export const STRINGS = {
     listen: 'Vorlesen',
     stop: 'Stopp',
     why: 'Warum',
+    nextStep: 'Was Sie als Nächstes tun können',
+    inspect: 'Prüfen Sie das Feld auf ungleichmäßigen Wuchs, stehendes Wasser oder sichtbare Blattschäden. Halten Sie Ihre Beobachtungen im Feld-Besuchsprotokoll der Live-Ansicht fest.',
+    lowRiskNote: 'Geringes Risiko bestätigt nicht, dass der Bestand gesund ist. Setzen Sie Ihre üblichen Feldkontrollen fort.',
+    unknownCause: 'Dies schätzt das Zurückfallen hinter benachbarte Weizenfelder. Es bestimmt weder die Ursache noch empfiehlt es eine Behandlung.',
+    missingRiskNote: 'Keine Vorhersage verfügbar. Das bedeutet nicht geringes Risiko.',
     nothing: 'Nichts Auffälliges',
     noData: 'Keine Vorhersage für diesen Tag',
     inDays: (d: number) => `Nächste ${d} Tage`,
@@ -67,6 +77,13 @@ export function formatDate(iso: string, lang: Lang): string {
   })
 }
 
+/** Same next step on the card and in read-aloud; no forecast is never low risk. */
+export function riskGuidance(risk: FieldRisk, lang: Lang): string {
+  const s = STRINGS[lang]
+  if (!risk.horizons.length) return s.missingRiskNote
+  return `${risk.horizons.some((h) => h.level !== 'green') ? s.inspect : s.lowRiskNote} ${s.unknownCause}`
+}
+
 /** One short spoken summary: each horizon's level, then the reasons of the worst horizon. */
 export function speechText(risk: FieldRisk, lang: Lang): string {
   const s = STRINGS[lang]
@@ -76,5 +93,5 @@ export function speechText(risk: FieldRisk, lang: Lang): string {
   if (worst && worst.level !== 'green' && worst.reasons.length > 0) {
     parts.push(`${s.why}: ${worst.reasons.map((r) => reasonText(r, lang)).join('. ')}.`)
   }
-  return `${s.field}, ${risk.district}. ${parts.join(' ')}`
+  return `${s.field}, ${risk.district}. ${parts.join(' ')} ${riskGuidance(risk, lang)}`
 }
