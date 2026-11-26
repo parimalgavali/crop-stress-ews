@@ -234,3 +234,22 @@ def test_evidence_separates_quality_status_and_never_makes_null_mean_healthy() -
     assert out["b"]["crop_status"] == "not_eligible"
     assert out["c"]["quality_status"] == "limited"
     assert "stale_optical" in out["c"]["quality_reasons"]
+
+
+def test_series_support_counts_unique_fields_and_tracks_changing_coverage():
+    from cropews.live import season_series
+
+    ids = list("abcdef")
+    rows = [
+        {"field_id": fid, "date": day, "ndvi": 0.5, "clear_fraction": 1.0}
+        for day, members in [("2026-10-01", ids[:5]), ("2026-10-06", ids[1:])]
+        for fid in members
+    ]
+    rows.append(rows[0].copy())  # An overlapping scene is not another field.
+    out = season_series(pd.DataFrame(rows), pd.Series("Soest", index=ids), set(ids), AS_OF)
+    assert out["peer_support"]["Soest"]["2026-10-01"]["count"] == 5
+    assert out["peer_support"]["Soest"]["2026-10-06"] == {
+        "count": 5,
+        "previous_count": 5,
+        "retained_from_previous": 4,
+    }

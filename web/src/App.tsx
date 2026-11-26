@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   fetchDates,
   fetchFields,
@@ -11,13 +11,16 @@ import {
   type Level,
   type LiveSeason,
 } from "./api";
+import { IntroDialog } from "./components/IntroDialog";
+import { BackupTools } from "./components/BackupTools";
+import { ReadFieldButton } from "./components/ReadFieldButton";
 import { MyFields } from "./components/MyFields";
 import { browserStore } from "./savedFields";
 import { MapView } from "./components/MapView";
 import { LiveCard } from "./components/LiveCard";
 import { CheckPanel } from "./components/CheckPanel";
 import { RiskCard } from "./components/RiskCard";
-import { formatDate, STRINGS, type Lang } from "./i18n";
+import { formatDate, speechText, STRINGS, type Lang } from "./i18n";
 import { outerRing } from "./fieldPhoto";
 import {
   LIVE_STRINGS,
@@ -70,6 +73,7 @@ export default function App() {
   const [intro, setIntro] = useState(
     () => { try { return browserStore()?.getItem("cropews-intro-seen") == null; } catch { return true; } },
   );
+  const [localRevision, setLocalRevision] = useState(0);
   const [draft, setDraft] = useState<[number, number][] | null>(null);
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -85,6 +89,20 @@ export default function App() {
   const liveField = isLive
     ? live?.fields.features.find((f) => f.properties.field_id === selected)
     : undefined;
+
+  const [liveReadout, setLiveReadout] = useState<{ id: string | null; lang: Lang; text: string } | null>(null);
+  const receiveSummary = useCallback((text: string) => {
+    setLiveReadout((before) => before?.id === selected && before.lang === lang && before.text === text ? before : { id: selected, lang, text });
+  }, [selected, lang]);
+  const selectedRisk = isLive ? (selected ? live?.risk?.[selected] : undefined)
+    : risk?.field_id === selected && risk.date === date && risk.year === year ? risk : undefined;
+  const selectedProps = shown?.features.find((f) => f.properties.field_id === selected)?.properties;
+  const conditionReadout = isLive && liveReadout?.id === selected && liveReadout.lang === lang ? liveReadout.text : '';
+  const readout = selectedProps ? [
+    `${s.field} ${selectedProps.field_id}, ${selectedProps.district}.`,
+    selectedRisk ? speechText(selectedRisk, lang) : `${s.missingRiskNote} ${s.inspect}`,
+    conditionReadout,
+  ].join(' ') : null;
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -107,11 +125,13 @@ export default function App() {
   }, [year, date]);
 
   useEffect(() => {
-    if (!selected || !date) return setRisk(null);
-    fetchRisk(selected, year, date)
-      .then(setRisk)
-      .catch(() => setRisk(null));
-  }, [selected, year, date]);
+    let active = true;
+    setRisk(null);
+    if (selected && date && !isLive) fetchRisk(selected, year, date)
+      .then((value) => { if (active) setRisk(value); })
+      .catch(() => { if (active) setRisk(null); });
+    return () => { active = false; };
+  }, [selected, year, date, isLive]);
 
   useEffect(() => {
     if (isLive && board === undefined) loadScoreboard().then(setBoard);
@@ -154,32 +174,12 @@ export default function App() {
   );
 
   return (
-    <div className="app">
-      {intro && (
-        <div className="intro-backdrop">
-          <div
-            className="intro-card"
-            role="dialog"
-            aria-modal="true"
-            aria-label={s.introTitle}
-          >
-            <h2>{s.introTitle}</h2>
-            <p className="intro-lights">{s.introLights}</p>
-            <p>{s.introPick}</p>
-            <p>{s.introListen}</p>
-            <button
-              type="button"
-              className="big-button"
-              onClick={() => {
-                try { browserStore()?.setItem("cropews-intro-seen", "1"); } catch { /* The dialog still closes without storage. */ }
-                setIntro(false);
-              }}
-            >
-              {s.introDone}
-            </button>
-          </div>
-        </div>
-      )}
+    <div className={`app${selected ? " has-field" : ""}`}>
+      <a className="skip-link" href="#field-panel">{lang === 'de' ? 'Direkt zu den Feldern' : 'Skip to field controls'}</a>
+      {intro && <IntroDialog lang={lang} onClose={() => {
+        try { browserStore()?.setItem("cropews-intro-seen", "1"); } catch { /* Help can close without storage. */ }
+        setIntro(false);
+      }} />}
 
       <header className="bar">
         <div>
@@ -302,12 +302,13 @@ export default function App() {
             }
           />
         </div>
-        <aside className="panel">
+        <aside id="field-panel" className="panel" tabIndex={-1} aria-label={lang === "de" ? "Feldbedienung" : "Field controls"}>
           {error && <p role="alert">Data not reachable.</p>}
           <div className="panel-tools">
             <label className="field-label" htmlFor="field-select">
               {s.field}
             </label>
+            <div className="field-selector-row">
             <select
               id="field-select"
               className="big-select"
@@ -323,6 +324,8 @@ export default function App() {
                 </option>
               ))}
             </select>
+            <ReadFieldButton text={readout} lang={lang} identity={`${isLive ? "live" : year}|${selected}|${date}`} />
+            </div>
             {isLive &&
               options.length > 1 &&
               (() => {
@@ -369,12 +372,12 @@ export default function App() {
             liveField && live?.conditions[liveField.properties.field_id] ? (
               <>
                 {live.risk?.[liveField.properties.field_id] && (
-                  <RiskCard
+                  <RiskCard hideSpeech
                     risk={live.risk[liveField.properties.field_id]}
                     lang={lang}
                   />
                 )}
-                <LiveCard
+                <LiveCard hideSpeech onSummary={receiveSummary} key={`${selected}-${localRevision}`}
                   cond={live.conditions[liveField.properties.field_id]}
                   crop={liveField.properties.declared_crop}
                   district={liveField.properties.district}
@@ -397,6 +400,7 @@ export default function App() {
                   series={live.season?.fields[liveField.properties.field_id]}
                   peers={live.season?.peers[liveField.properties.district]}
                   peerKind={live.season?.peer_kind}
+                  peerSupport={live.season?.peer_support?.[liveField.properties.district]}
                   ring={outerRing(liveField.geometry)}
                   pheno={live.phenology?.[liveField.properties.district]}
                   evidence={live.evidence?.[liveField.properties.field_id]}
@@ -418,11 +422,12 @@ export default function App() {
               </p>
             )
           ) : risk ? (
-            <RiskCard risk={risk} lang={lang} />
+            <RiskCard hideSpeech risk={risk} lang={lang} />
           ) : (
             <p className="hint">{selected ? s.noData : s.pickHint}</p>
           )}
-          {isLive && <MyFields live={live} selected={selected} onSelect={setSelected} lang={lang} />}
+          {isLive && <MyFields key={localRevision} live={live} selected={selected} onSelect={setSelected} lang={lang} />}
+          {isLive && <BackupTools lang={lang} onRestored={() => setLocalRevision((n) => n + 1)} />}
         </aside>
       </main>
 
@@ -469,6 +474,14 @@ export default function App() {
             <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span>{" "}
             {playing ? s.pause : s.play}
           </button>
+          <div className="date-nav" role="group" aria-label={lang === 'de' ? 'Datum wechseln' : 'Change date'}>
+            <button type="button" disabled={dateIdx <= 0 || !dates.length} onClick={() => { setPlaying(false); setDateIdx((i) => Math.max(0, i - 1)); }}>
+              {lang === 'de' ? 'Vorheriges Datum' : 'Previous date'}
+            </button>
+            <button type="button" disabled={dateIdx >= dates.length - 1 || !dates.length} onClick={() => { setPlaying(false); setDateIdx((i) => Math.min(dates.length - 1, i + 1)); }}>
+              {lang === 'de' ? 'Nächstes Datum' : 'Next date'}
+            </button>
+          </div>
           <label className="slider">
             <span>
               {s.day}:{" "}

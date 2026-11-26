@@ -64,7 +64,7 @@ test('choose a field, see three traffic lights, hear it, step the season', async
 
   await page.getByRole('button', { name: /Listen/ }).click()
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
-  expect(spoken[0]).toMatch(/^en-GB\|Field, Soest\./)
+  expect(spoken[0]).toMatch(/^en-GB\|Field f2, Soest\./)
   expect(spoken.join(' ')).toContain('Next 7 days: Low risk')
 
   await page.getByRole('slider').fill('1')
@@ -78,9 +78,11 @@ test('choose a field, see three traffic lights, hear it, step the season', async
 test('keyboard only: tab to the field list and the read-aloud button', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: 'EN' }).click()
-  await page.getByLabel('Field', { exact: true }).focus()
-  await page.keyboard.press('ArrowDown')
-  await page.keyboard.press('ArrowDown')
+  const select = page.getByLabel('Field', { exact: true })
+  await expect(select.locator('option')).toHaveCount(3)
+  await select.focus()
+  // Native type-ahead selects the first Field option without an OS popup.
+  await page.keyboard.press('f')
   await expect(page.getByTestId('horizon-7')).toBeVisible()
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: /Listen/ })).toBeFocused()
@@ -120,7 +122,7 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await expect(lines).toContainText('Last clear satellite image: 4 days ago')
   await expect(lines).toContainText('Green crop cover, getting greener')
   await expect(lines).toContainText('Rain in the last 30 days: 55 mm')
-  await expect(page.getByRole('img', { name: /greener than the neighbours/ })).toBeVisible()
+  await expect(page.getByRole('img', { name: /Comparison unavailable: contributing-field count is unknown/ })).toBeVisible()
   await page.route('https://planetarycomputer.microsoft.com/api/stac/v1/search', (r) =>
     r.fulfill({ json: { type: 'FeatureCollection', features: [] } }),
   )
@@ -136,7 +138,9 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await page.getByRole('button', { name: /Listen/ }).click()
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
   const spokenText = spoken.map((x) => x.replace(/^[^|]+\|/, '')).join(' ')
-  expect(spokenText).toMatch(/^Field, Soest\. Last clear satellite image/)
+  expect(spokenText).toMatch(/^Field LWK-1, Soest\./)
+  expect(spokenText).toContain('Last clear satellite image')
+  expect(spokenText).toContain('No forecast is available')
   expect(spokenText).toMatch(/You checked it on .*: looks fine\./)
   expect(spokenText).toContain('Greenness since 1 October: from 0.50 to 0.70')
 })
@@ -293,6 +297,14 @@ test('saved Live fields keep their names after reload and reopen the original fi
   await mine.getByLabel('Name for this field').fill('Behind the barn')
   await mine.getByRole('button', { name: 'Save field name' }).click()
   await expect(mine.getByRole('status')).toContainText('Saved on this device')
+  const downloaded = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Download my backup' }).click()
+  const file = await downloaded
+  expect(file.suggestedFilename()).toMatch(/^crop-ews-backup-.*\.json$/)
+  const { readFile } = await import('node:fs/promises')
+  const backup = JSON.parse(await readFile((await file.path())!, 'utf8'))
+  expect(backup.schema_version).toBe(1)
+  expect(backup.saved_fields[0]).toMatchObject({ field_id: 'f2', name: 'Behind the barn' })
   await page.reload()
   await expect(mine.getByRole('button', { name: 'Behind the barn', exact: true })).toBeVisible()
   await page.getByLabel('Field', { exact: true }).selectOption('f1')
@@ -301,4 +313,122 @@ test('saved Live fields keep their names after reload and reopen the original fi
   await expect(mine).toContainText('No forecast available')
   await mine.getByRole('button', { name: 'Remove: Behind the barn' }).click()
   await expect(mine).toContainText('No saved fields yet')
+  await page.getByLabel('Choose a backup file').setInputFiles((await file.path())!)
+  await expect(page.getByRole('button', { name: 'Restore this backup' })).toBeVisible()
+  await page.getByLabel('Replace existing work', { exact: true }).check()
+  await expect(page.getByRole('button', { name: 'Restore this backup' })).toBeDisabled()
+  await page.getByLabel('I understand this replaces my saved fields, checks and visit records.').check()
+  await page.getByRole('button', { name: 'Restore this backup' }).click()
+  await expect(mine.getByRole('button', { name: 'Behind the barn', exact: true })).toBeVisible()
+  await page.reload()
+  await expect(mine.getByRole('button', { name: 'Behind the barn', exact: true })).toBeVisible()
 })
+
+
+test('intro keyboard focus stays inside help and returns to its opener', async ({ page }) => {
+  await page.goto('/')
+  const dialog = page.getByRole('dialog')
+  const close = dialog.getByRole('button')
+  await expect(close).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(close).toBeFocused()
+  await page.keyboard.press('Shift+Tab')
+  await expect(close).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(dialog).not.toBeVisible()
+  const help = page.getByRole('button', { name: /How it works|So funktioniert es/, exact: true })
+  await help.focus(); await page.keyboard.press('Enter')
+  await expect(dialog).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(help).toBeFocused()
+})
+
+test('keyboard visits can read a Live card, open details and save a visit', async ({ page }) => {
+  await page.route('**/live/latest.json', (r) => r.fulfill({ json: {
+    as_of: '2026-11-26', attribution: 'test', fields: { ...fields, features: fields.features.map((f) => ({ ...f, properties: { ...f.properties, declared_crop: 'wheat' } })) },
+    conditions: { f1: {}, f2: {} },
+  } }))
+  await page.goto('/?field=f2')
+  await page.getByRole('button', { name: /Listen/ }).focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => page.evaluate(() => (window as unknown as { spoken: string[] }).spoken.length)).toBeGreaterThan(0)
+  await page.locator('details.more > summary').focus(); await page.keyboard.press('Enter')
+  await page.getByText('📝 Field visit record', { exact: true }).focus(); await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: 'Record what you saw' }).focus(); await page.keyboard.press('Enter')
+  await page.getByRole('button', { name: 'Save record', exact: true }).focus(); await page.keyboard.press('Enter')
+  await expect(page.getByText(/Saved: visit on/)).toBeVisible()
+})
+
+for (const lang of ['EN', 'DE']) {
+  test(`${lang}: small phone and enlarged text keep controls reachable without horizontal scrolling`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 })
+    await page.route('**/live/latest.json', (r) => r.fulfill({ json: {
+      as_of: '2026-11-26', attribution: 'test',
+      fields: { ...fields, features: fields.features.map((f) => ({ ...f, properties: { ...f.properties, declared_crop: 'wheat' } })) },
+      conditions: { f1: {}, f2: {} },
+      forecast: { Soest: { fc_to: '2026-12-01', fc_rain_5d_mm: 20, fc_tmin_5d_c: -10, fc_frost_days: 2,
+        fc_days: Array.from({ length: 5 }, (_, i) => ({ date: `2026-11-${26 + i}`, pr: 12, tmin: -10, tmax: 12 })) } },
+    } }))
+    await page.goto('/')
+    await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: lang }).click()
+    await page.addStyleTag({ content: ':root { font-size: 36px; }' })
+    const select = page.locator('#field-select')
+    await expect(select.locator('option')).toHaveCount(3)
+    await select.selectOption('f2')
+    const next = page.getByRole('button', { name: lang === 'EN' ? 'Next date' : 'Nächstes Datum', exact: true })
+    await next.scrollIntoViewIfNeeded()
+    await next.click()
+    await expect(page.getByTestId('current-date')).toHaveText(lang === 'EN' ? '10 May' : '10. Mai')
+    const overflow = await page.evaluate(() => [...document.querySelectorAll('body *')].filter((el) => { const b = el.getBoundingClientRect(); return b.width > 0 && b.right > innerWidth + 1 }).map((el) => `${el.tagName}.${el.className}`))
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), overflow.join(', ')).toBe(true)
+    const listen = page.getByRole('button', { name: lang === 'EN' ? /Listen/ : /Vorlesen/ })
+    await listen.scrollIntoViewIfNeeded()
+    const box = await listen.boundingBox()
+    expect(box!.height).toBeGreaterThanOrEqual(48)
+    await listen.click()
+    await page.getByRole('button', { name: lang === 'EN' ? 'How it works' : 'So funktioniert es', exact: true }).click()
+    const close = page.getByRole('dialog').getByRole('button')
+    await close.scrollIntoViewIfNeeded(); await close.click()
+    await expect(page.getByRole('dialog')).not.toBeVisible()
+    await page.getByRole('button', { name: lang === 'EN' ? 'Live' : 'Aktuell', exact: true }).click()
+    await expect(select.locator('option')).toHaveCount(3)
+    await select.selectOption('f2')
+    const save = page.getByRole('button', { name: lang === 'EN' ? 'Save field name' : 'Feldname speichern' })
+    await save.scrollIntoViewIfNeeded(); await save.click()
+    const backup = page.getByRole('button', { name: lang === 'EN' ? 'Download my backup' : 'Meine Sicherung herunterladen' })
+    await backup.scrollIntoViewIfNeeded()
+    expect((await backup.boundingBox())!.height).toBeGreaterThanOrEqual(48)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+  })
+}
+
+for (const lang of ['EN', 'DE']) {
+  test(`${lang}: satellite explanations and one upper speaker stay consistent`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 })
+    await page.route('**/live/latest.json', (r) => r.fulfill({ json: {
+      as_of: '2026-11-26', attribution: 'test',
+      fields: { ...fields, features: fields.features.map((f) => ({ ...f, properties: { ...f.properties, declared_crop: 'wheat' } })) },
+      conditions: { f2: { s2_date: '2026-11-24', s2_days_ago: 2, ndvi: 0.33 } },
+      season: { fields: { f2: [['2026-10-05', 0.23], ['2026-11-24', 0.33]] }, peers: { Soest: [['2026-10-05', 0.4], ['2026-11-24', 0.5]] }, peer_kind: 'all',
+        peer_support: { Soest: { '2026-11-24': { count: 5, previous_count: 6, retained_from_previous: 4 } } } },
+      subfield: { f2: { date: '2026-11-24', assessment: { status: 'insufficient', usable_pixels: 2, clear_fraction: 0.1 }, zones: [],
+        quality: { clear: 0.1, cloud_shadow: 0.9, unstable: true, interior_px: 20 },
+        grid: { h: 1, w: 2, ndvi: [[0.33, null]], zone_cells: [] } } },
+    } }))
+    await page.goto('/?field=f2')
+    await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: lang }).click()
+    const chart = page.getByTestId('season-chart')
+    await expect(chart).toContainText(lang === 'EN' ? 'Mixed monitored crops · Soest' : 'Gemischte beobachtete Kulturen · Soest')
+    await expect(chart).toContainText(lang === 'EN' ? '5 contributing fields' : '5 beitragende Felder')
+    await expect(chart).toContainText(lang === 'EN' ? 'Contributing fields changed' : 'tragen andere Felder bei')
+    const patch = page.getByRole('img', { name: lang === 'EN' ? /Not enough clear detail/ : /Nicht genug klare Bilddetails/ })
+    await expect(patch).toBeVisible()
+    await expect(page.locator('.upper-read-button')).toHaveCount(1)
+    await expect(page.locator('.card .speak')).toHaveCount(0)
+    await patch.scrollIntoViewIfNeeded()
+    expect((await page.locator('.upper-read-button').boundingBox())!.y).toBeLessThan(20)
+    await page.locator('.upper-read-button').click()
+    await expect.poll(async () => (await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)).join(' ')).toContain(lang === 'EN' ? 'Not enough clear detail' : 'Nicht genug klare Bilddetails')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+  })
+}

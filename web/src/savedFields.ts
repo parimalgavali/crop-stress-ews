@@ -1,10 +1,8 @@
 /** Personal names refer only to stable Live field ids (ADR 0034). */
 export interface SavedField { field_id: string; name: string; district: string }
 export const SAVED_FIELDS_KEY = 'cropews.saved-fields.v1'
-export type LocalStore = Pick<Storage, 'getItem' | 'setItem'>
-export function browserStore(): LocalStore | null {
-  try { return window.localStorage } catch { return null }
-}
+import type { LocalStore } from './localStore'
+export { browserStore, type LocalStore } from './localStore'
 export function loadSavedFields(store: LocalStore | null): SavedField[] {
   try {
     const value: unknown = JSON.parse(store?.getItem(SAVED_FIELDS_KEY) ?? '[]')

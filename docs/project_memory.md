@@ -346,3 +346,40 @@ How it works:
 ## Saved fields (#175, ADR 0078)
 - web/src/savedFields.ts and MyFields.tsx: cropews.saved-fields.v1 stores stable Live ids,
   personal names and districts. No account/upload; failures visible. Replay ids not saved.
+
+## Backup (#176, ADR 0079)
+- backup.ts / BackupTools: versioned local JSON download of names, checks/notes, observations.
+  Files/images/caches/reports excluded and explained. No upload; unreadable data fails visibly.
+
+## Restore (#177, ADR 0080)
+- restore.ts validates the whole file before preview. Merge preserves names/deduplicates records;
+  replace requires acknowledgement. localStore.ts wraps all browser work access; one atomic
+  cropews.local-data.v1 snapshot supersedes legacy keys after restore. New writes update it.
+
+## Keyboard access (#178, ADR 0081)
+- IntroDialog contains focus, supports Escape and restores opener focus; skip link goes to
+  field controls. Native select test waits for options and uses type-ahead, avoiding macOS popup.
+
+## Phone access (#179, ADR 0082)
+- 48 px app buttons, wrapping controls, scrolling help and document scrolling on small screens.
+  Timeline retains slider plus previous/next date buttons. EN/DE phone/doubled-text tests.
+- Help legend now stacks each light and meaning vertically in EN/DE (owner follow-up, 27 Nov).
+## Satellite clarity (ADR 0083)
+- #203: subfield assessment requires >=10 finite clear pixels and >=80% interior coverage.
+  Legacy assessment is unknown; UI/read-aloud share patchSummary. No model change.
+- #204: patch map has symbols/legend and explains within-field comparison and 20 m analysis;
+  displayed cells may aggregate. Absent patch entries get an unavailable message.
+- #198: season chart labels dates and −1..1 NDVI scale; accessible observation table and
+  explanation of dots/lines are shared with read-aloud. No daily measurements invented.
+- #199: season.peer_support adds unique counts and retained/previous membership per district/date;
+  chart/speech identifies group and district and explicitly labels unknown legacy metadata.
+- #200: descriptive chart comparisons require same date, known crop kind and >=5 known peers.
+  Coverage changes exposed in summary/table. Published 26 Nov data has changing membership in
+  most adjacent eligible dates; specific screenshot jump is not diagnosed (ADR 0083).
+- #201: photos report actual acquisition date and effective extraction spacing; shared EN/DE
+  explanation/readout distinguishes source detail, cloud clarity and transparent no-data.
+- #202: on-demand photo has overview/pixel modes over the same unchanged raster; no sharpening,
+  new fetch or extra detail. Both modes retain date/source and resolution explanation.
+- #205: ReadFieldButton in upper controls combines selected forecast/guidance and Live summary;
+  duplicate selected-card speakers hidden; drawn-field playback remains separately labelled.
+  Stop/cancel on identity, language or text change. Phone control stays at upper right.

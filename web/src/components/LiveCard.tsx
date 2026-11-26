@@ -9,6 +9,7 @@ import type {
   SeasonRain,
   Scoreboard,
   SeriesPoint,
+  PeerSupport,
   WinterCheck,
 } from "../api";
 import type { Ring } from "../geo";
@@ -19,12 +20,17 @@ import { lastCheckText } from "../fieldChecks";
 import { fieldLink } from "../fieldLink";
 import { FieldPhoto } from "./FieldPhoto";
 import { ObservationLog } from "./ObservationLog";
+import { CHART_TEXT } from "../chartText";
 import { SeasonChart } from "./SeasonChart";
 import { SubfieldMap } from "./SubfieldMap";
 import WeatherStrip from "./WeatherStrip";
+import { PATCH_TEXT, patchSummary } from "../patches";
+import { photoExplanation } from "../photoText";
 import { speak } from "../speech";
 
 interface Props {
+  hideSpeech?: boolean;
+  onSummary?: (text: string) => void;
   cond: Conditions;
   crop: string;
   district: string;
@@ -41,6 +47,7 @@ interface Props {
   series?: SeriesPoint[];
   peers?: SeriesPoint[];
   peerKind?: "cereal" | "all";
+  peerSupport?: PeerSupport;
   ring?: Ring | null;
   pheno?: Phenology;
   soil?: Soil;
@@ -51,6 +58,8 @@ interface Props {
 }
 
 export function LiveCard({
+  hideSpeech = false,
+  onSummary,
   cond,
   crop,
   district,
@@ -65,6 +74,7 @@ export function LiveCard({
   series,
   peers,
   peerKind,
+  peerSupport,
   ring,
   pheno,
   soil,
@@ -88,16 +98,13 @@ export function LiveCard({
     soil,
     seasonRain,
   );
-  const chart = chartSummary(series, peers, lang);
-  const ha = subfield?.zones.reduce((a, z) => a + z.area_ha, 0) ?? 0;
-  const subText = subfield
-    ? (subfield.zones.length
-        ? l.patches?.(subfield.zones.length, Math.round(ha * 10) / 10, subfield.date)
-        : l.patchesNone?.(subfield.date)) ?? null
-    : null;
+  const chart = chartSummary(series, peers, lang, { peerKind, peerSupport, district });
+  const subText = subfield ? `${patchSummary(subfield, lang)} ${PATCH_TEXT[lang].explain} ${PATCH_TEXT[lang].legend.join(". ")} ${PATCH_TEXT[lang].detail}` : fieldId ? patchSummary(undefined, lang) : null;
   const qualitySummary = evidenceSummary(evidence, cond, lang);
   const ev = evidence ? evidenceLines(evidence, lang) : null;
+  const [, refreshChecks] = useState(0);
   const [speaking, setSpeaking] = useState(false);
+  const [photoReadout, setPhotoReadout] = useState(photoExplanation(lang));
   const [copied, setCopied] = useState(false);
   const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -106,12 +113,16 @@ export function LiveCard({
   useEffect(
     () => () => {
       stopRef.current?.();
-      if (canSpeak) window.speechSynthesis.cancel();
+      if (canSpeak && !hideSpeech) window.speechSynthesis.cancel();
     },
-    [canSpeak, cond, lang],
+    [canSpeak, cond, lang, hideSpeech],
   );
 
   useEffect(() => setCopied(false), [fieldId]);
+
+  const checked = fieldId ? lastCheckText(fieldId, lang) : null;
+  const summaryText = `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ${CHART_TEXT[lang].explain} ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}${ring && cond.s2_date ? ` ${photoReadout}` : ""}`;
+  useEffect(() => { onSummary?.(summaryText); }, [summaryText, onSummary]);
 
   const toggleSpeech = () => {
     if (!canSpeak) return;
@@ -120,9 +131,8 @@ export function LiveCard({
       return setSpeaking(false);
     }
     window.speechSynthesis.cancel();
-    const checked = fieldId ? lastCheckText(fieldId, lang) : null;
     stopRef.current = speak(
-      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
+      summaryText,
       lang,
       () => {
         stopRef.current = null;
@@ -147,10 +157,11 @@ export function LiveCard({
           </li>
         ))}
       </ul>
-      {canSpeak && (
+      {canSpeak && !hideSpeech && (
         <button
           type="button"
           className="big-button speak"
+          aria-label={!fieldId ? (lang === "de" ? "Vorlesen: gezeichnetes Feld" : "Listen to drawn-field result") : undefined}
           onClick={toggleSpeech}
         >
           <span aria-hidden="true">{speaking ? "■" : "🔊"}</span>{" "}
@@ -158,7 +169,7 @@ export function LiveCard({
         </button>
       )}
       {fieldId && (
-        <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} />
+        <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} onChange={() => refreshChecks((n) => n + 1)} />
       )}
       {forecast?.fc_days?.length ? (
         <WeatherStrip days={forecast.fc_days} lang={lang} />
@@ -167,12 +178,15 @@ export function LiveCard({
         series={series}
         peers={peers}
         peerKind={peerKind}
+        peerSupport={peerSupport}
+        district={district}
         lang={lang}
       />
-      {subfield && <SubfieldMap entry={subfield} lang={lang} />}
+      {subfield ? <SubfieldMap entry={subfield} lang={lang} /> : fieldId ? <p className="hint">{patchSummary(undefined, lang)}</p> : null}
       {ring && cond.s2_date && (
         <FieldPhoto
           ring={ring}
+          onDescription={setPhotoReadout}
           date={cond.s2_date}
           dateLabel={formatDate(cond.s2_date, lang)}
           lang={lang}

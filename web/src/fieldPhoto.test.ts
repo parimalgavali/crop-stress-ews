@@ -19,3 +19,12 @@ describe('field photo', () => {
     expect(Array.from(out.slice(0, 3))).toEqual([10, 10, 10])
   })
 })
+
+it('explains a coarser extraction separately from the source resolution', async () => {
+  const { photoExplanation, photoMetadata } = await import('./photoText')
+  const photo = { date: '2026-11-24', width: 20, height: 10, rgba: new Uint8ClampedArray(), pixel_size_m: 20 }
+  expect(photoMetadata(photo, 'en')).toContain('20 metres per pixel — read at coarser detail')
+  expect(photoMetadata({ ...photo, pixel_size_m: undefined }, 'de')).toContain('unbekannt')
+  expect(photoExplanation('en')).toContain('10 metres per source pixel')
+  expect(photoExplanation('de')).toContain('Einzelne Blätter')
+})

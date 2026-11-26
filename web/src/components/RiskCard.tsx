@@ -24,7 +24,7 @@ function Light({ h, lang }: { h: HorizonRisk; lang: Lang }) {
   )
 }
 
-export function RiskCard({ risk, lang }: { risk: FieldRisk; lang: Lang }) {
+export function RiskCard({ risk, lang, hideSpeech = false }: { risk: FieldRisk; lang: Lang; hideSpeech?: boolean }) {
   const s = STRINGS[lang]
   const [speaking, setSpeaking] = useState(false)
   const stopRef = useRef<(() => void) | null>(null)
@@ -64,7 +64,7 @@ export function RiskCard({ risk, lang }: { risk: FieldRisk; lang: Lang }) {
         <strong>{s.nextStep}</strong>
         <p>{riskGuidance(risk, lang)}</p>
       </div>
-      {canSpeak && (
+      {canSpeak && !hideSpeech && (
         <button type="button" className="big-button speak" onClick={toggleSpeech}>
           <span aria-hidden="true">{speaking ? '■' : '🔊'}</span> {speaking ? s.stop : s.listen}
         </button>

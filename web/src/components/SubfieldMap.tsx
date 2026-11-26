@@ -1,56 +1,30 @@
-import { SubfieldEntry } from "../api";
-import { Lang } from "../i18n";
-import { LIVE_STRINGS } from "../live";
+import type { SubfieldEntry } from '../api'
+import type { Lang } from '../i18n'
+import { PATCH_TEXT, patchSummary } from '../patches'
 
-const CELL = 9;
-
-function cellColor(v: number | null, zone: boolean): string {
-  if (zone) return "var(--warn, #b3261e)";
-  if (v == null) return "transparent";
-  if (v < 0.3) return "#c9b98a";
-  if (v < 0.6) return "#7fae57";
-  return "#2e7d32";
+function cell(v: number | null, candidate: boolean) {
+  if (v == null) return { color: '#eee', mark: '—' }
+  if (candidate) return { color: '#b3261e', mark: '×' }
+  if (v < 0.3) return { color: '#c9b98a', mark: '·' }
+  if (v < 0.6) return { color: '#7fae57', mark: '+' }
+  return { color: '#2e7d32', mark: '●' }
 }
-
-/** Pixel map of the field's freshest view with weak patches highlighted (spec 8.6). */
 export function SubfieldMap({ entry, lang }: { entry: SubfieldEntry; lang: Lang }) {
-  const t = LIVE_STRINGS[lang];
-  const zone = new Set(entry.grid.zone_cells.map(([r, c]) => `${r},${c}`));
-  const ha = entry.zones.reduce((a, z) => a + z.area_ha, 0);
-  const date = entry.date;
-  const text =
-    entry.zones.length > 0
-      ? t.patches(entry.zones.length, Math.round(ha * 10) / 10, date)
-      : t.patchesNone(date);
-  return (
-    <div className="subfield">
-      <div
-        role="img"
-        aria-label={text}
-        className="subfield-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${entry.grid.w}, ${CELL}px)`,
-          gap: 1,
-        }}
-      >
-        {entry.grid.ndvi.flatMap((row, r) =>
-          row.map((v, c) => (
-            <span
-              key={`${r}-${c}`}
-              style={{
-                width: CELL,
-                height: CELL,
-                background: cellColor(v, zone.has(`${r},${c}`)),
-              }}
-            />
-          )),
-        )}
-      </div>
-      <p className="hint">
-        {text}
-        {entry.quality.unstable ? ` — ${t.patchyView}` : ""}
-      </p>
+  const t = PATCH_TEXT[lang]
+  const zone = new Set(entry.grid.zone_cells.map(([r, c]) => `${r},${c}`))
+  const text = patchSummary(entry, lang)
+  return <section className="subfield" aria-label={t.title}>
+    <h3>{t.title}</h3>
+    <p>{t.explain}</p>
+    <div role="img" aria-label={text} className="subfield-grid" style={{
+      display: 'grid', gridTemplateColumns: `repeat(${entry.grid.w}, minmax(0, 1fr))`, width: `${entry.grid.w * 10}px`, maxWidth: '100%', gap: 1,
+    }}>
+      {entry.grid.ndvi.flatMap((row, r) => row.map((v, c) => {
+        const x = cell(v, zone.has(`${r},${c}`) && entry.assessment?.status === 'detected')
+        return <span key={`${r}-${c}`} aria-hidden="true" style={{ aspectRatio: '1', background: x.color, fontSize: 8, lineHeight: 1, textAlign: 'center', color: x.mark === '×' || x.mark === '●' ? '#fff' : '#111' }}>{x.mark}</span>
+      }))}
     </div>
-  );
+    <ul className="patch-legend">{t.legend.map((line) => <li key={line}>{line}</li>)}</ul>
+    <p className="hint">{text}</p><p className="hint">{t.detail}</p>
+  </section>
 }

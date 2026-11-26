@@ -148,6 +148,8 @@ def season_series(
         & (d["date"] <= pd.Timestamp(as_of))
         & d["field_id"].isin(district.index)
     ].dropna(subset=["ndvi"])
+    # One contribution per field and date even when overlapping scenes repeat a field.
+    d = d.groupby(["field_id", "date"], as_index=False)["ndvi"].median()
     d = d.assign(district=d["field_id"].map(district))
     fields = {
         str(fid): [
@@ -165,7 +167,23 @@ def season_series(
         ]
         for k, g in p.groupby("district")
     }
-    return {"fields": fields, "peers": medians}
+    support: dict[str, dict[str, Any]] = {}
+    eligible = d[d["field_id"].isin(peers)]
+    for district_name, group in eligible.groupby("district"):
+        previous: set[str] | None = None
+        dates_support = {}
+        for dt, rows in group.groupby("date", sort=True):
+            members = set(rows["field_id"])
+            if len(members) < min_peers:
+                continue
+            dates_support[dt.date().isoformat()] = {
+                "count": len(members),
+                "previous_count": len(previous) if previous is not None else None,
+                "retained_from_previous": len(members & previous) if previous is not None else None,
+            }
+            previous = members
+        support[str(district_name)] = dates_support
+    return {"fields": fields, "peers": medians, "peer_support": support}
 
 
 def live_payload(
