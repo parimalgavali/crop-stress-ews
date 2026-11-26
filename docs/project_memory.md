@@ -352,3 +352,5 @@ How it works:
   Legacy assessment is unknown; UI/read-aloud share patchSummary. No model change.
 - #204: patch map has symbols/legend and explains within-field comparison and 20 m analysis;
   displayed cells may aggregate. Absent patch entries get an unavailable message.
+- #198: season chart labels dates and −1..1 NDVI scale; accessible observation table and
+  explanation of dots/lines are shared with read-aloud. No daily measurements invented.

@@ -19,3 +19,10 @@ legend explains the within-field comparison separately from district comparisons
 20 m analysis, minimum four connected pixels and potentially aggregated display cells. Visible
 and spoken descriptions share the result and limits. The grid shrinks to phone width. Missing
 assessment also gets an explicit message when no subfield entry exists.
+
+## #198: Readable greenness chart
+
+Show dated endpoints and the full NDVI −1..1 scale, without clipping negative observations.
+A native details/table exposes all measured dates/values. Explain that dots are observations,
+lines only connect them, and greenness is not health percentage or yield. The description is
+also in read-aloud. No values are interpolated into the data.

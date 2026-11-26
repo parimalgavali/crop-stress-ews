@@ -19,7 +19,7 @@ import { lastCheckText } from "../fieldChecks";
 import { fieldLink } from "../fieldLink";
 import { FieldPhoto } from "./FieldPhoto";
 import { ObservationLog } from "./ObservationLog";
-import { SeasonChart } from "./SeasonChart";
+import { CHART_TEXT, SeasonChart } from "./SeasonChart";
 import { SubfieldMap } from "./SubfieldMap";
 import WeatherStrip from "./WeatherStrip";
 import { PATCH_TEXT, patchSummary } from "../patches";
@@ -118,7 +118,7 @@ export function LiveCard({
     window.speechSynthesis.cancel();
     const checked = fieldId ? lastCheckText(fieldId, lang) : null;
     stopRef.current = speak(
-      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
+      `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ${CHART_TEXT[lang].explain} ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}`,
       lang,
       () => {
         stopRef.current = null;
