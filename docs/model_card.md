@@ -1,8 +1,9 @@
 # Model card — crop-stress early warning (demo model)
 
 ## Model
-- **Task:** for an NRW winter-wheat field on a 5-day grid date, give the probability that a field starts falling behind its district peers
-  in satellite-observed canopy condition within 7, 14 or 21 days ([ADR 0010](decisions/0010-peer-reference-label.md) label).
+- **Task:** for an NRW winter-wheat field on a 5-day grid date, give the probability that it
+  starts falling behind its district peers in satellite-observed canopy condition within
+  7, 14 or 21 days ([ADR 0010](decisions/0010-peer-reference-label.md) label).
 - **Served model:** logistic regression with one model per horizon, Platt-calibrated on the 2022
   validation season. Traffic-light thresholds are amber at 75% and red at 90% validation
   specificity ([ADR 0012](decisions/0012-api-and-demo-model.md)). Reasons are the model's own

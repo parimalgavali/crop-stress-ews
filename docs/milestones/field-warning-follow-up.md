@@ -18,3 +18,14 @@
 
 - Story #172: regional-warning experiment plan completed, with independent outcomes, baseline
   and future-season gates. No new model, data extraction or claimed validation.
+
+## Validation
+
+- Python: ruff lint/format and mypy pass; pytest 175 passed, 5 skipped (PostGIS unavailable).
+  Local environment: Python 3.14 with project extras; the Python 3.10 lock was not reproduced.
+- Web: 60 unit tests pass; eslint, TypeScript and production build pass.
+- Playwright on macOS: 13 of 14 pass, including all EN/DE axe accessibility checks. The
+  keyboard-only test times out before selecting a field; the same test fails identically
+  on unchanged main with the same dependencies/browser. No keyboard test changes retained.
+- Local links in README, model card, case study and both new guides resolve.
+- No field trial, regional experiment, model retraining or alert delivery was performed.

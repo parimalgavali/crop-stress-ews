@@ -8,8 +8,10 @@ canopy anomaly, not a diagnosed stress cause; agronomic interpretation needs ind
 field observation. Inputs are Sentinel-2 optical data, Sentinel-1 radar and DWD weather. The
 reasons are written in plain language, and a one-screen web app can read them aloud.
 
-**Web app:** <https://parimalgavali.github.io/crop-stress-ews/> (static build: historical 2024/2025 replay plus a separate
-Live view for periodically refreshed 2026/27 observations; spring forecasts from 5 April 2027; [ADR 0014](docs/decisions/0014-static-pages-demo.md)).
+**Web app:** <https://parimalgavali.github.io/crop-stress-ews/> — static build with historical
+2024/2025 replay ([ADR 0014](docs/decisions/0014-static-pages-demo.md)) and a separate Live view
+for periodically refreshed 2026/27 observations; spring forecasts from 5 April 2027
+([ADR 0015](docs/decisions/0015-live-season.md)).
 
 **Reproduce the environment:** `pip install -r requirements-lock.txt` (pinned).
 

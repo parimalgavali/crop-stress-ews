@@ -4,8 +4,8 @@ One page for reviewers. Every number links to the doc it comes from.
 
 ## Problem
 A farmer or adviser cannot walk every field. Satellite-observed changes may help prioritise
-visits, but they do not establish a stress cause or a harvest loss. **Question:** for each field and date, will it start falling behind its district
-neighbours within 7, 14 or 21 days? The answer has to be usable by someone who can't read a chart.
+visits, but they do not establish a stress cause or a harvest loss. **Question:** for each field
+and date, will it start falling behind its district neighbours within 7, 14 or 21 days? The answer has to be usable by someone who can't read a chart.
 
 ## Data (all free and open)
 Europe-LAND/IACS parcels 2019–2025 and the weekly LWK parcel file, Sentinel-2 optical data,
@@ -77,6 +77,5 @@ shows periodically refreshed observations for season 2026/27; spring forecasts s
 ## Next
 - Score spring 2027 from the forecast log, which is the true out-of-sample test.
 - Add harvest-2026 labels from the LWK declarations and run the yearly champion/challenger retrain.
-
 - Prepare a partner-led [field trial](field_trial.md) to test useful visits and alert burden.
 - Investigate [regional warnings](regional_warning_experiment.md) only with independent outcomes.
