@@ -11,6 +11,8 @@ import {
   type Level,
   type LiveSeason,
 } from "./api";
+import { IntroDialog } from "./components/IntroDialog";
+import { BackupTools } from "./components/BackupTools";
 import { MyFields } from "./components/MyFields";
 import { browserStore } from "./savedFields";
 import { MapView } from "./components/MapView";
@@ -70,6 +72,7 @@ export default function App() {
   const [intro, setIntro] = useState(
     () => { try { return browserStore()?.getItem("cropews-intro-seen") == null; } catch { return true; } },
   );
+  const [localRevision, setLocalRevision] = useState(0);
   const [draft, setDraft] = useState<[number, number][] | null>(null);
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
@@ -155,31 +158,11 @@ export default function App() {
 
   return (
     <div className="app">
-      {intro && (
-        <div className="intro-backdrop">
-          <div
-            className="intro-card"
-            role="dialog"
-            aria-modal="true"
-            aria-label={s.introTitle}
-          >
-            <h2>{s.introTitle}</h2>
-            <p className="intro-lights">{s.introLights}</p>
-            <p>{s.introPick}</p>
-            <p>{s.introListen}</p>
-            <button
-              type="button"
-              className="big-button"
-              onClick={() => {
-                try { browserStore()?.setItem("cropews-intro-seen", "1"); } catch { /* The dialog still closes without storage. */ }
-                setIntro(false);
-              }}
-            >
-              {s.introDone}
-            </button>
-          </div>
-        </div>
-      )}
+      <a className="skip-link" href="#field-panel">{lang === 'de' ? 'Direkt zu den Feldern' : 'Skip to field controls'}</a>
+      {intro && <IntroDialog lang={lang} onClose={() => {
+        try { browserStore()?.setItem("cropews-intro-seen", "1"); } catch { /* Help can close without storage. */ }
+        setIntro(false);
+      }} />}
 
       <header className="bar">
         <div>
@@ -302,7 +285,7 @@ export default function App() {
             }
           />
         </div>
-        <aside className="panel">
+        <aside id="field-panel" className="panel" tabIndex={-1} aria-label={lang === "de" ? "Feldbedienung" : "Field controls"}>
           {error && <p role="alert">Data not reachable.</p>}
           <div className="panel-tools">
             <label className="field-label" htmlFor="field-select">
@@ -374,7 +357,7 @@ export default function App() {
                     lang={lang}
                   />
                 )}
-                <LiveCard
+                <LiveCard key={`${selected}-${localRevision}`}
                   cond={live.conditions[liveField.properties.field_id]}
                   crop={liveField.properties.declared_crop}
                   district={liveField.properties.district}
@@ -423,7 +406,8 @@ export default function App() {
           ) : (
             <p className="hint">{selected ? s.noData : s.pickHint}</p>
           )}
-          {isLive && <MyFields live={live} selected={selected} onSelect={setSelected} lang={lang} />}
+          {isLive && <MyFields key={localRevision} live={live} selected={selected} onSelect={setSelected} lang={lang} />}
+          {isLive && <BackupTools lang={lang} onRestored={() => setLocalRevision((n) => n + 1)} />}
         </aside>
       </main>
 
@@ -470,6 +454,14 @@ export default function App() {
             <span aria-hidden="true">{playing ? "❚❚" : "▶"}</span>{" "}
             {playing ? s.pause : s.play}
           </button>
+          <div className="date-nav" role="group" aria-label={lang === 'de' ? 'Datum wechseln' : 'Change date'}>
+            <button type="button" disabled={dateIdx <= 0 || !dates.length} onClick={() => { setPlaying(false); setDateIdx((i) => Math.max(0, i - 1)); }}>
+              {lang === 'de' ? 'Vorheriges Datum' : 'Previous date'}
+            </button>
+            <button type="button" disabled={dateIdx >= dates.length - 1 || !dates.length} onClick={() => { setPlaying(false); setDateIdx((i) => Math.min(dates.length - 1, i + 1)); }}>
+              {lang === 'de' ? 'Nächstes Datum' : 'Next date'}
+            </button>
+          </div>
           <label className="slider">
             <span>
               {s.day}:{" "}

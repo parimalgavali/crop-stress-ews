@@ -65,3 +65,7 @@ Overview and enlarged-pixel modes share the same unchanged canvas raster; neares
 CSS rendering reveals blocks in pixel mode, not invented detail. Sizing is bounded by raster
 width and phone width. Date, attribution and resolution metadata remain visible. Switching
 modes does not fetch another image. Source masks and pixel values are preserved; no sharpening.
+
+Integration prerequisite: the earlier PR stack was merged into predecessor branches after
+#193 reached main. Integrate origin/feature/178-keyboard (which contains the completed #176–#179
+changes and vertical help legend) so the new speaker builds on those already-reviewed changes.

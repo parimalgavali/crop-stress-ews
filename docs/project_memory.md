@@ -347,6 +347,23 @@ How it works:
 - web/src/savedFields.ts and MyFields.tsx: cropews.saved-fields.v1 stores stable Live ids,
   personal names and districts. No account/upload; failures visible. Replay ids not saved.
 
+## Backup (#176, ADR 0079)
+- backup.ts / BackupTools: versioned local JSON download of names, checks/notes, observations.
+  Files/images/caches/reports excluded and explained. No upload; unreadable data fails visibly.
+
+## Restore (#177, ADR 0080)
+- restore.ts validates the whole file before preview. Merge preserves names/deduplicates records;
+  replace requires acknowledgement. localStore.ts wraps all browser work access; one atomic
+  cropews.local-data.v1 snapshot supersedes legacy keys after restore. New writes update it.
+
+## Keyboard access (#178, ADR 0081)
+- IntroDialog contains focus, supports Escape and restores opener focus; skip link goes to
+  field controls. Native select test waits for options and uses type-ahead, avoiding macOS popup.
+
+## Phone access (#179, ADR 0082)
+- 48 px app buttons, wrapping controls, scrolling help and document scrolling on small screens.
+  Timeline retains slider plus previous/next date buttons. EN/DE phone/doubled-text tests.
+- Help legend now stacks each light and meaning vertically in EN/DE (owner follow-up, 27 Nov).
 ## Satellite clarity (ADR 0083)
 - #203: subfield assessment requires >=10 finite clear pixels and >=80% interior coverage.
   Legacy assessment is unknown; UI/read-aloud share patchSummary. No model change.

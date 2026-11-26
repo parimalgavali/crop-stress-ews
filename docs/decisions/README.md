@@ -59,4 +59,8 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0076](0076-field-trial-plan.md) | Proposed field-trial protocol using local visit records | Accepted as plan |
 | [0077](0077-regional-warning-plan.md) | Separate regional-warning experiment with independent outcomes | Accepted as plan |
 | [0078](0078-my-fields.md) | Personal names for device-local saved Live fields | Accepted |
+| [0079](0079-device-backup.md) | Explicit download of device-local field work | Accepted |
+| [0080](0080-atomic-restore.md) | Previewed atomic restore of device-local field work | Accepted |
+| [0081](0081-keyboard-help.md) | Keyboard help focus and native-select test path | Accepted |
+| [0082](0082-phone-reflow.md) | Phone touch targets and enlarged-text reflow | Accepted |
 | [0083](0083-satellite-clarity.md) | Satellite views communicate evidence and limits | Accepted |
