@@ -346,3 +346,7 @@ How it works:
 ## Saved fields (#175, ADR 0078)
 - web/src/savedFields.ts and MyFields.tsx: cropews.saved-fields.v1 stores stable Live ids,
   personal names and districts. No account/upload; failures visible. Replay ids not saved.
+
+## Backup (#176, ADR 0079)
+- backup.ts / BackupTools: versioned local JSON download of names, checks/notes, observations.
+  Files/images/caches/reports excluded and explained. No upload; unreadable data fails visibly.
