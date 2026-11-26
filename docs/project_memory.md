@@ -350,3 +350,5 @@ How it works:
 ## Satellite clarity (ADR 0083)
 - #203: subfield assessment requires >=10 finite clear pixels and >=80% interior coverage.
   Legacy assessment is unknown; UI/read-aloud share patchSummary. No model change.
+- #204: patch map has symbols/legend and explains within-field comparison and 20 m analysis;
+  displayed cells may aggregate. Absent patch entries get an unavailable message.
