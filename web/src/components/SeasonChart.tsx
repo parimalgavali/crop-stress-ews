@@ -1,3 +1,4 @@
+import { CHART_TEXT } from '../chartText'
 import { coverageText, COMPARISON_TEXT, comparisonGroup, type ChartContext } from '../chartContext'
 import type { SeriesPoint } from '../api'
 import { formatDate, type Lang } from '../i18n'
@@ -5,14 +6,7 @@ import { chartSummary, LIVE_STRINGS } from '../live'
 export interface ChartProps extends ChartContext {
   series?: SeriesPoint[]; peers?: SeriesPoint[]; peerKind?: 'cereal' | 'all'; lang: Lang
 }
-export const CHART_TEXT = {
-  en: { axis: 'Greenness (NDVI)', values: 'Observation dates and values', date: 'Date',
-    explain: 'Dots are usable satellite observations; lines only connect them. Gaps are not daily measurements. NDVI ranges from −1 to 1 and is a vegetation signal, not a percentage of crop health or a harvest prediction.',
-  },
-  de: { axis: 'Pflanzengrün (NDVI)', values: 'Beobachtungsdaten und Werte', date: 'Datum',
-    explain: 'Punkte sind nutzbare Satellitenbeobachtungen; Linien verbinden sie nur. Lücken sind keine täglichen Messungen. NDVI reicht von −1 bis 1 und ist ein Vegetationssignal, kein Gesundheitsprozentsatz und keine Erntevorhersage.',
-  },
-}
+
 const W = 400, H = 170, LEFT = 40, RIGHT = 12, TOP = 12, BOTTOM = 35
 const day = (d: string) => Date.parse(`${d}T00:00:00Z`) / 86400000
 export function SeasonChart({ series, peers, peerKind, peerSupport, district, lang }: ChartProps) {

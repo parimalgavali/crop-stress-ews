@@ -69,3 +69,13 @@ modes does not fetch another image. Source masks and pixel values are preserved;
 Integration prerequisite: the earlier PR stack was merged into predecessor branches after
 #193 reached main. Integrate origin/feature/178-keyboard (which contains the completed #176–#179
 changes and vertical help legend) so the new speaker builds on those already-reviewed changes.
+
+## #205: One upper speaker for the selected monitored field
+
+App places one icon-only control beside the selector (sticky panel controls on desktop;
+fixed upper-right control on phones with reserved header space). It combines the selected
+forecast or explicit unavailability and inspection guidance with the Live card's shared
+conditions/evidence/chart/patch/photo description. The selected cards hide duplicate speakers;
+independently drawn-field results retain a separately labelled control. EN/DE accessible names,
+visible hint, Stop and unavailable/error text remain. Selection, date, language or summary
+changes stop queued speech. Replay fetches ignore late responses so an old field cannot be read.

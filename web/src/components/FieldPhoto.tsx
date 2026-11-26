@@ -28,10 +28,10 @@ export function FieldPhoto({ ring, date, lang, load = fieldPhoto, onDescription 
   const canvas = useRef<HTMLCanvasElement>(null);
   const key = `${date}|${ring.flat().join(",")}`;
 
-  const request = useRef(0);
+  const request = useRef({ value: 0 });
   const currentKey = useRef(key);
   currentKey.current = key;
-  useEffect(() => { request.current++; setPixels(false); setState({ kind: "idle" }); return () => { request.current++; }; }, [key]);
+  useEffect(() => { const counter = request.current; counter.value++; setPixels(false); setState({ kind: "idle" }); return () => { counter.value++; }; }, [key]);
   useEffect(() => {
     onDescription?.(`${state.kind === "done" ? photoMetadata(state.photo, lang) : ""} ${photoExplanation(lang)}`);
   }, [state, lang, onDescription]);
@@ -44,15 +44,15 @@ export function FieldPhoto({ ring, date, lang, load = fieldPhoto, onDescription 
   }, [state]);
 
   const show = async () => {
-    const token = ++request.current;
+    const token = ++request.current.value;
     const requestedKey = key;
     setState({ kind: "loading" });
     try {
       const photo = await load(ring, date);
-      if (token !== request.current || requestedKey !== currentKey.current) return;
+      if (token !== request.current.value || requestedKey !== currentKey.current) return;
       setState(photo ? { kind: "done", photo } : { kind: "problem", text: l.photoNone });
     } catch {
-      if (token !== request.current || requestedKey !== currentKey.current) return;
+      if (token !== request.current.value || requestedKey !== currentKey.current) return;
       setState({ kind: "problem", text: l.photoError });
     }
   };

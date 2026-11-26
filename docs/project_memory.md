@@ -380,3 +380,6 @@ How it works:
   explanation/readout distinguishes source detail, cloud clarity and transparent no-data.
 - #202: on-demand photo has overview/pixel modes over the same unchanged raster; no sharpening,
   new fetch or extra detail. Both modes retain date/source and resolution explanation.
+- #205: ReadFieldButton in upper controls combines selected forecast/guidance and Live summary;
+  duplicate selected-card speakers hidden; drawn-field playback remains separately labelled.
+  Stop/cancel on identity, language or text change. Phone control stays at upper right.

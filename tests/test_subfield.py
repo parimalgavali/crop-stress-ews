@@ -68,3 +68,15 @@ def test_assessment_requires_clear_coverage_and_enough_finite_pixels() -> None:
     ndvi[3, 3] = 0.4
     assert assess_patches(ndvi, scl, interior)["status"] == "insufficient"
     assert assess_patches(*_field(6, 6))["status"] == "insufficient"
+
+
+def test_assessment_clear_coverage_boundary_includes_missing_pixels() -> None:
+    from cropews.subfield import assess_patches
+
+    ndvi = np.full((10, 10), 0.5)
+    scl = np.full((10, 10), 4)
+    inside = np.ones((10, 10), dtype=bool)
+    scl.flat[:20] = 0
+    assert assess_patches(ndvi, scl, inside)["status"] == "none_detected"
+    scl.flat[20] = 3
+    assert assess_patches(ndvi, scl, inside)["status"] == "insufficient"

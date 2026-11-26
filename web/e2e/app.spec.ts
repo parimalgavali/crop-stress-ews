@@ -64,7 +64,7 @@ test('choose a field, see three traffic lights, hear it, step the season', async
 
   await page.getByRole('button', { name: /Listen/ }).click()
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
-  expect(spoken[0]).toMatch(/^en-GB\|Field, Soest\./)
+  expect(spoken[0]).toMatch(/^en-GB\|Field f2, Soest\./)
   expect(spoken.join(' ')).toContain('Next 7 days: Low risk')
 
   await page.getByRole('slider').fill('1')
@@ -122,7 +122,7 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await expect(lines).toContainText('Last clear satellite image: 4 days ago')
   await expect(lines).toContainText('Green crop cover, getting greener')
   await expect(lines).toContainText('Rain in the last 30 days: 55 mm')
-  await expect(page.getByRole('img', { name: /greener than the neighbours/ })).toBeVisible()
+  await expect(page.getByRole('img', { name: /Comparison unavailable: contributing-field count is unknown/ })).toBeVisible()
   await page.route('https://planetarycomputer.microsoft.com/api/stac/v1/search', (r) =>
     r.fulfill({ json: { type: 'FeatureCollection', features: [] } }),
   )
@@ -138,7 +138,9 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await page.getByRole('button', { name: /Listen/ }).click()
   const spoken = await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)
   const spokenText = spoken.map((x) => x.replace(/^[^|]+\|/, '')).join(' ')
-  expect(spokenText).toMatch(/^Field, Soest\. Last clear satellite image/)
+  expect(spokenText).toMatch(/^Field LWK-1, Soest\./)
+  expect(spokenText).toContain('Last clear satellite image')
+  expect(spokenText).toContain('No forecast is available')
   expect(spokenText).toMatch(/You checked it on .*: looks fine\./)
   expect(spokenText).toContain('Greenness since 1 October: from 0.50 to 0.70')
 })
@@ -396,6 +398,37 @@ for (const lang of ['EN', 'DE']) {
     const backup = page.getByRole('button', { name: lang === 'EN' ? 'Download my backup' : 'Meine Sicherung herunterladen' })
     await backup.scrollIntoViewIfNeeded()
     expect((await backup.boundingBox())!.height).toBeGreaterThanOrEqual(48)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
+  })
+}
+
+for (const lang of ['EN', 'DE']) {
+  test(`${lang}: satellite explanations and one upper speaker stay consistent`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 })
+    await page.route('**/live/latest.json', (r) => r.fulfill({ json: {
+      as_of: '2026-11-26', attribution: 'test',
+      fields: { ...fields, features: fields.features.map((f) => ({ ...f, properties: { ...f.properties, declared_crop: 'wheat' } })) },
+      conditions: { f2: { s2_date: '2026-11-24', s2_days_ago: 2, ndvi: 0.33 } },
+      season: { fields: { f2: [['2026-10-05', 0.23], ['2026-11-24', 0.33]] }, peers: { Soest: [['2026-10-05', 0.4], ['2026-11-24', 0.5]] }, peer_kind: 'all',
+        peer_support: { Soest: { '2026-11-24': { count: 5, previous_count: 6, retained_from_previous: 4 } } } },
+      subfield: { f2: { date: '2026-11-24', assessment: { status: 'insufficient', usable_pixels: 2, clear_fraction: 0.1 }, zones: [],
+        quality: { clear: 0.1, cloud_shadow: 0.9, unstable: true, interior_px: 20 },
+        grid: { h: 1, w: 2, ndvi: [[0.33, null]], zone_cells: [] } } },
+    } }))
+    await page.goto('/?field=f2')
+    await page.getByRole('group', { name: /Language|Sprache/ }).getByRole('button', { name: lang }).click()
+    const chart = page.getByTestId('season-chart')
+    await expect(chart).toContainText(lang === 'EN' ? 'Mixed monitored crops · Soest' : 'Gemischte beobachtete Kulturen · Soest')
+    await expect(chart).toContainText(lang === 'EN' ? '5 contributing fields' : '5 beitragende Felder')
+    await expect(chart).toContainText(lang === 'EN' ? 'Contributing fields changed' : 'tragen andere Felder bei')
+    const patch = page.getByRole('img', { name: lang === 'EN' ? /Not enough clear detail/ : /Nicht genug klare Bilddetails/ })
+    await expect(patch).toBeVisible()
+    await expect(page.locator('.upper-read-button')).toHaveCount(1)
+    await expect(page.locator('.card .speak')).toHaveCount(0)
+    await patch.scrollIntoViewIfNeeded()
+    expect((await page.locator('.upper-read-button').boundingBox())!.y).toBeLessThan(20)
+    await page.locator('.upper-read-button').click()
+    await expect.poll(async () => (await page.evaluate(() => (window as unknown as { spoken: string[] }).spoken)).join(' ')).toContain(lang === 'EN' ? 'Not enough clear detail' : 'Nicht genug klare Bilddetails')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true)
   })
 }

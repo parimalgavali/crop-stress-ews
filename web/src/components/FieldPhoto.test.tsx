@@ -1,9 +1,11 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { act, cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Photo } from '../fieldPhoto'
 import { FieldPhoto } from './FieldPhoto'
 
-afterEach(cleanup)
+beforeEach(() => { vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null) })
+afterEach(() => { cleanup(); vi.restoreAllMocks() })
 
 const ring: [number, number][] = [[8.1, 51.57], [8.104, 51.57], [8.104, 51.574], [8.1, 51.57]]
 
@@ -35,4 +37,18 @@ describe('FieldPhoto', () => {
     await userEvent.click(screen.getByRole('button'))
     expect(await screen.findByRole('alert')).toHaveTextContent('konnte nicht geladen werden')
   })
+})
+
+
+it('does not replace the selected date with a late old photo', async () => {
+  let finish: (photo: Photo) => void = () => {}
+  const photo = (date: string): Photo => ({ date, width: 1, height: 1, rgba: new Uint8ClampedArray(4), pixel_size_m: 10 })
+  const load = vi.fn().mockImplementationOnce(() => new Promise<Photo>((resolve) => { finish = resolve })).mockResolvedValueOnce(photo('2026-10-21'))
+  const view = render(<FieldPhoto ring={ring} date="2026-10-20" dateLabel="20 October" lang="en" load={load} />)
+  await userEvent.click(screen.getByRole('button'))
+  view.rerender(<FieldPhoto ring={ring} date="2026-10-21" dateLabel="21 October" lang="en" load={load} />)
+  await userEvent.click(screen.getByRole('button'))
+  expect(await screen.findByRole('img')).toHaveAccessibleName(/21 October/)
+  await act(async () => finish(photo('2026-10-20')))
+  expect(screen.getByRole('img')).toHaveAccessibleName(/21 October/)
 })
