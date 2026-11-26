@@ -79,3 +79,4 @@ shows periodically refreshed observations for season 2026/27; spring forecasts s
 - Add harvest-2026 labels from the LWK declarations and run the yearly champion/challenger retrain.
 
 - Prepare a partner-led [field trial](field_trial.md) to test useful visits and alert burden.
+- Investigate [regional warnings](regional_warning_experiment.md) only with independent outcomes.

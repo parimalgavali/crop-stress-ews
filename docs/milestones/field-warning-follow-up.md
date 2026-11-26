@@ -15,3 +15,6 @@
 
 - Story #171: proposed field-trial guide completed, using existing local visit records and
   exports. Recruitment, consent and field observations remain future partner-led work.
+
+- Story #172: regional-warning experiment plan completed, with independent outcomes, baseline
+  and future-season gates. No new model, data extraction or claimed validation.

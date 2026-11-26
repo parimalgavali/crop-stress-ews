@@ -1,3 +1,7 @@
+### Regional-warning research plan (ADR 0077)
+- docs/regional_warning_experiment.md (#172) requires independent dated outcomes and a future
+  season check. No new regional score or change to the served model has been implemented.
+
 ### Field-trial preparation (ADR 0076)
 - Proposed protocol in docs/field_trial.md (#171); no recruitment or field validation performed.
   Device-local records remain unchanged. Comparison visits and independent review are required.
