@@ -10,3 +10,6 @@
 - Validate EN/DE at a 320×640 CSS viewport and doubled base font, plus existing axe/keyboard
   flows. This is automated reflow testing, not a claim of physical-device/outdoor or universal
   screen-reader validation; participant testing remains #188.
+
+- Owner follow-up, 2026-11-27: help legend is a vertical three-item list in EN/DE; each
+  traffic-light icon stays beside its own text instead of wrapping a single inline sentence.

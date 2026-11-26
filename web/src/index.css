@@ -117,7 +117,9 @@ h1 { font-size: 1.3rem; margin: 0; }
 .intro-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
 .intro-card { background: #fff; border-radius: 12px; padding: 1.2rem; max-width: 22rem; display: flex; flex-direction: column; gap: 0.7rem; }
 .intro-card h2 { margin: 0; }
-.intro-lights { font-weight: 600; }
+.intro-lights { font-weight: 600; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; }
+.intro-lights li { display: flex; align-items: flex-start; gap: 0.4rem; }
+.intro-lights li > span:first-child { flex: none; }
 .field-note label { display: block; font-weight: 600; margin-bottom: 2px; }
 .field-note textarea { width: 100%; font: inherit; padding: 0.4rem; border: 2px solid #888; border-radius: 8px; }
 

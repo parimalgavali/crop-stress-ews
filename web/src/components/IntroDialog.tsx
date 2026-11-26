@@ -23,7 +23,11 @@ export function IntroDialog({ lang, onClose }: { lang: Lang; onClose: () => void
   return <div className="intro-backdrop">
     <div className="intro-card" role="dialog" aria-modal="true" aria-labelledby="intro-title">
       <h2 id="intro-title">{s.introTitle}</h2>
-      <p className="intro-lights">{s.introLights}</p><p>{s.introPick}</p><p>{s.introListen}</p>
+      <ul className="intro-lights">
+        {s.introLights.map(([icon, text]) => <li key={text}>
+          <span aria-hidden="true">{icon}</span><span>{text}</span>
+        </li>)}
+      </ul><p>{s.introPick}</p><p>{s.introListen}</p>
       <button ref={close} type="button" className="big-button" onClick={onClose}>{s.introDone}</button>
     </div>
   </div>

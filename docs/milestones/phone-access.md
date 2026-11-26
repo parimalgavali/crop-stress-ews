@@ -9,3 +9,6 @@ Validation: 19/19 Playwright tests pass on macOS Chromium, including EN/DE repla
 48px controls and button-based date changes. Existing keyboard, printing, offline and axe
 checks pass. 72 web unit tests, eslint and TypeScript/build pass; ruff/mypy pass and pytest
 175 passed, five PostGIS-dependent tests skipped locally. No physical-device or outdoor trial.
+
+Owner follow-up, 27 Nov: stacked the three help-legend entries vertically in English and
+German, using a semantic list and keeping each icon beside its explanation.

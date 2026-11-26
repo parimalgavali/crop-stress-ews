@@ -363,3 +363,4 @@ How it works:
 ## Phone access (#179, ADR 0082)
 - 48 px app buttons, wrapping controls, scrolling help and document scrolling on small screens.
   Timeline retains slider plus previous/next date buttons. EN/DE phone/doubled-text tests.
+- Help legend now stacks each light and meaning vertically in EN/DE (owner follow-up, 27 Nov).
