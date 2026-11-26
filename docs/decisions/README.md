@@ -56,3 +56,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0073](0073-alerts-write-protected.md) | Alerts only on write-protected ntfy topics (publisher token) | Accepted |
 | [0074](0074-field-warning-guidance.md) | Plain-language field-warning guidance | Accepted |
 | [0075](0075-visible-evidence-summary.md) | Evidence summary visible before Live conditions | Accepted |
+| [0076](0076-field-trial-plan.md) | Proposed field-trial protocol using local visit records | Accepted as plan |

@@ -77,3 +77,5 @@ shows periodically refreshed observations for season 2026/27; spring forecasts s
 ## Next
 - Score spring 2027 from the forecast log, which is the true out-of-sample test.
 - Add harvest-2026 labels from the LWK declarations and run the yearly champion/challenger retrain.
+
+- Prepare a partner-led [field trial](field_trial.md) to test useful visits and alert burden.

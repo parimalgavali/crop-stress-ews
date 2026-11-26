@@ -12,3 +12,6 @@
 
 - Story #170: evidence quality and clear-image freshness are visible above Live conditions
   and read aloud; missing status is explicitly unknown. No model/threshold changes.
+
+- Story #171: proposed field-trial guide completed, using existing local visit records and
+  exports. Recruitment, consent and field observations remain future partner-led work.

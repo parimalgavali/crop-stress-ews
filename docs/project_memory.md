@@ -1,3 +1,7 @@
+### Field-trial preparation (ADR 0076)
+- Proposed protocol in docs/field_trial.md (#171); no recruitment or field validation performed.
+  Device-local records remain unchanged. Comparison visits and independent review are required.
+
 ### Visible evidence summary (ADR 0075)
 - Live cards show existing quality status and last clear image before conditions (#170).
   Missing status is unknown; risk and quality remain separate. Summary is read aloud.
