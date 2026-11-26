@@ -9,6 +9,7 @@ import type {
   SeasonRain,
   Scoreboard,
   SeriesPoint,
+  PeerSupport,
   WinterCheck,
 } from "../api";
 import type { Ring } from "../geo";
@@ -42,6 +43,7 @@ interface Props {
   series?: SeriesPoint[];
   peers?: SeriesPoint[];
   peerKind?: "cereal" | "all";
+  peerSupport?: PeerSupport;
   ring?: Ring | null;
   pheno?: Phenology;
   soil?: Soil;
@@ -66,6 +68,7 @@ export function LiveCard({
   series,
   peers,
   peerKind,
+  peerSupport,
   ring,
   pheno,
   soil,
@@ -89,7 +92,7 @@ export function LiveCard({
     soil,
     seasonRain,
   );
-  const chart = chartSummary(series, peers, lang);
+  const chart = chartSummary(series, peers, lang, { peerKind, peerSupport, district });
   const subText = subfield ? `${patchSummary(subfield, lang)} ${PATCH_TEXT[lang].explain} ${PATCH_TEXT[lang].legend.join(". ")} ${PATCH_TEXT[lang].detail}` : fieldId ? patchSummary(undefined, lang) : null;
   const qualitySummary = evidenceSummary(evidence, cond, lang);
   const ev = evidence ? evidenceLines(evidence, lang) : null;
@@ -163,6 +166,8 @@ export function LiveCard({
         series={series}
         peers={peers}
         peerKind={peerKind}
+        peerSupport={peerSupport}
+        district={district}
         lang={lang}
       />
       {subfield ? <SubfieldMap entry={subfield} lang={lang} /> : fieldId ? <p className="hint">{patchSummary(undefined, lang)}</p> : null}

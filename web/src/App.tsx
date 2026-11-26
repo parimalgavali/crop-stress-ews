@@ -397,6 +397,7 @@ export default function App() {
                   series={live.season?.fields[liveField.properties.field_id]}
                   peers={live.season?.peers[liveField.properties.district]}
                   peerKind={live.season?.peer_kind}
+                  peerSupport={live.season?.peer_support?.[liveField.properties.district]}
                   ring={outerRing(liveField.geometry)}
                   pheno={live.phenology?.[liveField.properties.district]}
                   evidence={live.evidence?.[liveField.properties.field_id]}

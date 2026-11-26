@@ -26,3 +26,12 @@ Show dated endpoints and the full NDVI −1..1 scale, without clipping negative 
 A native details/table exposes all measured dates/values. Explain that dots are observations,
 lines only connect them, and greenness is not health percentage or yield. The description is
 also in read-aloud. No values are interpolated into the data.
+
+## #199: Describe the actual comparison group
+
+Expose the district, mixed-crop versus likely-cereal group, date and contributing field count.
+Unknown metadata is labelled unknown, never assumed to mean wheat. The same context appears
+in the chart and speech; lower greenness does not prove poor health. season_series collapses
+overlapping clear observations to a field/date median before computing district medians and
+unique contributor counts. It reports previous count and retained membership for coverage
+interpretation; no field identities or model changes are added.

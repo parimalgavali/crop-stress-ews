@@ -1,7 +1,8 @@
+import { comparisonGroup, type ChartContext } from '../chartContext'
 import type { SeriesPoint } from '../api'
 import { formatDate, type Lang } from '../i18n'
 import { chartSummary, LIVE_STRINGS } from '../live'
-export interface ChartProps {
+export interface ChartProps extends ChartContext {
   series?: SeriesPoint[]; peers?: SeriesPoint[]; peerKind?: 'cereal' | 'all'; lang: Lang
 }
 export const CHART_TEXT = {
@@ -14,8 +15,8 @@ export const CHART_TEXT = {
 }
 const W = 400, H = 170, LEFT = 40, RIGHT = 12, TOP = 12, BOTTOM = 35
 const day = (d: string) => Date.parse(`${d}T00:00:00Z`) / 86400000
-export function SeasonChart({ series, peers, peerKind, lang }: ChartProps) {
-  const summary = chartSummary(series, peers, lang)
+export function SeasonChart({ series, peers, peerKind, peerSupport, district, lang }: ChartProps) {
+  const summary = chartSummary(series, peers, lang, { peerKind, peerSupport, district })
   if (!series || !summary) return null
   const t = CHART_TEXT[lang], l = LIVE_STRINGS[lang]
   const all = [...series, ...(peers ?? [])]
@@ -39,7 +40,7 @@ export function SeasonChart({ series, peers, peerKind, lang }: ChartProps) {
       <text x={LEFT} y={H - 8} fontSize="12">{formatDate(first, lang)}</text>
       <text x={W - RIGHT} y={H - 8} fontSize="12" textAnchor="end">{formatDate(last, lang)}</text>
     </svg>
-    <p className="legend"><span className="key field">━●</span> {l.chartField}{peers && peers.length > 1 && <> <span className="key peers">╌╌</span> {l.chartPeers(peerKind !== 'all')}</>}</p>
+    <p className="legend"><span className="key field">━●</span> {l.chartField}{peers && peers.length > 1 && <> <span className="key peers">╌╌</span> {comparisonGroup({ peerKind }, lang)}</>}</p>
     <p className="hint">{summary}</p><p className="hint">{t.explain}</p>
     <details><summary>{t.values}</summary><div className="observation-table">
       <table><thead><tr><th scope="col">{t.date}</th><th scope="col">{t.axis}</th></tr></thead>

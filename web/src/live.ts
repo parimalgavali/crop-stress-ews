@@ -1,3 +1,4 @@
+import { comparisonContext, type ChartContext } from "./chartContext";
 import type {
   Conditions,
   FieldRisk,
@@ -128,9 +129,9 @@ const T = {
     chartSummary: (n: number, from: string, to: string) =>
       `Greenness since 1 October: from ${from} to ${to}, on ${n} clear satellite images`,
     chartCompare: {
-      above: "greener than the neighbours",
-      same: "about as green as the neighbours",
-      below: "less green than the neighbours",
+      above: "greener than the comparison group",
+      same: "about as green as the comparison group",
+      below: "less green than the comparison group",
     } as Record<Compare, string>,
     photoShow: "Show satellite photo of this field",
     photoLoading: "Loading satellite photo…",
@@ -227,9 +228,9 @@ const T = {
     chartSummary: (n: number, from: string, to: string) =>
       `Pflanzengrün seit 1. Oktober: von ${from} auf ${to}, auf ${n} klaren Satellitenbildern`,
     chartCompare: {
-      above: "grüner als die Nachbarn",
-      same: "etwa so grün wie die Nachbarn",
-      below: "weniger grün als die Nachbarn",
+      above: "grüner als die Vergleichsgruppe",
+      same: "etwa so grün wie die Vergleichsgruppe",
+      below: "weniger grün als die Vergleichsgruppe",
     } as Record<Compare, string>,
     photoShow: "Satellitenfoto dieses Feldes zeigen",
     photoLoading: "Satellitenfoto wird geladen…",
@@ -691,6 +692,7 @@ export function chartSummary(
   series: SeriesPoint[] | undefined,
   peers: SeriesPoint[] | undefined,
   lang: Lang,
+  context: ChartContext = {},
 ): string | null {
   if (!series || series.length < 2) return null;
   const t = T[lang];
@@ -698,7 +700,7 @@ export function chartSummary(
     lang === "de" ? v.toFixed(2).replace(".", ",") : v.toFixed(2);
   const base = t.chartSummary(series.length, fmt(series[0][1]), fmt(series.at(-1)![1]));
   const cmp = compareToPeers(series, peers);
-  return cmp ? `${base}; ${t.chartCompare[cmp]}` : base;
+  return `${cmp ? `${base}; ${t.chartCompare[cmp]}` : base}. ${comparisonContext(series, peers, context, lang)}`;
 }
 
 /** Deterministic weekly digest over the scouting queue + evidence freshness (ADR 0064). */

@@ -16,10 +16,10 @@ describe('season chart', () => {
   })
 
   it('summarises in plain words and needs two clear images', () => {
-    expect(chartSummary(series, peers, 'en')).toBe(
-      'Greenness since 1 October: from 0.21 to 0.45, on 3 clear satellite images; less green than the neighbours',
+    expect(chartSummary(series, peers, 'en')).toContain(
+      'Greenness since 1 October: from 0.21 to 0.45, on 3 clear satellite images; less green than the comparison group',
     )
-    expect(chartSummary(series, undefined, 'de')).toBe(
+    expect(chartSummary(series, undefined, 'de')).toContain(
       'Pflanzengrün seit 1. Oktober: von 0,21 auf 0,45, auf 3 klaren Satellitenbildern',
     )
     expect(chartSummary(series.slice(0, 1), peers, 'en')).toBeNull()
@@ -27,10 +27,10 @@ describe('season chart', () => {
 
   it('renders an accessible chart with a text legend, or nothing', () => {
     const { rerender } = render(<SeasonChart series={series} peers={peers} peerKind="cereal" lang="en" />)
-    expect(screen.getByRole('img')).toHaveAccessibleName(/less green than the neighbours/)
-    expect(screen.getByTestId('season-chart')).toHaveTextContent('Neighbouring winter cereal fields')
+    expect(screen.getByRole('img')).toHaveAccessibleName(/less green than the comparison group/)
+    expect(screen.getByTestId('season-chart')).toHaveTextContent('Likely winter cereals')
     rerender(<SeasonChart series={series} peers={peers} peerKind="all" lang="en" />)
-    expect(screen.getByTestId('season-chart')).toHaveTextContent('Other monitored fields nearby')
+    expect(screen.getByTestId('season-chart')).toHaveTextContent('Mixed monitored crops')
     rerender(<SeasonChart series={series.slice(0, 1)} lang="en" />)
     expect(screen.queryByTestId('season-chart')).not.toBeInTheDocument()
   })

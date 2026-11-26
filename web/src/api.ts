@@ -197,7 +197,15 @@ export interface LiveSeason {
 /** [ISO date, NDVI] on clear Sentinel-2 dates since 1 October (ADR 0027). */
 export type SeriesPoint = [string, number]
 
+export interface PeerDateSupport {
+  count: number
+  previous_count: number | null
+  retained_from_previous: number | null
+}
+export type PeerSupport = Record<string, PeerDateSupport>
+
 export interface SeasonChart {
+  peer_support?: Record<string, PeerSupport>
   fields: Record<string, SeriesPoint[]>
   peers: Record<string, SeriesPoint[]>
   peer_kind?: 'cereal' | 'all'

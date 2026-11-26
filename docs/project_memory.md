@@ -354,3 +354,5 @@ How it works:
   displayed cells may aggregate. Absent patch entries get an unavailable message.
 - #198: season chart labels dates and −1..1 NDVI scale; accessible observation table and
   explanation of dots/lines are shared with read-aloud. No daily measurements invented.
+- #199: season.peer_support adds unique counts and retained/previous membership per district/date;
+  chart/speech identifies group and district and explicitly labels unknown legacy metadata.
