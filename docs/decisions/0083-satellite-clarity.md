@@ -58,3 +58,10 @@ from the 10 m Sentinel-2 colour source. Explain coarser large-field reads, cloud
 views, transparent exterior/no-data and ambiguous brown colours, visibly and in speech. Reject
 next-day STAC results and ignore late responses after the selected field/date changes. No
 satellite photo is fetched until requested.
+
+## #202: Honest pixel view
+
+Overview and enlarged-pixel modes share the same unchanged canvas raster; nearest-neighbour
+CSS rendering reveals blocks in pixel mode, not invented detail. Sizing is bounded by raster
+width and phone width. Date, attribution and resolution metadata remain visible. Switching
+modes does not fetch another image. Source masks and pixel values are preserved; no sharpening.

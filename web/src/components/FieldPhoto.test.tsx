@@ -1,7 +1,9 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { FieldPhoto } from './FieldPhoto'
+
+afterEach(cleanup)
 
 const ring: [number, number][] = [[8.1, 51.57], [8.104, 51.57], [8.104, 51.574], [8.1, 51.57]]
 
@@ -14,6 +16,11 @@ describe('FieldPhoto', () => {
     expect(load).toHaveBeenCalledWith(ring, '2026-10-20')
     expect(await screen.findByRole('img')).toHaveAccessibleName(/on 20 October, true colours/)
     expect(screen.getByTestId('field-photo')).toHaveTextContent('Copernicus Sentinel-2')
+    await userEvent.click(screen.getByRole('button', { name: 'Pixels (enlarged)' }))
+    expect(screen.getByRole('img')).toHaveStyle({ imageRendering: 'pixelated' })
+    expect(load).toHaveBeenCalledOnce()
+    await userEvent.click(screen.getByRole('button', { name: 'Overview' }))
+    expect(screen.getByRole('img')).toHaveStyle({ imageRendering: 'auto' })
   })
 
   it('says so in plain words when there is no photo or the network fails', async () => {

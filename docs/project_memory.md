@@ -361,3 +361,5 @@ How it works:
   most adjacent eligible dates; specific screenshot jump is not diagnosed (ADR 0083).
 - #201: photos report actual acquisition date and effective extraction spacing; shared EN/DE
   explanation/readout distinguishes source detail, cloud clarity and transparent no-data.
+- #202: on-demand photo has overview/pixel modes over the same unchanged raster; no sharpening,
+  new fetch or extra detail. Both modes retain date/source and resolution explanation.
