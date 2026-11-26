@@ -6,3 +6,6 @@
 
 - Story #168: bilingual ntfy copy now names the peer-relative target and inspection next step.
   Alert delivery and episode rules are unchanged.
+
+- Story #169: forecast cards and read-aloud share inspection guidance and distinguish low risk
+  from missing forecasts. General observation wording still needs adviser/user review.

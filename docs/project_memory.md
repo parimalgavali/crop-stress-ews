@@ -1,6 +1,7 @@
 ### Clear field-warning language (ADR 0074)
 - Alerts describe the peer-relative canopy target, suggest inspection, and do not diagnose or
-  prescribe treatment. Cooldown and sending rules are unchanged (story #168).
+  prescribe treatment. Forecast cards share bilingual next steps with read-aloud (#169).
+  Green does not confirm health; no forecast is not low risk. Cooldown and sending rules are unchanged (story #168).
 
 # Project memory
 
