@@ -8,8 +8,8 @@ canopy anomaly, not a diagnosed stress cause; agronomic interpretation needs ind
 field observation. Inputs are Sentinel-2 optical data, Sentinel-1 radar and DWD weather. The
 reasons are written in plain language, and a one-screen web app can read them aloud.
 
-**Live demo:** <https://parimalgavali.github.io/crop-stress-ews/> (static build, precomputed
-2024/2025 predictions; [ADR 0014](docs/decisions/0014-static-pages-demo.md)).
+**Web app:** <https://parimalgavali.github.io/crop-stress-ews/> (static build: historical 2024/2025 replay plus a separate
+Live view for periodically refreshed 2026/27 observations; spring forecasts from 5 April 2027; [ADR 0014](docs/decisions/0014-static-pages-demo.md)).
 
 **Reproduce the environment:** `pip install -r requirements-lock.txt` (pinned).
 
@@ -35,9 +35,10 @@ reasons are written in plain language, and a one-screen web app can read them al
   the validation-selected GRU-D (30-day window) reaches 0.83 / 0.80 / 0.79 on the 2022 gate —
   below the LightGBM baseline (0.88 / 0.83 / 0.82) at every horizon, so sequence models are
   not adopted and stay a research comparison ([sequence models](docs/sequence_models.md)).
-- **Model choice:** GRU-D/LSTM, LightGBM and the served model overlap in CI. The demo serves the
-  simplest model, whose reasons are its own coefficient contributions
-  ([ADR 0012](docs/decisions/0012-api-and-demo-model.md)).
+- **Model choice:** the demo serves the simple logistic model, whose reasons are its own
+  coefficient contributions
+  ([ADR 0012](docs/decisions/0012-api-and-demo-model.md)). Future challenger comparisons use
+  paired field-bootstrap differences ([ADR 0054](docs/decisions/0054-paired-comparison.md)).
 - **Honest caveats:** the label is relative to neighbouring fields, Düren had no test-season
   onsets, and false alarms rise at 21 days. See the [model card](docs/model_card.md) for limitations.
 
