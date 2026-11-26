@@ -359,3 +359,8 @@ How it works:
 ## Keyboard access (#178, ADR 0081)
 - IntroDialog contains focus, supports Escape and restores opener focus; skip link goes to
   field controls. Native select test waits for options and uses type-ahead, avoiding macOS popup.
+
+## Phone access (#179, ADR 0082)
+- 48 px app buttons, wrapping controls, scrolling help and document scrolling on small screens.
+  Timeline retains slider plus previous/next date buttons. EN/DE phone/doubled-text tests.
+- Help legend now stacks each light and meaning vertically in EN/DE (owner follow-up, 27 Nov).
