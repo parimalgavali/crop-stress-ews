@@ -1,3 +1,4 @@
+import { browserStore, unavailableStore, type LocalStore } from "../localStore";
 import { useState } from "react";
 import type { Level } from "../api";
 import {
@@ -15,7 +16,7 @@ interface Props {
   light: Level | null;
   lang: Lang;
   onChange?: () => void;
-  store?: Storage;
+  store?: LocalStore;
   today?: () => string;
 }
 
@@ -24,7 +25,7 @@ export function CheckedIt({
   light,
   lang,
   onChange,
-  store = localStorage,
+  store = browserStore() ?? unavailableStore,
   today = () => new Date().toISOString().slice(0, 10),
 }: Props) {
   const t = CHECK_STRINGS[lang];

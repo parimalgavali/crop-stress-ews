@@ -161,3 +161,5 @@ details.queue li button {
 .backup-tools { border-top: 1px solid #ddd; overflow-wrap: anywhere; }
 .backup-tools h2 { font-size: 1.1rem; }
 @media print { .backup-tools { display: none; } }
+.backup-tools label { display: block; margin: 0.6rem 0; }
+.backup-file input { display: block; max-width: 100%; }
