@@ -356,3 +356,6 @@ How it works:
   explanation of dots/lines are shared with read-aloud. No daily measurements invented.
 - #199: season.peer_support adds unique counts and retained/previous membership per district/date;
   chart/speech identifies group and district and explicitly labels unknown legacy metadata.
+- #200: descriptive chart comparisons require same date, known crop kind and >=5 known peers.
+  Coverage changes exposed in summary/table. Published 26 Nov data has changing membership in
+  most adjacent eligible dates; specific screenshot jump is not diagnosed (ADR 0083).

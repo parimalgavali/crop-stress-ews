@@ -1,4 +1,4 @@
-import { comparisonGroup, type ChartContext } from '../chartContext'
+import { coverageText, COMPARISON_TEXT, comparisonGroup, type ChartContext } from '../chartContext'
 import type { SeriesPoint } from '../api'
 import { formatDate, type Lang } from '../i18n'
 import { chartSummary, LIVE_STRINGS } from '../live'
@@ -47,5 +47,11 @@ export function SeasonChart({ series, peers, peerKind, peerSupport, district, la
         <tbody>{series.map(([d, v]) => <tr key={d}><th scope="row">{d}</th><td>{value(v)}</td></tr>)}</tbody>
       </table>
     </div></details>
+    {peers?.length ? <details><summary>{lang === 'de' ? 'Vergleichsdaten und beitragende Felder' : 'Comparison dates and contributing fields'}</summary>
+      <div className="observation-table"><table><thead><tr><th scope="col">{t.date}</th><th scope="col">{t.axis}</th><th scope="col">{lang === 'de' ? 'Abdeckung' : 'Coverage'}</th></tr></thead>
+        <tbody>{peers.map(([d, v]) => <tr key={d}><th scope="row">{d}</th><td>{value(v)}</td><td>
+          {peerSupport?.[d]?.count == null ? COMPARISON_TEXT[lang].countUnknown : COMPARISON_TEXT[lang].count(peerSupport[d].count)}. {coverageText(peerSupport?.[d], lang)}
+        </td></tr>)}</tbody></table></div>
+    </details> : null}
   </figure>
 }

@@ -675,14 +675,16 @@ export function scoreLine(
     : line;
 }
 
-/** Field vs peer median on the latest peer date at or before the field's last clear image. */
+/** Descriptive comparison only on the same date with at least five known unique peers. */
 export function compareToPeers(
   series: SeriesPoint[],
   peers: SeriesPoint[] | undefined,
+  support?: import("./api").PeerSupport,
 ): Compare | null {
   const last = series.at(-1);
-  const peer = peers?.filter(([d]) => last && d <= last[0]).at(-1);
-  if (!last || !peer) return null;
+  const peer = peers?.find(([d]) => last && d === last[0]);
+  const count = last ? support?.[last[0]]?.count : undefined;
+  if (!last || !peer || count == null || count < 5) return null;
   const gap = last[1] - peer[1];
   return gap > COMPARE_NDVI ? "above" : gap < -COMPARE_NDVI ? "below" : "same";
 }
@@ -699,7 +701,7 @@ export function chartSummary(
   const fmt = (v: number) =>
     lang === "de" ? v.toFixed(2).replace(".", ",") : v.toFixed(2);
   const base = t.chartSummary(series.length, fmt(series[0][1]), fmt(series.at(-1)![1]));
-  const cmp = compareToPeers(series, peers);
+  const cmp = context.peerKind ? compareToPeers(series, peers, context.peerSupport) : null;
   return `${cmp ? `${base}; ${t.chartCompare[cmp]}` : base}. ${comparisonContext(series, peers, context, lang)}`;
 }
 

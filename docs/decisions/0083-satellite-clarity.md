@@ -35,3 +35,18 @@ in the chart and speech; lower greenness does not prove poor health. season_seri
 overlapping clear observations to a field/date median before computing district medians and
 unique contributor counts. It reports previous count and retained membership for coverage
 interpretation; no field identities or model changes are added.
+
+## #200: Same-date supported comparison, changing coverage visible
+
+The descriptive above/same/below statement requires an exact field/group observation-date
+match, a known crop-group kind, and at least five known unique contributors (existing minimum).
+No prior-date carry-forward or invented daily values. Raw peer medians remain plotted and a
+table reports date, count and changing membership; missing metadata is unknown. This avoids
+silently smoothing jumps or calling group turnover crop damage. Forecast models are untouched.
+
+Public-data inspection, 2026-11-27: published as_of=2026-11-26, peer_kind=all. Reconstructing
+contributors from published per-field clear dates found group membership changing in 17/17
+adjacent eligible-date pairs in Coesfeld, 7/7 Düren, 12/12 Höxter, 13/13 Rhein-Erft-Kreis,
+15/15 Soest and 12/13 Warendorf. This establishes changing coverage, not the cause of any
+particular plotted jump; the screenshot's field was not identified. New membership metadata
+requires a new live extraction. Legacy data stays visible but without unsupported comparisons.
