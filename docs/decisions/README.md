@@ -64,3 +64,5 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0081](0081-keyboard-help.md) | Keyboard help focus and native-select test path | Accepted |
 | [0082](0082-phone-reflow.md) | Phone touch targets and enlarged-text reflow | Accepted |
 | [0083](0083-satellite-clarity.md) | Satellite views communicate evidence and limits | Accepted |
+
+| [0084](0084-field-visit-view.md) | Compact field visit with existing warnings and local records | Accepted |

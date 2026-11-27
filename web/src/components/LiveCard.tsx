@@ -27,6 +27,8 @@ import WeatherStrip from "./WeatherStrip";
 import { PATCH_TEXT, patchSummary } from "../patches";
 import { photoExplanation } from "../photoText";
 import { speak } from "../speech";
+import { browserStore, loadSavedFields } from "../savedFields";
+import { VISIT_TEXT } from "../visitText";
 
 interface Props {
   hideSpeech?: boolean;
@@ -85,6 +87,9 @@ export function LiveCard({
   evidence,
   subfield,
 }: Props) {
+  const [visit, setVisit] = useState(false);
+  const v = VISIT_TEXT[lang];
+  const fieldName = loadSavedFields(browserStore()).find((f) => f.field_id === fieldId)?.name;
   const s = STRINGS[lang];
   const l = LIVE_STRINGS[lang];
   const lines = conditionLines(
@@ -121,7 +126,8 @@ export function LiveCard({
   useEffect(() => setCopied(false), [fieldId]);
 
   const checked = fieldId ? lastCheckText(fieldId, lang) : null;
-  const summaryText = `${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ${CHART_TEXT[lang].explain} ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}${ring && cond.s2_date ? ` ${photoReadout}` : ""}`;
+  const visitReadout = visit ? `${v.title}. ${fieldName ?? fieldId}. ${asOf ? `${v.updated} ${formatDate(asOf, lang)}.` : v.dateUnknown} ${v.checklist.join(". ")}. ${v.limits}` : "";
+  const summaryText = `${visitReadout} ${notice ? `${notice} ` : ""}${s.field}, ${district}. ${lines.map((x) => x.text).join(". ")}. ${chart ? `${chart}. ${CHART_TEXT[lang].explain} ` : ""}${spring ? "" : l.springNote} ${qualitySummary} ${scoreLine(board, lang)}${checked ? ` ${checked}.` : ""}${subText ? ` ${subText}.` : ""}${ring && cond.s2_date ? ` ${photoReadout}` : ""}`;
   useEffect(() => { onSummary?.(summaryText); }, [summaryText, onSummary]);
 
   const toggleSpeech = () => {
@@ -148,117 +154,134 @@ export function LiveCard({
       aria-live="polite"
       aria-label={`${s.field} ${district}`}
     >
-      <h2 className="live-title">{l.title}</h2>
+      {fieldId && <button type="button" className="big-button" aria-pressed={visit} onClick={() => setVisit(!visit)}>
+        {visit ? v.full : v.open}
+      </button>}
+      <h2 className="live-title">{visit ? v.title : l.title}</h2>
+      {visit && <>
+        <p><strong>{fieldName ? `${fieldName} · ${fieldId}` : fieldId}</strong> · {district}</p>
+        <p className="hint">{asOf ? `${v.updated} ${formatDate(asOf, lang)}` : v.dateUnknown}</p>
+        {notice && <p className="hint">{notice}</p>}
+        {!spring && <p className="hint">{s.missingRiskNote}</p>}
+      </>}
       <p className="hint" data-testid="evidence-summary">{qualitySummary}</p>
-      <ul className="live-lines" data-testid="live-lines">
-        {lines.map((x) => (
-          <li key={x.text}>
-            <span aria-hidden="true">{x.icon}</span> {x.text}
-          </li>
-        ))}
-      </ul>
-      {canSpeak && !hideSpeech && (
-        <button
-          type="button"
-          className="big-button speak"
-          aria-label={!fieldId ? (lang === "de" ? "Vorlesen: gezeichnetes Feld" : "Listen to drawn-field result") : undefined}
-          onClick={toggleSpeech}
-        >
-          <span aria-hidden="true">{speaking ? "■" : "🔊"}</span>{" "}
-          {speaking ? s.stop : s.listen}
-        </button>
-      )}
-      {fieldId && (
-        <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} onChange={() => refreshChecks((n) => n + 1)} />
-      )}
-      {forecast?.fc_days?.length ? (
-        <WeatherStrip days={forecast.fc_days} lang={lang} />
-      ) : null}
-      <SeasonChart
-        series={series}
-        peers={peers}
-        peerKind={peerKind}
-        peerSupport={peerSupport}
-        district={district}
-        lang={lang}
-      />
-      {subfield ? <SubfieldMap entry={subfield} lang={lang} /> : fieldId ? <p className="hint">{patchSummary(undefined, lang)}</p> : null}
-      {ring && cond.s2_date && (
-        <FieldPhoto
-          ring={ring}
-          onDescription={setPhotoReadout}
-          date={cond.s2_date}
-          dateLabel={formatDate(cond.s2_date, lang)}
+      {visit && fieldId && <>
+        <h3>{v.checkTitle}</h3>
+        <ul>{v.checklist.map((step) => <li key={step}>{step}</li>)}</ul>
+        <p className="hint">{v.limits}</p>
+      </>}
+      {fieldId && <ObservationLog key={fieldId} fieldId={fieldId} lang={lang} expanded={visit} />}
+      <details open={!visit || undefined} className="visit-details">
+        <summary hidden={!visit}>{v.details}</summary>
+        <ul className="live-lines" data-testid="live-lines">
+          {lines.map((x) => (
+            <li key={x.text}>
+              <span aria-hidden="true">{x.icon}</span> {x.text}
+            </li>
+          ))}
+        </ul>
+        {canSpeak && !hideSpeech && (
+          <button
+            type="button"
+            className="big-button speak"
+            aria-label={!fieldId ? (lang === "de" ? "Vorlesen: gezeichnetes Feld" : "Listen to drawn-field result") : undefined}
+            onClick={toggleSpeech}
+          >
+            <span aria-hidden="true">{speaking ? "■" : "🔊"}</span>{" "}
+            {speaking ? s.stop : s.listen}
+          </button>
+        )}
+        {fieldId && (
+          <CheckedIt key={fieldId} fieldId={fieldId} light={light} lang={lang} onChange={() => refreshChecks((n) => n + 1)} />
+        )}
+        {forecast?.fc_days?.length ? (
+          <WeatherStrip days={forecast.fc_days} lang={lang} />
+        ) : null}
+        <SeasonChart
+          series={series}
+          peers={peers}
+          peerKind={peerKind}
+          peerSupport={peerSupport}
+          district={district}
           lang={lang}
         />
-      )}
-      {ev && (
-        <details className="evidence">
-          <summary>
-            {l.evidenceTitle} — {ev.label}
-          </summary>
-          <ul>
-            {ev.lines.map((x) => (
-              <li key={x}>{x}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-      {!spring && <p className="hint">{l.springNote}</p>}
-      {fieldId && (
-        <details className="evidence more">
-          <summary>{l.moreTitle}</summary>
-          {alertUrl && (
-            <p>
-              <a
-                href={alertUrl}
-                target="_blank"
-                rel="noreferrer"
+        {subfield ? <SubfieldMap entry={subfield} lang={lang} /> : fieldId ? <p className="hint">{patchSummary(undefined, lang)}</p> : null}
+        {ring && cond.s2_date && (
+          <FieldPhoto
+            ring={ring}
+            onDescription={setPhotoReadout}
+            date={cond.s2_date}
+            dateLabel={formatDate(cond.s2_date, lang)}
+            lang={lang}
+          />
+        )}
+        {ev && (
+          <details className="evidence">
+            <summary>
+              {l.evidenceTitle} — {ev.label}
+            </summary>
+            <ul>
+              {ev.lines.map((x) => (
+                <li key={x}>{x}</li>
+              ))}
+            </ul>
+          </details>
+        )}
+        {!spring && <p className="hint">{l.springNote}</p>}
+        {fieldId && (
+          <details className="evidence more">
+            <summary>{l.moreTitle}</summary>
+            {alertUrl && (
+              <p>
+                <a
+                  href={alertUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  🔔 {l.alert}
+                </a>
+              </p>
+            )}
+            <div className="more-buttons">
+              <button
+                type="button"
+                className="big-button"
+                onClick={async () => {
+                  const url = fieldLink(fieldId);
+                  try {
+                    await navigator.clipboard.writeText(url);
+                    setCopied(true);
+                  } catch {
+                    window.prompt(l.linkManual, url);
+                  }
+                }}
               >
-                🔔 {l.alert}
-              </a>
+                {l.fieldLink}
+              </button>
+              <button
+                type="button"
+                className="big-button"
+                onClick={() => window.print()}
+              >
+                {l.printReport}
+              </button>
+            </div>
+            {copied && <p role="status">{l.linkCopied}</p>}
+          </details>
+        )}
+        {fieldId && (
+          <div className="print-only" data-testid="print-report">
+            <p className="print-meta">
+              Crop Stress EWS · {district} · {fieldId}
+              {asOf ? ` · ${l.asOf} ${formatDate(asOf, lang)}` : ""}
             </p>
-          )}
-          <div className="more-buttons">
-            <button
-              type="button"
-              className="big-button"
-              onClick={async () => {
-                const url = fieldLink(fieldId);
-                try {
-                  await navigator.clipboard.writeText(url);
-                  setCopied(true);
-                } catch {
-                  window.prompt(l.linkManual, url);
-                }
-              }}
-            >
-              {l.fieldLink}
-            </button>
-            <button
-              type="button"
-              className="big-button"
-              onClick={() => window.print()}
-            >
-              {l.printReport}
-            </button>
+            <p className="print-meta">{fieldLink(fieldId)}</p>
           </div>
-          {copied && <p role="status">{l.linkCopied}</p>}
-          <ObservationLog fieldId={fieldId} lang={lang} />
-        </details>
-      )}
-      {fieldId && (
-        <div className="print-only" data-testid="print-report">
-          <p className="print-meta">
-            Crop Stress EWS · {district} · {fieldId}
-            {asOf ? ` · ${l.asOf} ${formatDate(asOf, lang)}` : ""}
-          </p>
-          <p className="print-meta">{fieldLink(fieldId)}</p>
-        </div>
-      )}
-      <p className="hint" data-testid="scoreboard">
-        {scoreLine(board, lang)}
-      </p>
+        )}
+        <p className="hint" data-testid="scoreboard">
+          {scoreLine(board, lang)}
+        </p>
+      </details>
     </section>
   );
 }

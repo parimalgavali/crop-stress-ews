@@ -193,5 +193,8 @@ for (const lang of ["EN", "DE"] as const) {
       .selectOption("LWK-1");
     await expect(page.getByTestId("live-lines")).toBeVisible();
     await expectNoViolations(page);
+    await page.getByRole('button', { name: lang === 'EN' ? 'Start a field visit' : 'Feldbesuch starten' }).click();
+    await page.getByRole('button', { name: lang === 'EN' ? 'Record what you saw' : 'Festhalten, was Sie gesehen haben' }).click();
+    await expectNoViolations(page);
   });
 }

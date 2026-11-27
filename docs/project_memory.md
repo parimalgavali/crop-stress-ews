@@ -383,3 +383,12 @@ How it works:
 - #205: ReadFieldButton in upper controls combines selected forecast/guidance and Live summary;
   duplicate selected-card speakers hidden; drawn-field playback remains separately labelled.
   Stop/cancel on identity, language or text change. Phone control stays at upper right.
+
+## Field visit view (#180, ADR 0084)
+- LiveCard offers an EN/DE visit mode with saved name/id, data date, evidence freshness,
+  existing warning above, checklist and expanded ObservationLog. Full Live remains available;
+  charts/conditions stay in expandable details. Shared read-aloud includes checklist and limits.
+- One stable ObservationLog survives mode changes; writes fail visibly, retaining the form.
+  No new warning calculation, account, upload, automatic visit or treatment advice.
+- CI206 failure was an ambiguous getByRole(status) test after adding speaker status; scope the
+  checked-field assertion to its message. Missing forecasts remain distinct from low risk.
