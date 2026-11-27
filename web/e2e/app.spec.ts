@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises'
 import { expect, test } from '@playwright/test'
 
 const DATES = ['2024-05-05', '2024-05-10']
@@ -151,6 +152,16 @@ test('live mode shows current conditions in plain words', async ({ page }) => {
   await page.getByLabel('What did you see?').selectOption('standing_water')
   await page.getByRole('button', { name: 'Save record' }).click()
   await expect(page.getByRole('status').filter({ hasText: 'Saved: visit on' })).toBeVisible()
+  const downloadedCsv = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Export all visits (CSV)' }).click()
+  const csvDownload = await downloadedCsv
+  const csv = await readFile((await csvDownload.path())!, 'utf8')
+  expect(csvDownload.suggestedFilename()).toMatch(/field-visits-.*\.csv$/)
+  expect(csv).toContain('"LWK-1","Not named"')
+  expect(csv).toContain('"standing water","not sure","not sure","Not reviewed"')
+  await expect(page.getByText('CSV is for reading in a spreadsheet', { exact: false })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Export all records (JSON)' })).toBeVisible()
+
   await page.getByRole('button', { name: /Listen/ }).click()
   await expect.poll(async () => page.evaluate(() => (window as unknown as { spoken: string[] }).spoken.join(' '))).toContain('These are inspection prompts')
   await page.getByRole('button', { name: 'Return to full Live view' }).click()

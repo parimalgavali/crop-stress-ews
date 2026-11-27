@@ -1,4 +1,6 @@
 import { browserStore, unavailableStore, type LocalStore } from "../localStore";
+import { CSV_TEXT, downloadVisitCsv } from "../visitCsv";
+import { OBS_TEXT } from "../observationText";
 import { useState } from "react";
 import {
   addObservation,
@@ -16,88 +18,6 @@ import {
 } from "../observations";
 import { formatDate, type Lang } from "../i18n";
 
-const T = {
-  en: {
-    title: "📝 Field visit record",
-    add: "Record what you saw",
-    when: "When were you there?",
-    who: "Who visited?",
-    symptom: "What did you see?",
-    severity: "How bad?",
-    cause: "Suspected cause",
-    note: "Note (optional)",
-    save: "Save record",
-    error: "Could not save. Your browser storage may be full or unavailable. Keep this form open and try again.",
-    saved: (d: string) => `Saved: visit on ${d}`,
-    none: "No visit records on this device yet.",
-    export: "Export all records (JSON)",
-    unknown: "not sure",
-    privacy: "Records stay on this device. Nothing is sent.",
-    labels: {
-      none_seen: "nothing wrong seen",
-      patchy_growth: "patchy growth",
-      yellowing: "yellowing",
-      wilting: "wilting",
-      standing_water: "standing water",
-      bare_soil: "bare soil",
-      lodging: "lodging / flattened",
-      other: "other",
-      mild: "mild",
-      moderate: "moderate",
-      severe: "severe",
-      water: "water (too much / too little)",
-      frost: "frost",
-      heat: "heat",
-      pest_disease: "pest or disease",
-      nutrition: "nutrition",
-      mechanical: "machinery / other damage",
-      not_stress: "not crop stress",
-      farmer: "farmer",
-      agronomist: "agronomist",
-      developer: "developer",
-    } as Record<string, string>,
-  },
-  de: {
-    title: "📝 Feld-Besuchsprotokoll",
-    add: "Festhalten, was Sie gesehen haben",
-    when: "Wann waren Sie dort?",
-    who: "Wer war vor Ort?",
-    symptom: "Was haben Sie gesehen?",
-    severity: "Wie schlimm?",
-    cause: "Vermutete Ursache",
-    note: "Notiz (optional)",
-    save: "Eintrag speichern",
-    error: "Speichern fehlgeschlagen. Der Browserspeicher ist möglicherweise voll oder nicht verfügbar. Lassen Sie das Formular offen und versuchen Sie es erneut.",
-    saved: (d: string) => `Gespeichert: Besuch am ${d}`,
-    none: "Noch keine Besuchseinträge auf diesem Gerät.",
-    export: "Alle Einträge exportieren (JSON)",
-    unknown: "unsicher",
-    privacy: "Einträge bleiben auf diesem Gerät. Es wird nichts gesendet.",
-    labels: {
-      none_seen: "nichts Auffälliges gesehen",
-      patchy_growth: "unterschiedlicher Bewuchs",
-      yellowing: "Vergilbung",
-      wilting: "Welken",
-      standing_water: "stehendes Wasser",
-      bare_soil: "offener Boden",
-      lodging: "Lagerung / umgelegt",
-      other: "sonstiges",
-      mild: "leicht",
-      moderate: "mittel",
-      severe: "schwer",
-      water: "Wasser (zu viel / zu wenig)",
-      frost: "Frost",
-      heat: "Hitze",
-      pest_disease: "Schädling oder Krankheit",
-      nutrition: "Nährstoffe",
-      mechanical: "Maschinen- / sonstiger Schaden",
-      not_stress: "kein Pflanzenstress",
-      farmer: "Landwirt/in",
-      agronomist: "Agronom/in",
-      developer: "Entwickler/in",
-    } as Record<string, string>,
-  },
-};
 
 interface Props {
   fieldId: string;
@@ -107,7 +27,7 @@ interface Props {
 }
 
 export function ObservationLog({ fieldId, lang, expanded = false, store = browserStore() ?? unavailableStore }: Props) {
-  const t = T[lang];
+  const t = OBS_TEXT[lang];
   const [all, setAll] = useState<Observation[]>(() => loadObservations(store));
   const [open, setOpen] = useState(false);
   const [observedAt, setObservedAt] = useState(() =>
@@ -119,6 +39,7 @@ export function ObservationLog({ fieldId, lang, expanded = false, store = browse
   const [cause, setCause] = useState<Cause>("unknown");
   const [note, setNote] = useState("");
   const [justSaved, setJustSaved] = useState("");
+  const [csvStatus, setCsvStatus] = useState<"saved" | "error" | null>(null);
   const [failed, setFailed] = useState(false);
 
   const mine = all.filter((o) => o.field_id === fieldId);
@@ -265,6 +186,13 @@ export function ObservationLog({ fieldId, lang, expanded = false, store = browse
           {t.export}
         </button>
       )}
+      {all.length > 0 && <>
+        <button type="button" className="big-button" onClick={() => {
+          try { downloadVisitCsv(store, lang); setCsvStatus("saved"); } catch { setCsvStatus("error"); }
+        }}>{CSV_TEXT[lang].export}</button>
+        <p className="hint">{CSV_TEXT[lang].hint}</p>
+      </>}
+      {csvStatus && <p role={csvStatus === "error" ? "alert" : "status"}>{CSV_TEXT[lang][csvStatus]}</p>}
       <p className="hint">{t.privacy}</p>
     </details>
   );
