@@ -1,3 +1,5 @@
+import { makePack } from "../src/offlinePacks";
+import type { LiveSeason } from "../src/api";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
@@ -196,5 +198,20 @@ for (const lang of ["EN", "DE"] as const) {
     await page.getByRole('button', { name: lang === 'EN' ? 'Start a field visit' : 'Feldbesuch starten' }).click();
     await page.getByRole('button', { name: lang === 'EN' ? 'Record what you saw' : 'Festhalten, was Sie gesehen haben' }).click();
     await expectNoViolations(page);
+  });
+
+  test(`${lang}: saved visit pack is accessible on a phone`, async ({ page }) => {
+    const pack = makePack(live as LiveSeason, ['LWK-1'], []);
+    await page.addInitScript((p) => localStorage.setItem('cropews.visit-packs.v1', JSON.stringify([p])), pack);
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/?field=LWK-1');
+    await page.getByRole('button', { name: lang, exact: true }).click();
+    await page.getByRole('button', { name: lang === 'EN' ? 'Open saved pack' : 'Gespeichertes Paket öffnen' }).click();
+    const visit = page.getByRole('region', { name: lang === 'EN' ? 'Your field visit: LWK-1' : 'Ihr Feldbesuch: LWK-1' });
+    await visit.getByRole('button', { name: lang === 'EN' ? 'Record what you saw' : 'Festhalten, was Sie gesehen haben' }).click();
+    await expectNoViolations(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+    const speaker = visit.getByRole('button', { name: lang === 'EN' ? /^Saved visit:/ : /^Gespeicherter Besuch:/ });
+    expect(await speaker.evaluate((el) => getComputedStyle(el).position)).toBe('static');
   });
 }

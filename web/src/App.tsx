@@ -12,6 +12,7 @@ import {
   type LiveSeason,
 } from "./api";
 import { IntroDialog } from "./components/IntroDialog";
+import { OfflineVisits } from "./components/OfflineVisits";
 import { BackupTools } from "./components/BackupTools";
 import { ReadFieldButton } from "./components/ReadFieldButton";
 import { MyFields } from "./components/MyFields";
@@ -428,6 +429,7 @@ export default function App() {
           )}
           {isLive && <MyFields key={localRevision} live={live} selected={selected} onSelect={setSelected} lang={lang} />}
           {isLive && <BackupTools lang={lang} onRestored={() => setLocalRevision((n) => n + 1)} />}
+          <OfflineVisits key={`packs-${localRevision}`} live={isLive ? live : null} lang={lang} />
         </aside>
       </main>
 

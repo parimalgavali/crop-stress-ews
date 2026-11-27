@@ -392,3 +392,13 @@ How it works:
   No new warning calculation, account, upload, automatic visit or treatment advice.
 - CI206 failure was an ambiguous getByRole(status) test after adding speaker status; scope the
   checked-field assertion to its message. Missing forecasts remain distinct from low risk.
+
+## Offline visit packs (#181, ADR 0085)
+- OfflineVisits remains reachable even when Live data is unavailable. Save selected field
+  boundaries, names, warning/evidence text+dates and checklist as a frozen bilingual snapshot.
+- cropews.visit-packs.v1: maximum 5 packs / 4 MiB, separate from backup and local-work restore.
+  Download/write failures are explicit; removal retains observation records. No new forecasts.
+- SW cache v2 acknowledges explicit root/loaded JS/CSS preparation before a pack is persisted.
+  No OSM tiles, remote images or alerts are cached. Saved visits use a local boundary outline.
+- Saved ages are as of the recorded Live date. The saved reader has a distinct label and stays
+  in the card; starting it stops the other reader's queue. Browser eviction is still possible.

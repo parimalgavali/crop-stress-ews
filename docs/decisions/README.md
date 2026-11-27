@@ -66,3 +66,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 | [0083](0083-satellite-clarity.md) | Satellite views communicate evidence and limits | Accepted |
 
 | [0084](0084-field-visit-view.md) | Compact field visit with existing warnings and local records | Accepted |
+| [0085](0085-offline-visit-packs.md) | Explicit offline visit packs with verified app download | Accepted |

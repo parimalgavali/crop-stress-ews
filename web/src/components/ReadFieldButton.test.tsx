@@ -24,3 +24,16 @@ it('explains absent browser speech support and does not start playback', () => {
   expect(screen.getByRole('button')).toBeDisabled()
   expect(screen.getByText('Read-aloud is unavailable in this browser.')).toBeInTheDocument()
 })
+
+it('stops the previous field queue when a saved visit starts speaking', async () => {
+  const say = vi.fn();
+  vi.stubGlobal('speechSynthesis', { speak: say, cancel: vi.fn() });
+  vi.stubGlobal('SpeechSynthesisUtterance', class { lang = ''; onend: (() => void) | null = null; constructor(public text: string) {} });
+  render(<><ReadFieldButton text="Live field. More live information." lang="en" identity="live" />
+    <ReadFieldButton text="Saved visit." lang="en" identity="pack" context="Saved visit" /></>);
+  await userEvent.click(screen.getByRole('button', { name: 'Listen: read field summary' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Saved visit: Listen: read field summary' }));
+  expect(screen.getByRole('button', { name: 'Listen: read field summary' })).toHaveAttribute('aria-pressed', 'false');
+  act(() => say.mock.calls[0][0].onend?.());
+  expect(say).toHaveBeenCalledTimes(2);
+});
