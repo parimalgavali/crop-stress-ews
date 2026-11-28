@@ -402,3 +402,11 @@ How it works:
   No OSM tiles, remote images or alerts are cached. Saved visits use a local boundary outline.
 - Saved ages are as of the recorded Live date. The saved reader has a distinct label and stays
   in the card; starting it stops the other reader's queue. Browser eviction is still possible.
+
+## Readable visit CSV (#182, ADR 0086)
+- ObservationLog retains JSON and adds an all-visits CSV download using current saved names.
+  Shared observationText labels provide EN/DE columns/categories and explicit unknown/review state.
+- visitCsv validates visits/names with the backup contract, reads fresh storage, never writes.
+  UTF-8 BOM, quoted cells/embedded quotes/CRLF preserve accents and multiline notes. Leading
+  formula characters, including after Unicode control/format characters, get an apostrophe.
+- CSV is explicitly for reading/analysis; backup remains the restore path. Stored text is unchanged.

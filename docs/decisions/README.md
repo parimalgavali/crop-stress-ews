@@ -67,3 +67,4 @@ evaluation. Amend the status of superseded records instead of deleting them.
 
 | [0084](0084-field-visit-view.md) | Compact field visit with existing warnings and local records | Accepted |
 | [0085](0085-offline-visit-packs.md) | Explicit offline visit packs with verified app download | Accepted |
+| [0086](0086-readable-visit-csv.md) | Readable bilingual visit CSV with safe spreadsheet text | Accepted |
