@@ -1,0 +1,45 @@
+import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, expect, it, vi } from 'vitest';
+import { LiveCard } from './LiveCard';
+import { ObservationLog } from './ObservationLog';
+import { OBS_STORAGE_KEY } from '../observations';
+import type { Conditions } from '../api';
+
+afterEach(() => { cleanup(); localStorage.clear(); });
+const cond: Conditions = {};
+it.each(['en', 'de'] as const)('offers a compact visit and the original full view in %s', async (lang) => {
+  const summary = vi.fn();
+  render(<LiveCard hideSpeech fieldId="LWK-1" district="Soest" crop="unknown" cond={cond} lang={lang} asOf="2026-11-26" onSummary={summary} />);
+  await userEvent.click(screen.getByRole('button', { name: lang === 'en' ? 'Start a field visit' : 'Feldbesuch starten' }));
+  expect(screen.getByRole('heading', { name: lang === 'en' ? 'Your field visit' : 'Ihr Feldbesuch' })).toBeVisible();
+  expect(screen.getByText('LWK-1', { exact: true })).toBeVisible();
+  expect(screen.getByRole('button', { name: lang === 'en' ? 'Record what you saw' : 'Festhalten, was Sie gesehen haben' })).toBeVisible();
+  const details = screen.getByText(lang === 'en' ? 'Conditions, charts and extra information' : 'Bedingungen, Diagramme und weitere Informationen').closest('details')!;
+  expect(details.open).toBe(false);
+  expect(summary.mock.lastCall?.[0]).toContain(lang === 'en' ? 'These are inspection prompts' : 'Dies sind Hinweise zur Besichtigung');
+  expect(summary.mock.lastCall?.[0]).toContain(lang === 'en' ? 'Evidence: unknown' : 'Datenlage: unbekannt');
+  await userEvent.click(within(details).getByText(lang === 'en' ? 'Conditions, charts and extra information' : 'Bedingungen, Diagramme und weitere Informationen'));
+  expect(screen.getByTestId('live-lines')).toBeVisible();
+  await userEvent.click(screen.getByRole('button', { name: lang === 'en' ? 'Return to full Live view' : 'Zur vollständigen Live-Ansicht' }));
+  expect(screen.getByTestId('live-lines')).toBeVisible();
+});
+it('keeps an unsaved visit available after a write failure, then saves it once', async () => {
+  let blocked = true;
+  const values = new Map<string, string>();
+  const store = { getItem: (k: string) => values.get(k) ?? null, setItem: (k: string, v: string) => { if (blocked) throw new Error('Full'); values.set(k, v); } };
+  render(<ObservationLog fieldId="LWK-1" lang="en" expanded store={store} />);
+  await userEvent.click(screen.getByRole('button', { name: 'Record what you saw' }));
+  await userEvent.selectOptions(screen.getByLabelText('What did you see?'), 'standing_water');
+  await userEvent.type(screen.getByLabelText('Note (optional)'), 'Near the gate');
+  await userEvent.click(screen.getByRole('button', { name: 'Save record' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('Could not save');
+  expect(screen.getByLabelText('Note (optional)')).toHaveValue('Near the gate');
+  expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  blocked = false;
+  await userEvent.click(screen.getByRole('button', { name: 'Save record' }));
+  const records = JSON.parse(values.get(OBS_STORAGE_KEY)!);
+  expect(records).toHaveLength(1);
+  expect(records[0]).toMatchObject({ field_id: 'LWK-1', symptom: 'standing_water', severity: null, suspected_cause: 'unknown', review_status: 'unreviewed', note: 'Near the gate' });
+  expect(screen.getByRole('status')).toHaveTextContent('Saved: visit on');
+});

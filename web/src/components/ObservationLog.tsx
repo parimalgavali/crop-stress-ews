@@ -27,6 +27,7 @@ const T = {
     cause: "Suspected cause",
     note: "Note (optional)",
     save: "Save record",
+    error: "Could not save. Your browser storage may be full or unavailable. Keep this form open and try again.",
     saved: (d: string) => `Saved: visit on ${d}`,
     none: "No visit records on this device yet.",
     export: "Export all records (JSON)",
@@ -66,6 +67,7 @@ const T = {
     cause: "Vermutete Ursache",
     note: "Notiz (optional)",
     save: "Eintrag speichern",
+    error: "Speichern fehlgeschlagen. Der Browserspeicher ist möglicherweise voll oder nicht verfügbar. Lassen Sie das Formular offen und versuchen Sie es erneut.",
     saved: (d: string) => `Gespeichert: Besuch am ${d}`,
     none: "Noch keine Besuchseinträge auf diesem Gerät.",
     export: "Alle Einträge exportieren (JSON)",
@@ -101,9 +103,10 @@ interface Props {
   fieldId: string;
   lang: Lang;
   store?: LocalStore;
+  expanded?: boolean;
 }
 
-export function ObservationLog({ fieldId, lang, store = browserStore() ?? unavailableStore }: Props) {
+export function ObservationLog({ fieldId, lang, expanded = false, store = browserStore() ?? unavailableStore }: Props) {
   const t = T[lang];
   const [all, setAll] = useState<Observation[]>(() => loadObservations(store));
   const [open, setOpen] = useState(false);
@@ -116,6 +119,7 @@ export function ObservationLog({ fieldId, lang, store = browserStore() ?? unavai
   const [cause, setCause] = useState<Cause>("unknown");
   const [note, setNote] = useState("");
   const [justSaved, setJustSaved] = useState("");
+  const [failed, setFailed] = useState(false);
 
   const mine = all.filter((o) => o.field_id === fieldId);
 
@@ -131,7 +135,14 @@ export function ObservationLog({ fieldId, lang, store = browserStore() ?? unavai
       note: note || undefined,
       review_status: "unreviewed",
     };
-    setAll(addObservation(store, rec));
+    setFailed(false);
+    setJustSaved("");
+    try {
+      setAll(addObservation(store, rec));
+    } catch {
+      setFailed(true);
+      return;
+    }
     setJustSaved(observedAt);
     setNote("");
     setOpen(false);
@@ -149,7 +160,7 @@ export function ObservationLog({ fieldId, lang, store = browserStore() ?? unavai
   };
 
   return (
-    <details className="evidence">
+    <details className="evidence" open={expanded || undefined}>
       <summary>{t.title}</summary>
       {mine.length === 0 ? (
         <p className="hint">{t.none}</p>
@@ -166,17 +177,19 @@ export function ObservationLog({ fieldId, lang, store = browserStore() ?? unavai
           ))}
         </ul>
       )}
+      {failed && <p role="alert">{t.error}</p>}
       {justSaved && <p role="status">{t.saved(formatDate(justSaved, lang))}</p>}
       {!open ? (
         <button type="button" className="big-button" onClick={() => setOpen(true)}>
           {t.add}
         </button>
       ) : (
-        <div className="obs-form">
+        <form className="obs-form" onSubmit={(e) => { e.preventDefault(); save(); }}>
           <label>
             {t.when}{" "}
             <input
               type="date"
+              required
               value={observedAt}
               onChange={(e) => setObservedAt(e.target.value)}
             />
@@ -242,10 +255,10 @@ export function ObservationLog({ fieldId, lang, store = browserStore() ?? unavai
               onChange={(e) => setNote(e.target.value)}
             />
           </label>
-          <button type="button" className="big-button" onClick={save}>
+          <button type="submit" className="big-button">
             {t.save}
           </button>
-        </div>
+        </form>
       )}
       {all.length > 0 && (
         <button type="button" className="big-button" onClick={download}>

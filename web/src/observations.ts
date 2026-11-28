@@ -63,11 +63,7 @@ export function loadObservations(store: Store): Observation[] {
 
 export function addObservation(store: Store, obs: Observation): Observation[] {
   const all = [...loadObservations(store), obs];
-  try {
-    store.setItem(OBS_STORAGE_KEY, JSON.stringify(all));
-  } catch {
-    // Private mode or full storage: the record just isn't kept.
-  }
+  store.setItem(OBS_STORAGE_KEY, JSON.stringify(all));
   return all;
 }
 
